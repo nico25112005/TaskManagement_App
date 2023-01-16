@@ -1,0 +1,368 @@
+﻿<Window x:Class="TaskManagement.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TaskManagement"
+        mc:Ignorable="d"
+        Title="MainWindow" Margin="0,0,0,0" d:DesignWidth="1324" d:DesignHeight="786.96">
+
+    <Window.Resources>
+        <Style x:Key="MenuButtons" TargetType="Button">
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="Margin" Value="10,4"/>
+            <Setter Property="Height" Value="75"/>
+        </Style>
+        <Style x:Key="Label"  TargetType="Control">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="FontFamily" Value="Bahnschrift"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        <Style TargetType="Control" x:Key="Color">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#454545"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="FontFamily" Value="Bahnschrift"/>
+        </Style>
+
+        <Style TargetType="Control" x:Key="Border" BasedOn="{StaticResource Color}">
+            <Setter Property="BorderBrush" Value="#abadb3"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <Style TargetType="Control" x:Key="Lv_item">
+            <Setter Property="BorderBrush" Value="#abadb3"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Margin" Value="15,0"/>
+        </Style>
+        
+        <SolidColorBrush x:Key="Button.MouseOver.Background" Color="Transparent"/>
+        <SolidColorBrush x:Key="Button.MouseOver.Border" Color="#FF3C7FB1"/>
+        <SolidColorBrush x:Key="Button.Pressed.Background" Color="#FFC4E5F6"/>
+        <SolidColorBrush x:Key="Button.Pressed.Border" Color="#FF2C628B"/>
+        <SolidColorBrush x:Key="Button.Disabled.Background" Color="#FFF4F4F4"/>
+        <SolidColorBrush x:Key="Button.Disabled.Border" Color="#FFADB2B5"/>
+        <SolidColorBrush x:Key="Button.Disabled.Foreground" Color="#FF838383"/>
+        <ControlTemplate x:Key="ButtonTemplate1" TargetType="{x:Type ButtonBase}">
+            <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="true">
+                <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="Button.IsDefaulted" Value="true">
+                    <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="true">
+                    <Setter Property="Background" TargetName="border" Value="{StaticResource Button.MouseOver.Background}"/>
+                    <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource Button.MouseOver.Border}"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="true">
+                    <Setter Property="Background" TargetName="border" Value="{StaticResource Button.Pressed.Background}"/>
+                    <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource Button.Pressed.Border}"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="false">
+                    <Setter Property="Background" TargetName="border" Value="{StaticResource Button.Disabled.Background}"/>
+                    <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource Button.Disabled.Border}"/>
+                    <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="{StaticResource Button.Disabled.Foreground}"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+        
+        
+        
+    </Window.Resources>
+    <Grid Background="#ededed">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Column="0" Background="#ffffff">
+
+            
+
+        </DockPanel>
+
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Background="#ffffff">
+                <Button Template="{DynamicResource ButtonTemplate1}" Style="{StaticResource MenuButtons}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0.5" Margin="10,20,10,0" Click="Home_page">
+                    <StackPanel>
+                        <Image Source="/Icons/Home_mine.png" Height="35" Width="35" Stretch="Uniform"/>
+                        <Label Style="{StaticResource Label}" Background="Transparent" Content="Home" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="2"/>
+                        </Style>
+                    </Button.Resources>
+
+                </Button>
+
+                <Button Style="{StaticResource MenuButtons}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0.5" Click="Todo_page">
+                    <StackPanel>
+                        <Image Source="/icons/Tasks.png" Height="35" Width="35" Stretch="Uniform"/>
+                        <Label Style="{StaticResource Label}" Background="Transparent" Content="To-do" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="2"/>
+                        </Style>
+                    </Button.Resources>
+
+                </Button>
+
+                <Button Style="{StaticResource MenuButtons}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0.5" Click="Settings_page">
+                    <StackPanel>
+                        <Image Source="/icons/Settings.png" Height="35" Width="35" Stretch="Uniform"/>
+                        <Label Style="{StaticResource Label}" Background="Transparent" Content="Settings" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="2"/>
+                        </Style>
+                    </Button.Resources>
+
+                </Button>
+            </StackPanel>
+
+            <!--Home-->
+            <Grid Grid.Column="1" x:Name="Home" Visibility="Visible">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                
+                <!--Left Side-->
+                <Grid Margin="10">
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Margin="0,0,0,10" Grid.Row="0">
+
+                        <Label Style="{StaticResource Label}" DockPanel.Dock="Top" BorderBrush="#abadb3" BorderThickness="1,1,1,1" VerticalAlignment="Center" HorizontalContentAlignment="Center" Content="Timer"/>
+                        <Label Style="{StaticResource Label}" DockPanel.Dock="Top" BorderBrush="#abadb3" BorderThickness="1,0,1,0" Height="60" HorizontalContentAlignment="Center" VerticalContentAlignment="Bottom" Content="0" FontSize="30"/>
+                        <Button Style="{StaticResource Label}" Content="Start" DockPanel.Dock="Top" BorderBrush="#abadb3" BorderThickness="1,0,1,1" Height="40">
+                            
+                        </Button>
+                        
+                    </StackPanel>
+
+
+                    <DockPanel Grid.Row="1" Margin="0,10,0,0">
+                        <Label Style="{StaticResource Label}" Content="To-do" BorderBrush="#abadb3" BorderThickness="1,1,1,0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" />
+                        
+                        
+                        <ListView Grid.Row="0" BorderThickness="1,0,1,1" x:Name="Lv_MenuTodos">
+
+                            <ListView.ItemTemplate >
+                                <DataTemplate>
+                                    <Border BorderBrush="#C9C9C9" BorderThickness="1.5" CornerRadius="2" Padding="5" Margin="10,3,0,3" >
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition/>
+                                                <ColumnDefinition/>
+                                                <ColumnDefinition/>
+                                                <ColumnDefinition/>
+                                                <ColumnDefinition/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition/>
+                                                <RowDefinition/>
+                                            </Grid.RowDefinitions>
+
+                                            <Label Content="Description:" Margin="15,0" Grid.Column="0" Grid.Row="0"/>
+                                            <Label Content="Delivery Date:" Margin="15,0" Grid.Column="1" Grid.Row="0"/>
+                                            <Label Content="Importance:" Margin="15,0" Grid.Column="2" Grid.Row="0"/>
+                                            <Label Content="Hours:" Margin="15,0" Grid.Column="3" Grid.Row="0"/>
+                                            <Label Content="allocationWeighting:" Margin="15,0" Grid.Column="4" Grid.Row="0"/>
+
+                                            <Label Content="{Binding Description}" Style="{StaticResource Lv_item}" Grid.Column="0" Grid.Row="1"/>
+                                            <Label Content="{Binding Delivery}" Style="{StaticResource Lv_item}"  Grid.Column="1" Grid.Row="1"/>
+                                            <Label Content="{Binding Importance}" Style="{StaticResource Lv_item}"  Grid.Column="2" Grid.Row="1"/>
+                                            <Label Content="{Binding Hours}" Style="{StaticResource Lv_item}"  Grid.Column="3" Grid.Row="1"/>
+                                            <Label Content="{Binding AllocationWeighting}" Style="{StaticResource Lv_item}"  Grid.Column="4" Grid.Row="1"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+
+                        </ListView>
+
+                    </DockPanel>
+
+                </Grid>
+                
+                
+                <!--Right Side-->
+                <Grid Grid.Column="1" Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <DockPanel Grid.Row="0" Margin="0,0,0,10">
+                        <Label Style="{StaticResource Label}" Content="Termine" BorderBrush="#abadb3" BorderThickness="1,1,1,0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" />
+                        <ListView Grid.Row="0" BorderThickness="1,0,1,1">
+                        
+                        </ListView>
+                        
+                    </DockPanel>
+
+                    <DockPanel Grid.Row="1" Margin="0,10,0,0">
+                        <Label Style="{StaticResource Label}" Content="Fertig" BorderBrush="#abadb3" BorderThickness="1,1,1,0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" />
+
+                        <Grid >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <ListView Grid.Row="0" BorderThickness="1,0,1,1">
+
+                            
+                            </ListView>
+                        
+                            <ListView Grid.Column="1"  Grid.Row="0" BorderThickness="0,0,1,1">
+
+                            </ListView>
+                            
+                        </Grid>
+                        
+
+                    </DockPanel>
+
+
+                </Grid>
+            </Grid>
+            <!--Todo Page-->
+            <Grid Grid.Column="1" x:Name="Todo" Visibility="Collapsed">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="3*"/>
+                </Grid.ColumnDefinitions>
+
+                
+                <StackPanel Margin="10" Background="White" Grid.Column="0">
+
+                        <Label Style="{StaticResource Color}" Margin="10,20,10,0" Content="Description">
+
+                        </Label>
+                    
+                        <TextBox Style="{StaticResource Border}" Margin="10,0,10,5" Text="" x:Name="Tb_description">
+                            
+                            <TextBox.Resources>
+                                <Style TargetType="{x:Type Border}">
+                                    <Setter Property="CornerRadius" Value="4"/>
+                                </Style>
+                            </TextBox.Resources>
+
+                        </TextBox>
+
+                        <Label Style="{StaticResource Color}" Margin="10,0" Content="Hours">
+
+                        </Label>
+                        <TextBox Style="{StaticResource Border}" Margin="10,0,10,5" Text="" x:Name="Tb_hours">
+                            <TextBox.Resources>
+                                <Style TargetType="{x:Type Border}">
+                                    <Setter Property="CornerRadius" Value="4"/>
+                                </Style>
+                            </TextBox.Resources>
+
+                        </TextBox>
+
+
+                        <Label Style="{StaticResource Color}" Margin="10,0" Content="Delivery Date">
+
+                        </Label>
+                        <DatePicker Style="{StaticResource Border}" Margin="10,0,10,5" x:Name="Dp_delivery_date">
+                            
+                            <DatePicker.Resources>
+                                <Style TargetType="{x:Type Border}">
+                                    <Setter Property="CornerRadius" Value="4"/>
+                                </Style>
+                            </DatePicker.Resources>
+
+                        </DatePicker>
+
+
+                        <Label Style="{StaticResource Color}" Margin="10,0" Content="Importancy">
+
+                        </Label>
+                        <TextBox Style="{StaticResource Border}" Margin="10,0,10,5" x:Name="Tb_importancy">
+
+                            <TextBox.Resources>
+                                <Style TargetType="{x:Type Border}">
+                                    <Setter Property="CornerRadius" Value="4"/>
+                                </Style>
+                            </TextBox.Resources>
+
+                        </TextBox>
+
+                        <Button Style="{StaticResource Border}" HorizontalAlignment="Center" Padding="20,2" Margin="0,20,0,5" Content="Create" Click="Create">
+                            <Button.Resources>
+                                <Style TargetType="{x:Type Border}">
+                                    <Setter Property="CornerRadius" Value="4"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </StackPanel>
+
+
+                <ListView Grid.Column="1" Margin="10" d:ItemsSource="{d:SampleData ItemCount=5}" Style="{StaticResource Color}" BorderThickness="0" x:Name="Lv_Todos">
+
+                        <ListView.ItemTemplate >
+                            <DataTemplate>
+                                <Border BorderBrush="#C9C9C9" BorderThickness="1.5" CornerRadius="2" Padding="5" Margin="10,3,0,3" >
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition/>
+                                            <RowDefinition/>
+                                        </Grid.RowDefinitions>
+
+                                        <Label Content="Description:" Margin="15,0" Grid.Column="0" Grid.Row="0"/>
+                                        <Label Content="Delivery Date:" Margin="15,0" Grid.Column="1" Grid.Row="0"/>
+                                        <Label Content="Importance:" Margin="15,0" Grid.Column="2" Grid.Row="0"/>
+                                        <Label Content="Hours:" Margin="15,0" Grid.Column="3" Grid.Row="0"/>
+                                        <Label Content="allocationWeighting:" Margin="15,0" Grid.Column="4" Grid.Row="0"/>
+
+                                        <Label Content="{Binding Description}" Style="{StaticResource Lv_item}" Grid.Column="0" Grid.Row="1"/>
+                                        <Label Content="{Binding Delivery}" Style="{StaticResource Lv_item}"  Grid.Column="1" Grid.Row="1"/>
+                                        <Label Content="{Binding Importance}" Style="{StaticResource Lv_item}"  Grid.Column="2" Grid.Row="1"/>
+                                        <Label Content="{Binding Hours}" Style="{StaticResource Lv_item}"  Grid.Column="3" Grid.Row="1"/>
+                                        <Label Content="{Binding AllocationWeighting}" Style="{StaticResource Lv_item}"  Grid.Column="4" Grid.Row="1"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+
+
+                    </ListView>
+                
+            </Grid>
+            <!--Settings-->
+            <Grid Grid.Column="1" x:Name="Settings" Visibility="Collapsed">
+                
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Icons\Home.png" />
+    <None Remove="Icons\Home_mine.png" />
+    <None Remove="Icons\Settings.jpg" />
+    <None Remove="Icons\Settings.png" />
+    <None Remove="Icons\Tasks.png" />
+    <None Remove="Icons\Todo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="IX.Observable" Version="0.7.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Icons\Home.png" />
+    <Resource Include="Icons\Home_mine.png" />
+    <Resource Include="Icons\Settings.jpg" />
+    <Resource Include="Icons\Settings.png" />
+    <Resource Include="Icons\Tasks.png" />
+    <Resource Include="Icons\Todo.png" />
+  </ItemGroup>
+
+</Project>
