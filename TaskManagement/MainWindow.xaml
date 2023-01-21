@@ -70,8 +70,10 @@
         
         
     </Window.Resources>
+    
     <Grid Background="#ededed">
-
+        
+        
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
             <RowDefinition/>
@@ -148,7 +150,7 @@
 
                     <StackPanel Margin="0,0,0,10" Grid.Row="0">
 
-                        <Label Style="{StaticResource Label}" Background="#ffa600" DockPanel.Dock="Top" BorderBrush="#abadb3" BorderThickness="1,1,1,1" VerticalAlignment="Center" HorizontalContentAlignment="Center" Content="Timer"/>
+                        <Label Style="{StaticResource Label}" x:Name="Timer_Label" DockPanel.Dock="Top" BorderBrush="#abadb3" BorderThickness="1,1,1,1" VerticalAlignment="Center" HorizontalContentAlignment="Center" Content="Timer"/>
                         <Label Style="{StaticResource Label}" DockPanel.Dock="Top" BorderBrush="#abadb3" BorderThickness="1,0,1,0" Height="60" HorizontalContentAlignment="Center" VerticalContentAlignment="Bottom" Content="0" FontSize="30"/>
                         <Button Style="{StaticResource Label}" Content="Start" DockPanel.Dock="Top" BorderBrush="#abadb3" BorderThickness="1,0,1,1" Height="40">
                             
@@ -158,7 +160,7 @@
 
 
                     <DockPanel Grid.Row="1" Margin="0,10,0,0">
-                        <Label Style="{StaticResource Label}" Background="#00d7f3" Content="To-do" BorderBrush="#abadb3" BorderThickness="1,1,1,0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" />
+                        <Label Style="{StaticResource Label}" x:Name="Todo_Label" Content="To-do" BorderBrush="#abadb3" BorderThickness="1,1,1,0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" />
                         
                         
                         <ListView Grid.Row="0" BorderThickness="1,0,1,1" x:Name="Lv_MenuTodos">
@@ -202,7 +204,6 @@
 
                 </Grid>
                 
-                
                 <!--Right Side-->
                 <Grid Grid.Column="1" Margin="10">
                     <Grid.RowDefinitions>
@@ -211,7 +212,7 @@
                     </Grid.RowDefinitions>
 
                     <DockPanel Grid.Row="0" Margin="0,0,0,10">
-                        <Label Style="{StaticResource Label}" Background="#4ed84e" Content="Termine" BorderBrush="#abadb3" BorderThickness="1,1,1,0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" />
+                        <Label Style="{StaticResource Label}" x:Name="Termine_Label" Content="Termine" BorderBrush="#abadb3" BorderThickness="1,1,1,0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" />
                         <ListView Grid.Row="0" BorderThickness="1,0,1,1">
                         
                         </ListView>
@@ -219,7 +220,7 @@
                     </DockPanel>
 
                     <DockPanel Grid.Row="1" Margin="0,10,0,0">
-                        <Label Style="{StaticResource Label}" Background="#e35d48" Content="Fertig" BorderBrush="#abadb3" BorderThickness="1,1,1,0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" />
+                        <Label Style="{StaticResource Label}" x:Name="Fertig_Label" Content="Fertig" BorderBrush="#abadb3" BorderThickness="1,1,1,0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" />
 
                         <Grid >
                             <Grid.ColumnDefinitions>
@@ -255,7 +256,7 @@
                 
                 <StackPanel Margin="10" Background="White" Grid.Column="0">
 
-                    <Label Style="{StaticResource Color}" Background="#ffa600" Margin="10,20,10,2" Content="Description"/>
+                    <Label Style="{StaticResource Color}" x:Name="Description_Label" Margin="10,20,10,2" Content="Description"/>
 
 
 
@@ -269,7 +270,7 @@
 
                     </TextBox>
 
-                    <Label Style="{StaticResource Color}" Background="#00d7f3" Margin="10,15,10,2" Content="Hours"/>
+                    <Label Style="{StaticResource Color}" x:Name="Hours_Label" Margin="10,15,10,2" Content="Hours"/>
 
 
                     <TextBox Style="{StaticResource Border}" Margin="10,0,10,5" Text="" x:Name="Tb_hours">
@@ -282,7 +283,7 @@
                     </TextBox>
 
 
-                    <Label Style="{StaticResource Color}" Background="#4ed84e" Margin="10,15,10,2" Content="Delivery Date"/>
+                    <Label Style="{StaticResource Color}" x:Name="DeliveryDate_Label" Margin="10,15,10,2" Content="Delivery Date"/>
 
 
                     <DatePicker Style="{StaticResource Border}" Margin="10,0,10,5" x:Name="Dp_delivery_date">
@@ -296,7 +297,7 @@
                     </DatePicker>
 
 
-                    <Label Style="{StaticResource Color}" Background="#e35d48" Margin="10,15,10,2" Content="Importancy"/>
+                    <Label Style="{StaticResource Color}" x:Name="Importancy_Label" Margin="10,15,10,2" Content="Importancy"/>
 
 
                     <TextBox Style="{StaticResource Border}" Margin="10,0,10,5" x:Name="Tb_importancy">

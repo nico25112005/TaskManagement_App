@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Media;
 
 namespace TaskManagement
 {
@@ -12,7 +13,7 @@ namespace TaskManagement
         {
             InitializeComponent();
             StartUp();
-
+            SetColors();
         }
         private void Create(object sender, RoutedEventArgs e)
         {
@@ -56,6 +57,42 @@ namespace TaskManagement
             if (Data.notDistributableTasks != null)
             {
                 Lv_MenuTodos.ItemsSource = Data.nWeek[0].Tasks;
+            }
+        }
+        private void SetColors()
+        {
+            Timer_Label.Background = Colorpalet(0);
+            Todo_Label.Background = Colorpalet(2);
+            Termine_Label.Background = Colorpalet(1);
+            Fertig_Label.Background = Colorpalet(3);
+
+            Description_Label.Background = Colorpalet(0);
+            Hours_Label.Background = Colorpalet(1);
+            DeliveryDate_Label.Background = Colorpalet(2);
+            Importancy_Label.Background = Colorpalet(3);
+
+
+        }
+
+        private Brush? Colorpalet(byte index)
+        {
+            List<string> hexColors = new List<string>()
+            {
+                "#5E97D9",
+                "#e35d48",
+                "#FFC941",
+                "#509C6E"
+
+            };
+
+            var bc = new BrushConverter();
+            if (hexColors[index] != null)
+            {
+                return bc.ConvertFrom(hexColors[index]) as Brush;
+            }
+            else
+            {
+                return Brushes.White;
             }
         }
 
