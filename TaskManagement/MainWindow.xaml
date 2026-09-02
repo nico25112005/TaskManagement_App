@@ -122,6 +122,19 @@
 
                 </Button>
 
+                <Button Style="{StaticResource MenuButtons}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0.5" Click="Plan_page">
+                    <StackPanel>
+                        <Image Source="/icons/Todo.png" Height="35" Width="35" Stretch="Uniform"/>
+                        <Label Style="{StaticResource Label}" Background="Transparent" Content="Plan" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="2"/>
+                        </Style>
+                    </Button.Resources>
+
+                </Button>
+
                 <Button Style="{StaticResource MenuButtons}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0.5" Click="Settings_page">
                     <StackPanel>
                         <Image Source="/icons/Settings.png" Height="35" Width="35" Stretch="Uniform"/>
@@ -402,6 +415,55 @@
                     </ListView>
                 
             </Grid>
+            <!--Plan (Calendar / fixed events + free time blocks)-->
+            <Grid Grid.Column="1" x:Name="Plan" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Toolbar: add event of currently selected type -->
+                <DockPanel Grid.Row="0" Margin="10" LastChildFill="False">
+                    <Label Style="{StaticResource Label}" DockPanel.Dock="Left" Content="Type:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <ComboBox x:Name="Cb_eventType" DockPanel.Dock="Left" Width="180" SelectedIndex="0" VerticalAlignment="Center">
+                        <ComboBoxItem Content="Fixed appointment"/>
+                        <ComboBoxItem Content="Work hours (for tasks)"/>
+                        <ComboBoxItem Content="Free time (no tasks)"/>
+                        <ComboBoxItem Content="Sleep"/>
+                    </ComboBox>
+
+                    <Label Style="{StaticResource Label}" DockPanel.Dock="Left" Content="Title:" VerticalAlignment="Center" Margin="16,0,8,0"/>
+                    <TextBox x:Name="Tb_eventTitle" DockPanel.Dock="Left" Width="200" VerticalAlignment="Center" Padding="4"/>
+
+                    <Label Style="{StaticResource Label}" DockPanel.Dock="Left" Content="Day:" VerticalAlignment="Center" Margin="16,0,8,0"/>
+                    <DatePicker x:Name="Dp_eventDay" DockPanel.Dock="Left" VerticalAlignment="Center" Width="140"/>
+
+                    <Label Style="{StaticResource Label}" DockPanel.Dock="Left" Content="From:" VerticalAlignment="Center" Margin="16,0,8,0"/>
+                    <ComboBox x:Name="Cb_eventStart" DockPanel.Dock="Left" Width="80" VerticalAlignment="Center"/>
+                    <Label Style="{StaticResource Label}" DockPanel.Dock="Left" Content="To:" VerticalAlignment="Center" Margin="8,0,8,0"/>
+                    <ComboBox x:Name="Cb_eventEnd" DockPanel.Dock="Left" Width="80" VerticalAlignment="Center"/>
+
+                    <Button Style="{StaticResource Border}" DockPanel.Dock="Right" Content="Add event" Padding="14,4" Margin="10,0,0,0" Click="AddCalendarEvent"/>
+                </DockPanel>
+
+                <!-- Week overview: 7 columns, one per day -->
+                <Grid Grid.Row="1" Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Day headers + content generated in code-behind for now.
+                         Reason: dynamic time-grid with hour rows is easier to build
+                         programmatically than to template. See RefreshPlanView(). -->
+                </Grid>
+            </Grid>
+
             <!--Settings-->
             <Grid Grid.Column="1" x:Name="Settings" Visibility="Collapsed">
                 
