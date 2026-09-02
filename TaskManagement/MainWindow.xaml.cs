@@ -104,7 +104,7 @@ namespace TaskManagement
         {
             var weekPlan = Tasks.nWeek.Select(kvp => new WeekPlanViewModel
             {
-                Day = $"{DateTime.Now.AddDays(kvp.Key).ToString("M")}",
+                Day = $"{kvp.Value.Date:ddd dd.MM.}",
                 PlanedHours = kvp.Value.PlanedHours,
                 Tasks = kvp.Value.Tasks.Select(task => new TaskViewModel { Description = task.Description }).ToList()
             }).ToList();
