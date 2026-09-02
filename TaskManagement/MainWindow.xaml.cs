@@ -12,6 +12,7 @@ namespace TaskManagement
     public partial class MainWindow : Window
     {
         private TaskViewModel _draggedTask;
+        private TimerViewModel _timer = new();
 
         // Plan view: the inner Grid that holds the 7 day-columns.
         // Kept as field so RefreshPlanView can rebuild it without XAML.
@@ -20,6 +21,15 @@ namespace TaskManagement
         public MainWindow()
         {
             InitializeComponent();
+            _timer.PropertyChanged += (s, e) =>
+            {
+                TimerDisplay.Content = _timer.Display;
+                TimerState.Content = _timer.StateLabel;
+                BtnTimerStart.IsEnabled = !_timer.IsRunning;
+                BtnTimerPause.IsEnabled = _timer.IsRunning;
+                BtnTimerStop.IsEnabled = _timer.IsRunning;
+                BtnTimerSkip.IsEnabled = _timer.Session.IsOnBreak;
+            };
             StartUp();
             SetColors();
             InitPlanView();
@@ -406,6 +416,42 @@ namespace TaskManagement
             CalendarEvents.events.Remove(ev);
             CalendarEvents.WriteDataToJson();
             RefreshPlanView();
+        }
+
+        // === Timer (focus session) handlers ===
+
+        private void Timer_Start(object sender, RoutedEventArgs e)
+        {
+            // Find the highest-weighted unfinished task that fits in a reasonable focus block.
+            // Default to 50 min (Pomodoro-ish) if no task is selected.
+            var nextTask = Tasks.tasks.Values
+                .Where(t => t.Hours > 0)
+                .OrderByDescending(t => t.CalculateWeighting(Tasks.tasks))
+                .FirstOrDefault();
+            if (nextTask == null) return;
+
+            // Cap focus block to the smaller of 50min or the task's remaining hours
+            var blockDuration = TimeSpan.FromMinutes(Math.Min(50, nextTask.Hours * 60));
+            if (blockDuration < TimeSpan.FromMinutes(5)) return; // too short, don't bother
+            _timer.Start(nextTask, blockDuration);
+        }
+
+        private void Timer_Pause(object sender, RoutedEventArgs e)
+        {
+            if (_timer.IsRunning) _timer.Pause();
+            else _timer.Resume();
+        }
+
+        private void Timer_Stop(object sender, RoutedEventArgs e)
+        {
+            _timer.Stop();
+            // Re-distribute because task hours may have changed
+            Calculate();
+        }
+
+        private void Timer_SkipBreak(object sender, RoutedEventArgs e)
+        {
+            _timer.SkipBreak();
         }
     }
 
