@@ -115,8 +115,9 @@ namespace TaskManagement
             var weekPlan = Tasks.nWeek.Select(kvp => new WeekPlanViewModel
             {
                 Day = $"{kvp.Value.Date:ddd dd.MM.}",
+                DayDate = kvp.Value.Date.Date,
                 PlanedHours = kvp.Value.PlanedHours,
-                Tasks = kvp.Value.Tasks.Select(task => new TaskViewModel { Description = task.Description }).ToList()
+                Tasks = kvp.Value.Tasks.Select(task => new TaskViewModel { Description = task.Description, Hours = task.Hours }).ToList()
             }).ToList();
 
             Lv_WeekPlan.ItemsSource = weekPlan;
@@ -124,46 +125,58 @@ namespace TaskManagement
 
         private void WeekPlan_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (sender is ListViewItem item && item.DataContext is TaskViewModel task)
+            if (sender is FrameworkElement fe && fe.DataContext is TaskViewModel task)
             {
                 _draggedTask = task;
-                DragDrop.DoDragDrop(item, task, DragDropEffects.Move);
+                DragDrop.DoDragDrop(fe, task, DragDropEffects.Move);
             }
         }
 
-        private void TaskList_Drop(object sender, DragEventArgs e)
+        private void TaskChip_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (_draggedTask == null || !(sender is ItemsControl targetList)) return;
-
-            var targetWeek = targetList.DataContext as WeekPlanViewModel;
-            if (targetWeek != null)
-            {
-                Trace.WriteLine($"Verschiebe Aufgabe '{_draggedTask.Description}' zu {targetWeek.Day}");
-                RemoveTaskFromCurrentWeek(_draggedTask);
-                targetWeek.Tasks.Add(_draggedTask);
-                UpdateWeekPlanAfterTaskMove();
-            }
-
-            _draggedTask = null;
+            // Alias for XAML to keep the handler name short
+            WeekPlan_MouseLeftButtonDown(sender, e);
         }
 
-        private void RemoveTaskFromCurrentWeek(TaskViewModel task)
+        private void DayTaskContainer_DragEnter(object sender, DragEventArgs e)
         {
+            e.Effects = e.Data.GetDataPresent(typeof(TaskViewModel)) ? DragDropEffects.Move : DragDropEffects.None;
+        }
+
+        private void DayTaskContainer_DragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = e.Data.GetDataPresent(typeof(TaskViewModel)) ? DragDropEffects.Move : DragDropEffects.None;
+            e.Handled = true;
+        }
+
+        private void DayTaskContainer_Drop(object sender, DragEventArgs e)
+        {
+            if (_draggedTask == null) return;
+            if (sender is not FrameworkElement fe) return;
+            if (fe.Tag is not WeekPlanViewModel targetDay) return;
+
+            // Find the source day by description (we don't track chunk IDs in the view-model)
             foreach (var week in Tasks.nWeek.Values)
             {
-                var taskToRemove = week.Tasks.FirstOrDefault(t => t.Description == task.Description);
-                if (taskToRemove != null)
+                var match = week.Tasks.FirstOrDefault(t => t.Description == _draggedTask.Description);
+                if (match != null)
                 {
-                    week.Tasks.Remove(taskToRemove);
-                    week.PlanedHours -= taskToRemove.Hours;
-                    Trace.WriteLine($"Aufgabe '{task.Description}' aus ursprünglichem Tag entfernt.");
+                    week.Tasks.Remove(match);
+                    week.PlanedHours = Math.Max(0, week.PlanedHours - match.Hours);
+
+                    // Re-append the moved chunk to the target day
+                    int targetDayIndex = Tasks.nWeek.First(kvp => kvp.Value.Date.Date == targetDay.DayDate).Key;
+                    if (!Tasks.nWeek.ContainsKey(targetDayIndex))
+                        Tasks.nWeek[targetDayIndex] = new Week(targetDay.DayDate);
+                    Tasks.nWeek[targetDayIndex].Tasks.Add(match);
+                    Tasks.nWeek[targetDayIndex].PlanedHours += match.Hours;
+
+                    Trace.WriteLine($"Moved '{match.Description}' to day {targetDayIndex}");
                     break;
                 }
             }
-        }
 
-        private void UpdateWeekPlanAfterTaskMove()
-        {
+            _draggedTask = null;
             RefreshWeekPlan();
         }
 
@@ -457,13 +470,15 @@ namespace TaskManagement
 
     public class WeekPlanViewModel
     {
-        public string Day { get; set; }
+        public string Day { get; set; } = "";
         public float PlanedHours { get; set; }
-        public List<TaskViewModel> Tasks { get; set; }
+        public List<TaskViewModel> Tasks { get; set; } = new();
+        public DateTime DayDate { get; set; }
     }
 
     public class TaskViewModel
     {
-        public string Description { get; set; }
+        public string Description { get; set; } = "";
+        public float Hours { get; set; }
     }
 }

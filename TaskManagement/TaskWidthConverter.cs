@@ -1,29 +1,26 @@
-﻿using System;
+using System;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
 
 namespace TaskManagement
 {
+    /// <summary>
+    /// Converts a float hours-value into a pixel width for the week-plan task bar.
+    /// Uses the ConverterParameter as the scale (hours-to-pixels factor).
+    /// Example: Hours=5, parameter=30 -> width = 150px.
+    /// Min 30px so empty/very-short tasks are still visible.
+    /// </summary>
     public class TaskWidthConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is double listViewWidth && double.TryParse(parameter?.ToString(), out double taskHours))
+            if (value is float hours && double.TryParse(parameter?.ToString(), out double scale))
             {
-                double maxHours = Settings.maxHoursPerDay;
-
-                // Berechnung der Breite basierend auf den Stunden
-                if (maxHours > 0)
-                {
-                    return (taskHours / maxHours) * listViewWidth;
-                }
-                else
-                {
-                    // Sicherstellen, dass die maxHours größer als 0 ist
-                    return 0;
-                }
+                double width = hours * scale;
+                return Math.Max(30, Math.Min(400, width));
             }
-            return 0; // Rückgabe von 0, falls die Eingabewerte ungültig sind
+            return 30.0;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

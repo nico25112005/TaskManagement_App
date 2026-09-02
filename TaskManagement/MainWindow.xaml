@@ -247,12 +247,21 @@
                                             <!-- Tagesbezeichnung -->
                                             <Label Content="{Binding Day}" Grid.Column="0" FontWeight="Bold"/>
 
-                                            <!-- Task-Zeitleistenbereich -->
-                                            <StackPanel Grid.Column="1">
+                                            <!-- Task-Zeitleistenbereich (drop target for dragged tasks) -->
+                                            <StackPanel x:Name="DayTaskContainer" Grid.Column="1"
+                                                        AllowDrop="True"
+                                                        Background="Transparent"
+                                                        Drop="DayTaskContainer_Drop"
+                                                        DragEnter="DayTaskContainer_DragEnter"
+                                                        DragOver="DayTaskContainer_DragOver"
+                                                        Tag="{Binding}">
                                                 <ItemsControl ItemsSource="{Binding Tasks}">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <Border Background="#E1E1E1" Height="30" CornerRadius="5" Margin="5,3">
+                                                            <Border Background="#E1E1E1" Height="30" CornerRadius="5" Margin="5,3"
+                                                                    MouseLeftButtonDown="TaskChip_MouseLeftButtonDown"
+                                                                    Cursor="Hand"
+                                                                    Tag="{Binding}">
                                                                 <Grid>
                                                                     <Grid.ColumnDefinitions>
                                                                         <ColumnDefinition Width="Auto"/>
@@ -262,8 +271,9 @@
                                                                     <!-- Taskbeschreibung -->
                                                                     <Label Content="{Binding Description}" Grid.Column="0" Margin="5,0" FontWeight="Bold"/>
 
-                                                                    <!-- Zeitleiste basierend auf Task-Dauer -->
-                                                                    <Rectangle Grid.Column="1" Fill="LightGreen" Margin="5,0" Height="15" Width="30"/>
+                                                                    <!-- Zeitleiste basierend auf Task-Dauer (max-width ~250) -->
+                                                                    <Rectangle Grid.Column="1" Fill="LightGreen" Margin="5,0" Height="15"
+                                                                               Width="{Binding Hours, Converter={StaticResource TaskWidthConverter}, ConverterParameter=10}"/>
                                                                 </Grid>
                                                             </Border>
                                                         </DataTemplate>
