@@ -1,64 +1,171 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
+using System.Diagnostics;
 
 namespace TaskManagement
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
+        private TaskViewModel _draggedTask;
+
         public MainWindow()
         {
             InitializeComponent();
             StartUp();
             SetColors();
         }
-        private void Create(object sender, RoutedEventArgs e)
-        {
-
-            if (Tb_description.Text != "" || Tb_hours.Text != "" || Tb_importancy.Text != "" || Dp_delivery_date.SelectedDate != null) // §funktioniert nicht :(
-            {
-                Data.tasks.Add(Task.GenerateID(), new Task(float.Parse(Tb_hours.Text), Tb_description.Text, Dp_delivery_date.SelectedDate.GetValueOrDefault(), byte.Parse(Tb_importancy.Text), false));
-                Lv_Todos.ItemsSource = null;
-                Lv_Todos.ItemsSource = Data.tasks.Values;
-                Data.WriteDataToJson<Dictionary<string, Task>>("Todos", Data.tasks);
-
-            }
-
-            Calculate();
-        }
 
         private void StartUp()
         {
-            Data.ReadDataOfJson<Dictionary<string, Task>>("Todos", out Data.tasks);
-            Data.GenerateTasks(5, 1, 5, 1, 3, false);
-            TaskSorter.Distributor();
-            if (Data.tasks != null)
+            try
             {
-                Lv_Todos.ItemsSource = Data.tasks.Values;
+                Tasks.ReadDataFromJson<Dictionary<string, Task>>("todos", out Tasks.tasks);
+
+                //Tasks.GenerateTasks(6, 1, 5, 1, 3, false);
+                TaskSorter.Distributor();
+                RefreshTodoList();
+                RefreshWeekPlan();
             }
-            if (Data.nWeek != null)
+            catch (Exception ex)
             {
-                Lv_MenuTodos.ItemsSource = Data.nWeek[0].Tasks;
+                Trace.WriteLine($"Fehler bei StartUp: {ex.Message}");
             }
+        }
+
+        private void Create(object sender, RoutedEventArgs e)
+        {
+            if (!ValidateInputs()) return;
+
+            try
+            {
+                Tasks.tasks.Add(Task.GenerateId(), new Task(float.Parse(Tb_hours.Text), Tb_description.Text, Dp_delivery_date.SelectedDate.GetValueOrDefault(), byte.Parse(Tb_importancy.Text), false));
+                Trace.WriteLine($"Neue Aufgabe '{Tb_description.Text}' erstellt.");
+                Tasks.WriteDataToJson<Dictionary<string, Task>>("todos", Tasks.tasks); // <string, Task>
+                Calculate();
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"Fehler beim Erstellen der Aufgabe: {ex.Message}");
+            }
+        }
+
+        private bool ValidateInputs()
+        {
+            if (string.IsNullOrWhiteSpace(Tb_description.Text) || string.IsNullOrWhiteSpace(Tb_hours.Text) || string.IsNullOrWhiteSpace(Tb_importancy.Text) || Dp_delivery_date.SelectedDate == null)
+            {
+                Trace.WriteLine("Bitte füllen Sie alle Felder aus.");
+                MessageBox.Show("Alle Felder müssen ausgefüllt sein.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
+
+            if (!float.TryParse(Tb_hours.Text, out _) || !byte.TryParse(Tb_importancy.Text, out _))
+            {
+                Trace.WriteLine("Ungültige Eingabeformate.");
+                MessageBox.Show("Bitte geben Sie gültige numerische Werte für Stunden und Wichtigkeit ein.", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
+
+            return true;
         }
 
         private void Calculate()
         {
-
-            Data.nWeek.Clear();
-            TaskSorter.Distributor();
-            if (Data.tasks != null)
+            try
             {
-                Lv_Todos.ItemsSource = Data.tasks.Values;
+                Tasks.nWeek.Clear();
+                TaskSorter.Distributor();
+                RefreshTodoList();
+                RefreshWeekPlan();
             }
-            if (Data.notDistributableTasks != null)
+            catch (Exception ex)
             {
-                Lv_MenuTodos.ItemsSource = Data.nWeek[0].Tasks;
+                Trace.WriteLine($"Fehler bei der Berechnung: {ex.Message}");
             }
         }
+
+        private void RefreshTodoList()
+        {
+            Lv_Todos.ItemsSource = null;
+            Lv_Todos.ItemsSource = Tasks.tasks.Values;
+        }
+
+        private void RefreshWeekPlan()
+        {
+            var weekPlan = Tasks.nWeek.Select(kvp => new WeekPlanViewModel
+            {
+                Day = $"{DateTime.Now.AddDays(kvp.Key).ToString("M")}",
+                PlanedHours = kvp.Value.PlanedHours,
+                Tasks = kvp.Value.Tasks.Select(task => new TaskViewModel { Description = task.Description }).ToList()
+            }).ToList();
+
+            Lv_WeekPlan.ItemsSource = weekPlan;
+        }
+
+        private void WeekPlan_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is ListViewItem item && item.DataContext is TaskViewModel task)
+            {
+                _draggedTask = task;
+                DragDrop.DoDragDrop(item, task, DragDropEffects.Move);
+            }
+        }
+
+        private void TaskList_Drop(object sender, DragEventArgs e)
+        {
+            if (_draggedTask == null || !(sender is ItemsControl targetList)) return;
+
+            var targetWeek = targetList.DataContext as WeekPlanViewModel;
+            if (targetWeek != null)
+            {
+                Trace.WriteLine($"Verschiebe Aufgabe '{_draggedTask.Description}' zu {targetWeek.Day}");
+                RemoveTaskFromCurrentWeek(_draggedTask);
+                targetWeek.Tasks.Add(_draggedTask);
+                UpdateWeekPlanAfterTaskMove();
+            }
+
+            _draggedTask = null;
+        }
+
+        private void RemoveTaskFromCurrentWeek(TaskViewModel task)
+        {
+            foreach (var week in Tasks.nWeek.Values)
+            {
+                var taskToRemove = week.Tasks.FirstOrDefault(t => t.Description == task.Description);
+                if (taskToRemove != null)
+                {
+                    week.Tasks.Remove(taskToRemove);
+                    week.PlanedHours -= taskToRemove.Hours;
+                    Trace.WriteLine($"Aufgabe '{task.Description}' aus ursprünglichem Tag entfernt.");
+                    break;
+                }
+            }
+        }
+
+        private void UpdateWeekPlanAfterTaskMove()
+        {
+            RefreshWeekPlan();
+        }
+
+        private Brush? Colorpalet(byte index)
+        {
+            List<string> hexColors = new()
+            {
+                "#5E97D9",
+                "#e35d48",
+                "#FFC941",
+                "#509C6E"
+            };
+
+            var bc = new BrushConverter();
+            return hexColors[index] != null ? bc.ConvertFrom(hexColors[index]) as Brush : Brushes.White;
+        }
+
+
         private void SetColors()
         {
             Timer_Label.Background = Colorpalet(0);
@@ -72,28 +179,6 @@ namespace TaskManagement
             Importancy_Label.Background = Colorpalet(3);
 
 
-        }
-
-        private Brush? Colorpalet(byte index)
-        {
-            List<string> hexColors = new List<string>()
-            {
-                "#5E97D9",
-                "#e35d48",
-                "#FFC941",
-                "#509C6E"
-
-            };
-
-            var bc = new BrushConverter();
-            if (hexColors[index] != null)
-            {
-                return bc.ConvertFrom(hexColors[index]) as Brush;
-            }
-            else
-            {
-                return Brushes.White;
-            }
         }
 
         enum Pages
@@ -135,11 +220,24 @@ namespace TaskManagement
         private void Todo_page(object sender, RoutedEventArgs e)
         {
             ChangePage(Pages.Todo);
+            RefreshTodoList();
         }
 
         private void Settings_page(object sender, RoutedEventArgs e)
         {
             ChangePage(Pages.Settings);
         }
+    }
+
+    public class WeekPlanViewModel
+    {
+        public string Day { get; set; }
+        public float PlanedHours { get; set; }
+        public List<TaskViewModel> Tasks { get; set; }
+    }
+
+    public class TaskViewModel
+    {
+        public string Description { get; set; }
     }
 }

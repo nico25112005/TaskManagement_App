@@ -1,3 +1,42 @@
 {
-  
+  "27956": {
+    "AllocationWeighting": 1334.2858,
+    "Hours": 2.0,
+    "Description": "Deutsch",
+    "Delivery": "2025-02-09T00:00:00",
+    "Importance": 1,
+    "DependentTasks": []
+  },
+  "46515": {
+    "AllocationWeighting": 1033.851,
+    "Hours": 5.0,
+    "Description": "Diplomarbeit",
+    "Delivery": "2025-02-13T00:00:00",
+    "Importance": 3,
+    "DependentTasks": []
+  },
+  "4604": {
+    "AllocationWeighting": 1164.2858,
+    "Hours": 5.0,
+    "Description": "Diplomarbeit schreiben",
+    "Delivery": "2025-02-15T00:00:00",
+    "Importance": 1,
+    "DependentTasks": []
+  },
+  "41464": {
+    "AllocationWeighting": 804.2857,
+    "Hours": 1.5,
+    "Description": "Fiverr Auftrag Part 1B",
+    "Delivery": "2025-02-22T00:00:00",
+    "Importance": 2,
+    "DependentTasks": []
+  },
+  "64684": {
+    "AllocationWeighting": 920.34625,
+    "Hours": 15.0,
+    "Description": "Fiverr Auftrag Part 2",
+    "Delivery": "2025-02-23T00:00:00",
+    "Importance": 2,
+    "DependentTasks": []
+  }
 }

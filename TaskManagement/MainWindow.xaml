@@ -5,9 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TaskManagement"
         mc:Ignorable="d"
-        Title="MainWindow" Margin="0,0,0,0" d:DesignWidth="1324" d:DesignHeight="786.96">
+        Title="Task Management" Margin="0,0,0,0" d:DesignWidth="1324" d:DesignHeight="786.96">
 
     <Window.Resources>
+
+        <local:TaskWidthConverter x:Key="TaskWidthConverter"/>
+
         <Style x:Key="MenuButtons" TargetType="Button">
             <Setter Property="Foreground" Value="Black"/>
             <Setter Property="Margin" Value="10,4"/>
@@ -213,10 +216,50 @@
 
                     <DockPanel Grid.Row="0" Margin="0,0,0,10">
                         <Label Style="{StaticResource Label}" x:Name="Termine_Label" Content="Termine" BorderBrush="#abadb3" BorderThickness="1,1,1,0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" />
-                        <ListView Grid.Row="0" BorderThickness="1,0,1,1">
-                        
+
+                        <ListView x:Name="Lv_WeekPlan" BorderThickness="1,0,1,1">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="#C9C9C9" BorderThickness="1.5" CornerRadius="2" Padding="5" Margin="10,3,0,3">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="2*"/>
+                                                <ColumnDefinition Width="5*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Tagesbezeichnung -->
+                                            <Label Content="{Binding Day}" Grid.Column="0" FontWeight="Bold"/>
+
+                                            <!-- Task-Zeitleistenbereich -->
+                                            <StackPanel Grid.Column="1">
+                                                <ItemsControl ItemsSource="{Binding Tasks}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Background="#E1E1E1" Height="30" CornerRadius="5" Margin="5,3">
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                    </Grid.ColumnDefinitions>
+
+                                                                    <!-- Taskbeschreibung -->
+                                                                    <Label Content="{Binding Description}" Grid.Column="0" Margin="5,0" FontWeight="Bold"/>
+
+                                                                    <!-- Zeitleiste basierend auf Task-Dauer -->
+                                                                    <Rectangle Grid.Column="1" Fill="LightGreen" Margin="5,0" Height="15" Width="30"/>
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
                         </ListView>
-                        
+
+
                     </DockPanel>
 
                     <DockPanel Grid.Row="1" Margin="0,10,0,0">
