@@ -14,11 +14,19 @@
     <None Remove="Icons\Settings.png" />
     <None Remove="Icons\Tasks.png" />
     <None Remove="Icons\Todo.png" />
+    <None Remove="SaveDB.db" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="SaveDB.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="IX.Observable" Version="0.7.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="System.Data.SQLite" Version="1.0.117" />
   </ItemGroup>
 
   <ItemGroup>
