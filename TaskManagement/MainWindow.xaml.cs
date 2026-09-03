@@ -450,35 +450,60 @@ namespace TaskManagement
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-            // Ctrl+1..4 for page switch, Ctrl+N to focus new-task input on Todo page.
-            if (Keyboard.Modifiers != ModifierKeys.Control) return;
+            // Ctrl+1..4: page switch
+            // Ctrl+N: focus new-task input on Todo page
+            // Ctrl+Shift+N: open Quick-Capture overlay (works from any page)
+            var mods = Keyboard.Modifiers;
 
-            switch (e.Key)
+            if (mods == ModifierKeys.Control)
             {
-                case Key.D1:
-                    ChangePage(Pages.Home);
-                    e.Handled = true;
-                    break;
-                case Key.D2:
-                    Todo_page(this, new RoutedEventArgs());
-                    e.Handled = true;
-                    break;
-                case Key.D3:
-                    Plan_page(this, new RoutedEventArgs());
-                    e.Handled = true;
-                    break;
-                case Key.D4:
-                    Settings_page(this, new RoutedEventArgs());
-                    e.Handled = true;
-                    break;
-                case Key.N:
-                    if (pages == Pages.Todo && Tb_description != null)
-                    {
-                        Tb_description.Focus();
-                        Tb_description.SelectAll();
+                switch (e.Key)
+                {
+                    case Key.D1:
+                        ChangePage(Pages.Home);
                         e.Handled = true;
-                    }
-                    break;
+                        break;
+                    case Key.D2:
+                        Todo_page(this, new RoutedEventArgs());
+                        e.Handled = true;
+                        break;
+                    case Key.D3:
+                        Plan_page(this, new RoutedEventArgs());
+                        e.Handled = true;
+                        break;
+                    case Key.D4:
+                        Settings_page(this, new RoutedEventArgs());
+                        e.Handled = true;
+                        break;
+                    case Key.N:
+                        if (pages == Pages.Todo && Tb_description != null)
+                        {
+                            Tb_description.Focus();
+                            Tb_description.SelectAll();
+                            e.Handled = true;
+                        }
+                        break;
+                }
+            }
+            else if (mods == (ModifierKeys.Control | ModifierKeys.Shift) && e.Key == Key.N)
+            {
+                OpenQuickCapture();
+                e.Handled = true;
+            }
+        }
+
+        private void OpenQuickCapture()
+        {
+            var dlg = new QuickCaptureWindow { Owner = this };
+            if (dlg.ShowDialog() == true && !string.IsNullOrWhiteSpace(dlg.CapturedDescription))
+            {
+                // Sensible defaults: 1h, importance 2 (medium), delivery in 7 days.
+                var id = Task.GenerateId();
+                var task = new Task(1f, dlg.CapturedDescription, DateTime.Today.AddDays(7), (byte)2, false);
+                Tasks.tasks[id] = task;
+                Tasks.WriteDataToJson<Dictionary<string, Task>>("todos", Tasks.tasks);
+                Calculate();
+                Trace.WriteLine($"Quick-captured '{dlg.CapturedDescription}'.");
             }
         }
 
