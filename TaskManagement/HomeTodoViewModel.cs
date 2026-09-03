@@ -15,6 +15,7 @@ namespace TaskManagement
     {
         private List<TaskViewModel> _today = new();
         private List<TaskViewModel> _upcoming = new();
+        private List<DoneTaskViewModel> _done = new();
         private float _todayPlannedHours;
         private float _todayAvailableHours;
 
@@ -29,6 +30,15 @@ namespace TaskManagement
             get => _upcoming;
             set { _upcoming = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasUpcoming)); OnPropertyChanged(nameof(UpcomingCount)); }
         }
+
+        public List<DoneTaskViewModel> Done
+        {
+            get => _done;
+            set { _done = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasDone)); OnPropertyChanged(nameof(DoneCount)); }
+        }
+
+        public bool HasDone => _done.Count > 0;
+        public int DoneCount => _done.Count;
 
         public float TodayPlannedHours
         {
@@ -95,6 +105,20 @@ namespace TaskManagement
                 .OrderBy(t => t.Delivery)
                 .Select(t => new TaskViewModel { Description = t.Description, Hours = t.Hours })
                 .ToList();
+
+            // "Recently done" = the most recently completed tasks. Capped at 10
+            // to avoid flooding the Home tab if the user has a long history.
+            Done = Tasks.done.Values
+                .Where(t => t.DoneAt.HasValue)
+                .OrderByDescending(t => t.DoneAt)
+                .Take(10)
+                .Select(t => new DoneTaskViewModel
+                {
+                    Id = t.DoneAt.HasValue ? (Tasks.done.FirstOrDefault(kv => kv.Value == t).Key ?? "") : "",
+                    Description = t.Description,
+                    DoneAtLabel = t.DoneAt.HasValue ? t.DoneAt.Value.ToString("dd.MM. HH:mm") : ""
+                })
+                .ToList();
         }
 
         /// <summary>
@@ -110,5 +134,16 @@ namespace TaskManagement
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string? name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
+
+    /// <summary>
+    /// View-model for a completed task shown in the Home tab's "Recently done" list.
+    /// Carries the task id so the Undo button can move it back to active.
+    /// </summary>
+    public class DoneTaskViewModel
+    {
+        public string Id { get; set; } = "";
+        public string Description { get; set; } = "";
+        public string DoneAtLabel { get; set; } = "";
     }
 }

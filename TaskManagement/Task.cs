@@ -20,6 +20,15 @@ namespace TaskManagement
         public byte Importance { get; set; }
         public List<string> DependentTasks { get; set; } = new();
 
+        /// <summary>
+        /// True if the user marked this task as done. Done tasks are moved out
+        /// of Tasks.tasks into Tasks.done (with DoneAt timestamp) and no longer
+        /// count toward the planner's load. Defaults to false so existing
+        /// serialized tasks without this field load cleanly.
+        /// </summary>
+        public bool Done { get; set; } = false;
+        public DateTime? DoneAt { get; set; } = null;
+
         private const float BaseWeight = 1000f;
         private const float TimeDecayFactor = 0.05f;
 

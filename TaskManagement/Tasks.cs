@@ -9,12 +9,42 @@ namespace TaskManagement
     {
         public static Dictionary<string, Task> tasks = new();
         public static Dictionary<string, Task> notDistributableTasks = new();
+        public static Dictionary<string, Task> done = new();
         public static Dictionary<int, Week> nWeek = new();
 
         static Tasks()
         {
             tasks = new Dictionary<string, Task>();
+            done = new Dictionary<string, Task>();
             nWeek = new Dictionary<int, Week>();
+        }
+
+        /// <summary>
+        /// Mark a task as done: move from tasks to done with timestamp, persist, re-distribute.
+        /// </summary>
+        public static void MarkDone(string id)
+        {
+            if (!tasks.TryGetValue(id, out var task)) return;
+            task.Done = true;
+            task.DoneAt = DateTime.Now;
+            done[id] = task;
+            tasks.Remove(id);
+            WriteDataToJson("todos", tasks);
+            WriteDataToJson("done", done);
+        }
+
+        /// <summary>
+        /// Restore a done task back to active. Used if user 'undoes' completion.
+        /// </summary>
+        public static void MarkUndone(string id)
+        {
+            if (!done.TryGetValue(id, out var task)) return;
+            task.Done = false;
+            task.DoneAt = null;
+            tasks[id] = task;
+            done.Remove(id);
+            WriteDataToJson("todos", tasks);
+            WriteDataToJson("done", done);
         }
 
         public static void WriteDataToJson<T>(string filename, T data)

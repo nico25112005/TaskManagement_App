@@ -46,6 +46,7 @@ namespace TaskManagement
             try
             {
                 Tasks.ReadDataFromJson<Dictionary<string, Task>>("todos", out Tasks.tasks);
+                Tasks.ReadDataFromJson<Dictionary<string, Task>>("done", out Tasks.done);
                 CalendarEvents.ReadDataFromJson();
 
                 //Tasks.GenerateTasks(6, 1, 5, 1, 3, false);
@@ -122,6 +123,7 @@ namespace TaskManagement
             _homeTodo.Refresh();
             Lv_TodayTodos.ItemsSource = _homeTodo.Today;
             Lv_UpcomingTodos.ItemsSource = _homeTodo.Upcoming;
+            Lv_DoneTodos.ItemsSource = _homeTodo.Done;
             TodoLoadLabel.Content = _homeTodo.TodayLoadLabel;
             TodoLoadLabel.Foreground = _homeTodo.IsOverloaded ? Brushes.IndianRed : Brushes.Gray;
         }
@@ -240,6 +242,27 @@ namespace TaskManagement
                 Calculate();
                 Trace.WriteLine($"Edited task '{task.Description}'.");
             }
+        }
+
+        private void UndoDoneTodo_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement fe || fe.Tag is not DoneTaskViewModel doneVm) return;
+            if (string.IsNullOrEmpty(doneVm.Id)) return;
+            Tasks.MarkUndone(doneVm.Id);
+            Calculate();
+            Trace.WriteLine($"Restored '{doneVm.Description}' from done.");
+        }
+
+        private void MarkTodoDone_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement fe || fe.Tag is not Task task) return;
+            var id = Tasks.tasks.FirstOrDefault(kvp => kvp.Value == task).Key;
+            if (id == null)
+                id = Tasks.tasks.FirstOrDefault(kvp => ReferenceEquals(kvp.Value, task)).Key;
+            if (id == null) return;
+            Tasks.MarkDone(id);
+            Calculate();
+            Trace.WriteLine($"Marked '{task.Description}' as done.");
         }
 
         private void DeleteTodo_Click(object sender, RoutedEventArgs e)
