@@ -104,10 +104,20 @@ namespace TaskManagement
             }
         }
 
+        private HomeTodoViewModel _homeTodo = new();
+
         private void RefreshTodoList()
         {
+            // Refresh the Todo (create-new-task) page's full list – unchanged.
             Lv_Todos.ItemsSource = null;
             Lv_Todos.ItemsSource = Tasks.tasks.Values;
+
+            // Refresh the Home page's Today/Upcoming buckets via the view-model.
+            _homeTodo.Refresh();
+            Lv_TodayTodos.ItemsSource = _homeTodo.Today;
+            Lv_UpcomingTodos.ItemsSource = _homeTodo.Upcoming;
+            TodoLoadLabel.Content = _homeTodo.TodayLoadLabel;
+            TodoLoadLabel.Foreground = _homeTodo.IsOverloaded ? Brushes.IndianRed : Brushes.Gray;
         }
 
         private void RefreshWeekPlan()
@@ -291,26 +301,43 @@ namespace TaskManagement
             _planGrid.Children.Clear();
             _planGrid.RowDefinitions.Clear();
 
-            // 7 day columns are already declared in XAML.
-            var startOfWeek = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek); // Sunday
+            // Start from today, run 7 days. This matches the TaskSorter horizon
+            // (Tasks.nWeek is keyed by DateTime.Today.AddDays(N)), so we can map
+            // tasks to days directly by their Date property.
+            var startDay = DateTime.Today;
             var dayNames = new[] { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
 
             for (int col = 0; col < 7; col++)
             {
-                var day = startOfWeek.AddDays(col);
+                var day = startDay.AddDays(col);
                 var dayEvents = CalendarEvents.events
                     .Where(e => e.IsOnDay(day))
                     .OrderBy(e => e.Start)
                     .ToList();
                 var availableHours = CalendarEvents.GetAvailableHoursForDay(day);
+                var dayTasks = GetTasksForDay(day);
 
-                var dayPanel = BuildDayPanel(day, dayNames[col], dayEvents, availableHours);
+                var dayPanel = BuildDayPanel(day, dayNames[(int)day.DayOfWeek], dayEvents, availableHours, dayTasks);
                 Grid.SetColumn(dayPanel, col);
                 _planGrid.Children.Add(dayPanel);
             }
         }
 
-        private Border BuildDayPanel(DateTime day, string dayName, List<CalendarEvent> events, float availableHours)
+        /// <summary>
+        /// Looks up scheduled tasks for a given day from Tasks.nWeek.
+        /// Maps by Week.Date (set in TaskSorter.TryAssignWithSplit) rather than
+        /// by integer index, because start-of-week vs. start-from-today are
+        /// different anchors.
+        /// </summary>
+        private List<Task> GetTasksForDay(DateTime day)
+        {
+            return Tasks.nWeek.Values
+                .Where(w => w.Date.Date == day.Date)
+                .SelectMany(w => w.Tasks)
+                .ToList();
+        }
+
+        private Border BuildDayPanel(DateTime day, string dayName, List<CalendarEvent> events, float availableHours, List<Task> scheduledTasks)
         {
             var stack = new StackPanel { Margin = new Thickness(4) };
 
@@ -345,6 +372,8 @@ namespace TaskManagement
                     Padding = new Thickness(6, 3, 6, 3),
                     Margin = new Thickness(0, 2, 0, 2),
                     Background = ColorForEventType(ev.Type),
+                    Cursor = System.Windows.Input.Cursors.Hand,
+                    ToolTip = $"Right-click to remove '{ev.Title}'",
                     Child = new StackPanel
                     {
                         Children =
@@ -366,10 +395,86 @@ namespace TaskManagement
                         }
                     }
                 };
-                // Right-click to remove (simple v1 affordance)
-                evBorder.MouseRightButtonUp += (s, e) => RemoveCalendarEvent(ev);
-                evBorder.ToolTip = "Right-click to remove";
+
+                // Right-click to remove. Use MouseRightButtonDown (not Up) because
+                // Up can be swallowed by ancestor context-menus or scroll-behaviour;
+                // Down + e.Handled = true guarantees the event is consumed.
+                evBorder.MouseRightButtonDown += (s, e) =>
+                {
+                    e.Handled = true;
+                    var result = MessageBox.Show(
+                        $"Remove '{ev.Title}' ({ev.Start:ddd HH:mm}–{ev.End:HH:mm})?",
+                        "Remove calendar event",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        RemoveCalendarEvent(ev);
+                    }
+                };
+
                 stack.Children.Add(evBorder);
+            }
+
+            // === Scheduled tasks section ===
+            // Visual separator between events (immovable) and tasks (movable).
+            // This makes the planner read top-to-bottom: what's locked in first,
+            // then what you're working through.
+            if (scheduledTasks.Count > 0)
+            {
+                var separator = new Border
+                {
+                    Height = 1,
+                    Background = new SolidColorBrush(Color.FromRgb(0xDD, 0xDD, 0xDD)),
+                    Margin = new Thickness(0, 6, 0, 4)
+                };
+                stack.Children.Add(separator);
+
+                var tasksHeader = new Label
+                {
+                    Content = "Tasks",
+                    FontSize = 10,
+                    FontWeight = FontWeights.SemiBold,
+                    Foreground = Brushes.Gray,
+                    Padding = new Thickness(0, 0, 0, 2)
+                };
+                stack.Children.Add(tasksHeader);
+
+                foreach (var task in scheduledTasks.OrderByDescending(t => t.Importance))
+                {
+                    var hoursLabel = new Label
+                    {
+                        Content = $"{task.Hours:F1}h",
+                        FontSize = 10,
+                        Opacity = 0.7,
+                        Padding = new Thickness(0, 0, 0, 0)
+                    };
+                    var descLabel = new Label
+                    {
+                        Content = task.Description,
+                        FontSize = 11,
+                        FontWeight = FontWeights.SemiBold,
+                        Padding = new Thickness(0),
+                        TextTrimming = TextTrimming.CharacterEllipsis
+                    };
+
+                    var innerDock = new DockPanel();
+                    DockPanel.SetDock(hoursLabel, Dock.Right);
+                    innerDock.Children.Add(hoursLabel);
+                    innerDock.Children.Add(descLabel);
+
+                    var taskBorder = new Border
+                    {
+                        CornerRadius = new CornerRadius(3),
+                        Padding = new Thickness(6, 3, 6, 3),
+                        Margin = new Thickness(0, 2, 0, 2),
+                        Background = ImportanceBrush(task.Importance),
+                        ToolTip = $"{task.Description} – {task.Hours:F1}h, importance {task.Importance}, deadline {task.Delivery:dd.MM.}",
+                        Child = innerDock
+                    };
+
+                    stack.Children.Add(taskBorder);
+                }
             }
 
             return new Border
@@ -382,6 +487,18 @@ namespace TaskManagement
                 Child = stack
             };
         }
+
+        /// <summary>
+        /// Color coding for task chips based on importance (1=low, 3=high).
+        /// Cool to warm: pale yellow -> orange -> red.
+        /// </summary>
+        private Brush ImportanceBrush(byte importance) => importance switch
+        {
+            1 => new SolidColorBrush(Color.FromRgb(0xFF, 0xF3, 0xCD)), // pale yellow
+            2 => new SolidColorBrush(Color.FromRgb(0xFC, 0xD8, 0xA4)), // orange
+            3 => new SolidColorBrush(Color.FromRgb(0xF5, 0xBC, 0xA9)), // red
+            _ => Brushes.LightGray
+        };
 
         private Brush ColorForEventType(CalendarEventType type) => type switch
         {
@@ -421,6 +538,10 @@ namespace TaskManagement
             CalendarEvents.events.Add(ev);
             CalendarEvents.WriteDataToJson();
             Tb_eventTitle.Clear();
+            // Re-distribute because adding a calendar event may have changed available slots
+            TaskSorter.Distributor();
+            RefreshTodoList();
+            RefreshWeekPlan();
             RefreshPlanView();
         }
 
@@ -428,7 +549,34 @@ namespace TaskManagement
         {
             CalendarEvents.events.Remove(ev);
             CalendarEvents.WriteDataToJson();
+            // Re-distribute because removing a calendar event frees up slots
+            TaskSorter.Distributor();
+            RefreshTodoList();
+            RefreshWeekPlan();
             RefreshPlanView();
+        }
+
+        /// <summary>
+        /// Manual re-distribution trigger. User clicks this after adding/removing
+        /// CalendarEvents (which changes available hours) or after creating new
+        /// tasks (which the auto-distribute on Create() also covers, but this
+        /// gives the user control without having to add/remove a task).
+        /// </summary>
+        private void Redistribute_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                TaskSorter.Distributor();
+                RefreshTodoList();
+                RefreshWeekPlan();
+                RefreshPlanView();
+                Trace.WriteLine("Manual redistribute completed.");
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"Redistribute failed: {ex.Message}");
+                MessageBox.Show($"Redistribution failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         // === Timer (focus session) handlers ===
