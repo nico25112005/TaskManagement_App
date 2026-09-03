@@ -15,6 +15,9 @@ namespace TaskManagement
         private TaskViewModel _draggedTask;
         private TimerViewModel _timer = new();
 
+        // Plan view: currently displayed week. Always anchored to Monday.
+        private DateTime _planStartDay = DateTime.Today;
+
         // Plan view: the inner Grid that holds the 7 day-columns.
         // Kept as field so RefreshPlanView can rebuild it without XAML.
         private Grid? _planGrid;
@@ -223,6 +226,22 @@ namespace TaskManagement
             }
         }
 
+        private void Lv_Todos_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (Lv_Todos.SelectedItem is not Task task) return;
+
+            var dlg = new EditTaskWindow(task) { Owner = this };
+            var ok = dlg.ShowDialog();
+            if (ok == true)
+            {
+                // Save changes back to JSON and re-distribute (Hours/Importance/Delivery
+                // all affect the planner).
+                Tasks.WriteDataToJson<Dictionary<string, Task>>("todos", Tasks.tasks);
+                Calculate();
+                Trace.WriteLine($"Edited task '{task.Description}'.");
+            }
+        }
+
         private void DeleteTodo_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not FrameworkElement fe || fe.Tag is not Task task) return;
@@ -298,6 +317,50 @@ namespace TaskManagement
             foreach (var page in pageMap)
             {
                 page.Value.Visibility = page.Key == pages ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            // Update window title to reflect current page so users always know where they are.
+            Title = pages switch
+            {
+                Pages.Home => "Task Management \u2014 Home",
+                Pages.Todo => "Task Management \u2014 To-do",
+                Pages.Plan => "Task Management \u2014 Plan",
+                Pages.Settings => "Task Management \u2014 Settings",
+                _ => "Task Management"
+            };
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            // Ctrl+1..4 for page switch, Ctrl+N to focus new-task input on Todo page.
+            if (Keyboard.Modifiers != ModifierKeys.Control) return;
+
+            switch (e.Key)
+            {
+                case Key.D1:
+                    ChangePage(Pages.Home);
+                    e.Handled = true;
+                    break;
+                case Key.D2:
+                    Todo_page(this, new RoutedEventArgs());
+                    e.Handled = true;
+                    break;
+                case Key.D3:
+                    Plan_page(this, new RoutedEventArgs());
+                    e.Handled = true;
+                    break;
+                case Key.D4:
+                    Settings_page(this, new RoutedEventArgs());
+                    e.Handled = true;
+                    break;
+                case Key.N:
+                    if (pages == Pages.Todo && Tb_description != null)
+                    {
+                        Tb_description.Focus();
+                        Tb_description.SelectAll();
+                        e.Handled = true;
+                    }
+                    break;
             }
         }
 
@@ -489,8 +552,57 @@ namespace TaskManagement
             Dp_eventDay.SelectedDate = DateTime.Today;
 
             // Find the inner Grid of the Plan tab and keep a reference.
-            // (The XAML has exactly one child Grid in Plan's Row 1.)
-            _planGrid = Plan.Children.OfType<Grid>().FirstOrDefault(g => Grid.GetRow(g) == 1);
+            // (The XAML has exactly one child Grid in Plan's Row 2 after adding the nav bar.)
+            _planGrid = Plan.Children.OfType<Grid>().FirstOrDefault(g => Grid.GetRow(g) == 2);
+        }
+
+        /// <summary>
+        /// Snaps _planStartDay back to the Monday of its week so the week view
+        /// always shows Monday–Sunday regardless of which day was clicked.
+        /// </summary>
+        private void AlignPlanStartToMonday()
+        {
+            int daysSinceMonday = ((int)_planStartDay.DayOfWeek + 6) % 7;
+            _planStartDay = _planStartDay.AddDays(-daysSinceMonday).Date;
+        }
+
+        /// <summary>
+        /// Updates the navigation label to "Week of {Monday} – {Sunday}".
+        /// </summary>
+        private void UpdatePlanWeekLabel()
+        {
+            var monday = _planStartDay;
+            var sunday = monday.AddDays(6);
+            Tb_PlanWeekLabel.Text = $"Week of {monday:dd.MM.yyyy} – {sunday:dd.MM.yyyy}";
+        }
+
+        /// <summary>
+        /// True if the displayed week has no calendar events and no scheduled tasks.
+        /// </summary>
+        private bool IsPlanWeekEmpty(DateTime startDay)
+        {
+            var weekDays = Enumerable.Range(0, 7).Select(i => startDay.AddDays(i).Date);
+            bool anyEvents = CalendarEvents.events.Any(e => weekDays.Any(d => e.IsOnDay(d)));
+            bool anyTasks = Tasks.nWeek.Values.Any(w => weekDays.Contains(w.Date.Date) && w.Tasks.Count > 0);
+            return !anyEvents && !anyTasks;
+        }
+
+        private void PlanPrevWeek_Click(object sender, RoutedEventArgs e)
+        {
+            _planStartDay = _planStartDay.AddDays(-7);
+            RefreshPlanView();
+        }
+
+        private void PlanNextWeek_Click(object sender, RoutedEventArgs e)
+        {
+            _planStartDay = _planStartDay.AddDays(7);
+            RefreshPlanView();
+        }
+
+        private void PlanToday_Click(object sender, RoutedEventArgs e)
+        {
+            _planStartDay = DateTime.Today;
+            RefreshPlanView();
         }
 
         private void RefreshPlanView()
@@ -500,13 +612,35 @@ namespace TaskManagement
             _planGrid.RowDefinitions.Clear();
             _planGrid.ColumnDefinitions.Clear();
 
+            // Anchor the week to Monday so the label and columns are stable.
+            AlignPlanStartToMonday();
+            var startDay = _planStartDay;
+            UpdatePlanWeekLabel();
+
+            // Empty-state: if the whole week has neither calendar events nor scheduled tasks,
+            // show a friendly message instead of an empty calendar grid.
+            if (IsPlanWeekEmpty(startDay))
+            {
+                var emptyText = new TextBlock
+                {
+                    Text = "No calendar events yet — use the toolbar above to add fixed appointments, work hours, or free time.",
+                    FontSize = 14,
+                    Foreground = Brushes.Gray,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    TextWrapping = TextWrapping.Wrap,
+                    TextAlignment = TextAlignment.Center
+                };
+                _planGrid.Children.Add(emptyText);
+                return;
+            }
+
             // Outer grid: 1 hour-label column + 7 day columns.
             // Layout matches Google Calendar week-view: time on the left, days as columns.
             _planGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(48) });
             for (int i = 0; i < 7; i++)
                 _planGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
-            var startDay = DateTime.Today;
             var dayNames = new[] { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
 
             // === Hour-label column (left rail) ===
@@ -534,6 +668,8 @@ namespace TaskManagement
 
             // Spacer row below the hour grid (for tasks footer)
             _planGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridLength.Auto) });
+
+            var now = DateTime.Now;
 
             // === Day columns ===
             for (int col = 0; col < 7; col++)
@@ -591,6 +727,16 @@ namespace TaskManagement
                     dayCol.Children.Add(evTile);
                 }
 
+                // Now-indicator: red 1px line on the current day only.
+                if (day.Date == now.Date)
+                {
+                    var nowLine = BuildNowIndicator(now);
+                    Grid.SetRow(nowLine, Math.Max(0, Math.Min(23, now.Hour)));
+                    Grid.SetColumn(nowLine, 0);
+                    Grid.SetZIndex(nowLine, 10);
+                    dayCol.Children.Add(nowLine);
+                }
+
                 // Header overlay (day name + date + available badge) sits on top of row 0
                 var header = BuildDayHeader(day, dayNames[(int)day.DayOfWeek], availableHours);
                 Grid.SetRow(header, 0);
@@ -627,6 +773,24 @@ namespace TaskManagement
                 .Where(w => w.Date.Date == day.Date)
                 .SelectMany(w => w.Tasks)
                 .ToList();
+        }
+
+        /// <summary>
+        /// Builds a 1-pixel-tall red horizontal line positioned at the current
+        /// hour+minute inside today's column. The row is the current hour and
+        /// the top margin pushes the line down by the fractional minute offset.
+        /// </summary>
+        private Border BuildNowIndicator(DateTime now)
+        {
+            const double rowHeight = 28.0;
+            double minuteOffset = (now.Minute / 60.0) * rowHeight;
+            return new Border
+            {
+                Height = 1,
+                Background = new SolidColorBrush(Color.FromRgb(0xE3, 0x5D, 0x48)), // existing red
+                Margin = new Thickness(0, minuteOffset, 0, 0),
+                HorizontalAlignment = HorizontalAlignment.Stretch
+            };
         }
 
         private Border BuildCalendarEventTile(CalendarEvent ev, DateTime day)

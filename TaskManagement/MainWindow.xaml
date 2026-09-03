@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TaskManagement"
         mc:Ignorable="d"
-        Title="Task Management" Margin="0,0,0,0" d:DesignWidth="1324" d:DesignHeight="786.96">
+        Title="Task Management" Margin="0,0,0,0" d:DesignWidth="1324" d:DesignHeight="786.96"
+        Icon="/Icons/Home_mine.png"
+        KeyDown="Window_KeyDown">
 
     <Window.Resources>
 
@@ -389,7 +391,7 @@
                     </StackPanel>
 
 
-                <ListView Grid.Column="1" Margin="10" d:ItemsSource="{d:SampleData ItemCount=5}" Style="{StaticResource Color}" BorderThickness="0" x:Name="Lv_Todos">
+                <ListView Grid.Column="1" Margin="10" d:ItemsSource="{d:SampleData ItemCount=5}" Style="{StaticResource Color}" BorderThickness="0" x:Name="Lv_Todos" MouseDoubleClick="Lv_Todos_MouseDoubleClick">
 
                         <ListView.ItemTemplate >
                             <DataTemplate>
@@ -410,11 +412,20 @@
             <Grid Grid.Column="1" x:Name="Plan" Visibility="Collapsed">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
+                <!-- Date navigation bar -->
+                <DockPanel Grid.Row="0" Margin="10,6,10,0" LastChildFill="True">
+                    <Button DockPanel.Dock="Left" Content="◀" Padding="8,2" Margin="0,0,8,0" Click="PlanPrevWeek_Click"/>
+                    <TextBlock x:Name="Tb_PlanWeekLabel" DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Margin="0,0,8,0" Text="Week of 03.09.2026 – 09.09.2026"/>
+                    <Button DockPanel.Dock="Left" Content="▶" Padding="8,2" Margin="0,0,8,0" Click="PlanNextWeek_Click"/>
+                    <Button DockPanel.Dock="Left" Content="Today" Padding="8,2" Margin="0,0,0,0" Click="PlanToday_Click"/>
+                </DockPanel>
+
                 <!-- Toolbar: add event of currently selected type -->
-                <DockPanel Grid.Row="0" Margin="10" LastChildFill="False">
+                <DockPanel Grid.Row="1" Margin="10" LastChildFill="False">
                     <Label Style="{StaticResource Label}" DockPanel.Dock="Left" Content="Type:" VerticalAlignment="Center" Margin="0,0,8,0"/>
                     <ComboBox x:Name="Cb_eventType" DockPanel.Dock="Left" Width="180" SelectedIndex="0" VerticalAlignment="Center" SelectionChanged="Cb_eventType_SelectionChanged">
                         <ComboBoxItem Content="Fixed appointment"/>
@@ -438,7 +449,7 @@
                 </DockPanel>
 
                 <!-- Week overview: 7 columns, one per day -->
-                <Grid Grid.Row="1" Margin="10">
+                <Grid Grid.Row="2" Margin="10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
