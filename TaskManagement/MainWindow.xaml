@@ -186,7 +186,7 @@
 
                         <!-- Today section -->
                         <Label Style="{StaticResource Label}" x:Name="TodayHeader" Content="Today" DockPanel.Dock="Top" BorderBrush="#abadb3" BorderThickness="1,0,1,0" Padding="6,4" FontWeight="SemiBold" FontSize="12"/>
-                        <ListView BorderThickness="1,0,1,1" x:Name="Lv_TodayTodos" DockPanel.Dock="Top" MaxHeight="240">
+                        <ListView BorderThickness="1,0,1,1" x:Name="Lv_TodayTodos" DockPanel.Dock="Top" MaxHeight="240" Visibility="Collapsed">
 
                             <ListView.ItemTemplate >
                                 <DataTemplate>
@@ -200,10 +200,11 @@
                             </ListView.ItemTemplate>
 
                         </ListView>
+                        <TextBlock x:Name="Tb_TodayEmpty" DockPanel.Dock="Top" Text="Nothing on your plate for today." FontSize="12" Foreground="Gray" Margin="12,8,12,8" TextWrapping="Wrap" Visibility="Collapsed"/>
 
                         <!-- Upcoming section -->
                         <Label Style="{StaticResource Label}" Content="Upcoming" DockPanel.Dock="Top" BorderBrush="#abadb3" BorderThickness="1,0,1,0" Padding="6,4" FontWeight="SemiBold" FontSize="12" Margin="0,8,0,0"/>
-                        <ListView BorderThickness="1,0,1,1" x:Name="Lv_UpcomingTodos" DockPanel.Dock="Top">
+                        <ListView BorderThickness="1,0,1,1" x:Name="Lv_UpcomingTodos" DockPanel.Dock="Top" Visibility="Collapsed">
 
                             <ListView.ItemTemplate >
                                 <DataTemplate>
@@ -217,6 +218,7 @@
                             </ListView.ItemTemplate>
 
                         </ListView>
+                        <TextBlock x:Name="Tb_UpcomingEmpty" DockPanel.Dock="Top" Text="No upcoming tasks. You're either all caught up or no delivery dates are set." FontSize="12" Foreground="Gray" Margin="12,8,12,8" TextWrapping="Wrap" Visibility="Collapsed"/>
 
                         <!-- Recently done section -->
                         <Label Style="{StaticResource Label}" Content="Recently done" DockPanel.Dock="Top" BorderBrush="#abadb3" BorderThickness="1,0,1,0" Padding="6,4" FontWeight="SemiBold" FontSize="12" Margin="0,8,0,0" Foreground="#509C6E"/>
@@ -409,7 +411,8 @@
                     </StackPanel>
 
 
-                <ListView Grid.Column="1" Margin="10" d:ItemsSource="{d:SampleData ItemCount=5}" Style="{StaticResource Color}" BorderThickness="0" x:Name="Lv_Todos" MouseDoubleClick="Lv_Todos_MouseDoubleClick">
+                <ListView Grid.Column="1" Margin="10" d:ItemsSource="{d:SampleData ItemCount=5}" Style="{StaticResource Color}" BorderThickness="0" x:Name="Lv_Todos" MouseDoubleClick="Lv_Todos_MouseDoubleClick" Visibility="Collapsed"/>
+                <TextBlock x:Name="Tb_TodoEmpty" Grid.Column="1" Margin="10" Text="No tasks yet. Create your first one above or press Ctrl+Shift+N." FontSize="14" Foreground="Gray" TextWrapping="Wrap" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" Visibility="Visible"/>>
 
                         <ListView.ItemTemplate >
                             <DataTemplate>

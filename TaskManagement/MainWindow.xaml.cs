@@ -174,12 +174,21 @@ namespace TaskManagement
 
         private void RefreshTodoList()
         {
-            // Refresh the Todo (create-new-task) page's full list – unchanged.
+            // Refresh the Todo (create-new-task) page's full list.
+            bool hasTasks = Tasks.tasks.Count > 0;
+            Lv_Todos.Visibility = hasTasks ? Visibility.Visible : Visibility.Collapsed;
+            Tb_TodoEmpty.Visibility = hasTasks ? Visibility.Collapsed : Visibility.Visible;
             Lv_Todos.ItemsSource = null;
             Lv_Todos.ItemsSource = Tasks.tasks.Values;
 
             // Refresh the Home page's Today/Upcoming buckets via the view-model.
             _homeTodo.Refresh();
+            bool hasToday = _homeTodo.Today.Count > 0;
+            bool hasUpcoming = _homeTodo.Upcoming.Count > 0;
+            Lv_TodayTodos.Visibility = hasToday ? Visibility.Visible : Visibility.Collapsed;
+            Tb_TodayEmpty.Visibility = hasToday ? Visibility.Collapsed : Visibility.Visible;
+            Lv_UpcomingTodos.Visibility = hasUpcoming ? Visibility.Visible : Visibility.Collapsed;
+            Tb_UpcomingEmpty.Visibility = hasUpcoming ? Visibility.Collapsed : Visibility.Visible;
             Lv_TodayTodos.ItemsSource = _homeTodo.Today;
             Lv_UpcomingTodos.ItemsSource = _homeTodo.Upcoming;
             Lv_DoneTodos.ItemsSource = _homeTodo.Done;
@@ -1229,16 +1238,35 @@ namespace TaskManagement
 
         private void Timer_Start(object sender, RoutedEventArgs e)
         {
+            // No tasks = nothing to focus on.
+            if (Tasks.tasks.Count == 0)
+            {
+                MessageBox.Show(
+                    "No open tasks yet. Create a task before starting the focus timer.",
+                    "Nothing to focus on",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
             // Find the highest-weighted unfinished task that fits in a reasonable focus block.
             // Default to 50 min (Pomodoro-ish) if no task is selected.
             var nextTask = Tasks.tasks.Values
                 .Where(t => t.Hours > 0)
                 .OrderByDescending(t => t.CalculateWeighting(Tasks.tasks))
                 .FirstOrDefault();
-            if (nextTask == null) return;
+            if (nextTask == null)
+            {
+                MessageBox.Show(
+                    "All open tasks are already at 0 hours. Mark something undone or create a new task.",
+                    "Nothing to focus on",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
 
             // Cap focus block to the smaller of 50min or the task's remaining hours
-            var blockDuration = TimeSpan.FromMinutes(Math.Min(50, nextTask.Hours * 60));
+            var blockDuration = TimeSpan.FromMinutes(Math.Min(Settings.focusBlockMinutes, nextTask.Hours * 60));
             if (blockDuration < TimeSpan.FromMinutes(5)) return; // too short, don't bother
             _timer.Start(nextTask, blockDuration);
         }
