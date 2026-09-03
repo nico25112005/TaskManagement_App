@@ -122,6 +122,19 @@
 
                 </Button>
 
+                <Button Style="{StaticResource MenuButtons}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0.5" Click="Plan_page">
+                    <StackPanel>
+                        <Image Source="/icons/Todo.png" Height="35" Width="35" Stretch="Uniform"/>
+                        <Label Style="{StaticResource Label}" Background="Transparent" Content="Plan" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="2"/>
+                        </Style>
+                    </Button.Resources>
+
+                </Button>
+
                 <Button Style="{StaticResource MenuButtons}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0.5" Click="Settings_page">
                     <StackPanel>
                         <Image Source="/icons/Settings.png" Height="35" Width="35" Stretch="Uniform"/>
@@ -154,11 +167,15 @@
                     <StackPanel Margin="0,0,0,10" Grid.Row="0">
 
                         <Label Style="{StaticResource Label}" x:Name="Timer_Label" DockPanel.Dock="Top" BorderBrush="#abadb3" BorderThickness="1,1,1,1" VerticalAlignment="Center" HorizontalContentAlignment="Center" Content="Timer"/>
-                        <Label Style="{StaticResource Label}" DockPanel.Dock="Top" BorderBrush="#abadb3" BorderThickness="1,0,1,0" Height="60" HorizontalContentAlignment="Center" VerticalContentAlignment="Bottom" Content="0" FontSize="30"/>
-                        <Button Style="{StaticResource Label}" Content="Start" DockPanel.Dock="Top" BorderBrush="#abadb3" BorderThickness="1,0,1,1" Height="40">
-                            
-                        </Button>
-                        
+                        <Label x:Name="TimerDisplay" Style="{StaticResource Label}" DockPanel.Dock="Top" BorderBrush="#abadb3" BorderThickness="1,0,1,0" Height="60" HorizontalContentAlignment="Center" VerticalContentAlignment="Bottom" Content="00:00" FontSize="30"/>
+                        <Label x:Name="TimerState" Style="{StaticResource Label}" DockPanel.Dock="Top" BorderBrush="#abadb3" BorderThickness="1,0,1,0" Height="22" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Content="Ready" FontSize="11" Foreground="Gray"/>
+                        <DockPanel DockPanel.Dock="Top" LastChildFill="False">
+                            <Button x:Name="BtnTimerStart" Style="{StaticResource Label}" Content="Start" Height="40" Width="80" Margin="20,4,4,4" DockPanel.Dock="Left" Click="Timer_Start"/>
+                            <Button x:Name="BtnTimerPause" Style="{StaticResource Label}" Content="Pause" Height="40" Width="80" Margin="4" DockPanel.Dock="Left" Click="Timer_Pause" IsEnabled="False"/>
+                            <Button x:Name="BtnTimerStop" Style="{StaticResource Label}" Content="Stop" Height="40" Width="80" Margin="4" DockPanel.Dock="Left" Click="Timer_Stop" IsEnabled="False"/>
+                            <Button x:Name="BtnTimerSkip" Style="{StaticResource Label}" Content="Skip break" Height="40" Width="80" Margin="4,4,20,4" DockPanel.Dock="Left" Click="Timer_SkipBreak" IsEnabled="False"/>
+                        </DockPanel>
+
                     </StackPanel>
 
 
@@ -230,12 +247,21 @@
                                             <!-- Tagesbezeichnung -->
                                             <Label Content="{Binding Day}" Grid.Column="0" FontWeight="Bold"/>
 
-                                            <!-- Task-Zeitleistenbereich -->
-                                            <StackPanel Grid.Column="1">
+                                            <!-- Task-Zeitleistenbereich (drop target for dragged tasks) -->
+                                            <StackPanel x:Name="DayTaskContainer" Grid.Column="1"
+                                                        AllowDrop="True"
+                                                        Background="Transparent"
+                                                        Drop="DayTaskContainer_Drop"
+                                                        DragEnter="DayTaskContainer_DragEnter"
+                                                        DragOver="DayTaskContainer_DragOver"
+                                                        Tag="{Binding}">
                                                 <ItemsControl ItemsSource="{Binding Tasks}">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <Border Background="#E1E1E1" Height="30" CornerRadius="5" Margin="5,3">
+                                                            <Border Background="#E1E1E1" Height="30" CornerRadius="5" Margin="5,3"
+                                                                    MouseLeftButtonDown="TaskChip_MouseLeftButtonDown"
+                                                                    Cursor="Hand"
+                                                                    Tag="{Binding}">
                                                                 <Grid>
                                                                     <Grid.ColumnDefinitions>
                                                                         <ColumnDefinition Width="Auto"/>
@@ -245,8 +271,9 @@
                                                                     <!-- Taskbeschreibung -->
                                                                     <Label Content="{Binding Description}" Grid.Column="0" Margin="5,0" FontWeight="Bold"/>
 
-                                                                    <!-- Zeitleiste basierend auf Task-Dauer -->
-                                                                    <Rectangle Grid.Column="1" Fill="LightGreen" Margin="5,0" Height="15" Width="30"/>
+                                                                    <!-- Zeitleiste basierend auf Task-Dauer (max-width ~250) -->
+                                                                    <Rectangle Grid.Column="1" Fill="LightGreen" Margin="5,0" Height="15"
+                                                                               Width="{Binding Hours, Converter={StaticResource TaskWidthConverter}, ConverterParameter=10}"/>
                                                                 </Grid>
                                                             </Border>
                                                         </DataTemplate>
@@ -402,6 +429,55 @@
                     </ListView>
                 
             </Grid>
+            <!--Plan (Calendar / fixed events + free time blocks)-->
+            <Grid Grid.Column="1" x:Name="Plan" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Toolbar: add event of currently selected type -->
+                <DockPanel Grid.Row="0" Margin="10" LastChildFill="False">
+                    <Label Style="{StaticResource Label}" DockPanel.Dock="Left" Content="Type:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <ComboBox x:Name="Cb_eventType" DockPanel.Dock="Left" Width="180" SelectedIndex="0" VerticalAlignment="Center">
+                        <ComboBoxItem Content="Fixed appointment"/>
+                        <ComboBoxItem Content="Work hours (for tasks)"/>
+                        <ComboBoxItem Content="Free time (no tasks)"/>
+                        <ComboBoxItem Content="Sleep"/>
+                    </ComboBox>
+
+                    <Label Style="{StaticResource Label}" DockPanel.Dock="Left" Content="Title:" VerticalAlignment="Center" Margin="16,0,8,0"/>
+                    <TextBox x:Name="Tb_eventTitle" DockPanel.Dock="Left" Width="200" VerticalAlignment="Center" Padding="4"/>
+
+                    <Label Style="{StaticResource Label}" DockPanel.Dock="Left" Content="Day:" VerticalAlignment="Center" Margin="16,0,8,0"/>
+                    <DatePicker x:Name="Dp_eventDay" DockPanel.Dock="Left" VerticalAlignment="Center" Width="140"/>
+
+                    <Label Style="{StaticResource Label}" DockPanel.Dock="Left" Content="From:" VerticalAlignment="Center" Margin="16,0,8,0"/>
+                    <ComboBox x:Name="Cb_eventStart" DockPanel.Dock="Left" Width="80" VerticalAlignment="Center"/>
+                    <Label Style="{StaticResource Label}" DockPanel.Dock="Left" Content="To:" VerticalAlignment="Center" Margin="8,0,8,0"/>
+                    <ComboBox x:Name="Cb_eventEnd" DockPanel.Dock="Left" Width="80" VerticalAlignment="Center"/>
+
+                    <Button Style="{StaticResource Border}" DockPanel.Dock="Right" Content="Add event" Padding="14,4" Margin="10,0,0,0" Click="AddCalendarEvent"/>
+                </DockPanel>
+
+                <!-- Week overview: 7 columns, one per day -->
+                <Grid Grid.Row="1" Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Day headers + content generated in code-behind for now.
+                         Reason: dynamic time-grid with hour rows is easier to build
+                         programmatically than to template. See RefreshPlanView(). -->
+                </Grid>
+            </Grid>
+
             <!--Settings-->
             <Grid Grid.Column="1" x:Name="Settings" Visibility="Collapsed">
                 
