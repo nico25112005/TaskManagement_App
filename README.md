@@ -58,6 +58,14 @@ Tasks get a `[part 2/4]` suffix when split, so you always know which chunk you'r
 - **Ctrl+3** — Plan
 - **Ctrl+4** — Settings
 - **Ctrl+N** — focus new-task input (when on To-do tab)
+- **Ctrl+Shift+N** — Quick-capture overlay: create a task from any page
+
+### 📊 Status bar
+The status bar at the bottom is always visible and shows:
+- open tasks count
+- planned hours for today
+- completed focus blocks today
+- a short hint or overload warning
 
 ### 🎯 Drag-and-drop
 - Drag any task chip in the week plan to a different day
@@ -113,13 +121,14 @@ Done (in master):
 - ✅ Edit dialog for tasks
 - ✅ Task history / Done-archive with Undo
 - ✅ Window icon, dynamic title, keyboard shortcuts
+- ✅ Quick-capture (Ctrl+Shift+N)
+- ✅ Focus-block counter
+- ✅ Status bar
 
 Coming next:
 - Sub-tasks / checklists inside a task
-- Quick-capture hotkey for new tasks
 - Tray-icon minimize
 - Statistics dashboard
-- Pomodoro counter
 - Dark mode (toggle exists, theme is the only thing missing)
 
 ## License
