@@ -181,39 +181,36 @@
 
                     <DockPanel Grid.Row="1" Margin="0,10,0,0">
                         <Label Style="{StaticResource Label}" x:Name="Todo_Label" Content="To-do" BorderBrush="#abadb3" BorderThickness="1,1,1,0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" />
-                        
-                        
-                        <ListView Grid.Row="0" BorderThickness="1,0,1,1" x:Name="Lv_MenuTodos">
+                        <Label x:Name="TodoLoadLabel" Style="{StaticResource Label}" BorderBrush="#abadb3" BorderThickness="0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" FontSize="11" Padding="0,0,0,4" Content=""/>
+
+                        <!-- Today section -->
+                        <Label Style="{StaticResource Label}" x:Name="TodayHeader" Content="Today" DockPanel.Dock="Top" BorderBrush="#abadb3" BorderThickness="1,0,1,0" Padding="6,4" FontWeight="SemiBold" FontSize="12"/>
+                        <ListView BorderThickness="1,0,1,1" x:Name="Lv_TodayTodos" DockPanel.Dock="Top" MaxHeight="240">
 
                             <ListView.ItemTemplate >
                                 <DataTemplate>
-                                    <Border BorderBrush="#C9C9C9" BorderThickness="1.5" CornerRadius="2" Padding="5" Margin="10,3,0,3" >
+                                    <Border BorderBrush="#C9C9C9" BorderThickness="1" CornerRadius="2" Padding="6,4" Margin="4,2" Background="#FFFCF1D9">
+                                        <DockPanel>
+                                            <Label Content="{Binding Description}" FontWeight="SemiBold" FontSize="12" Padding="0"/>
+                                            <Label Content="{Binding Hours, StringFormat={}{0:F1}h}" DockPanel.Dock="Right" FontSize="11" Opacity="0.7" Padding="4,0,0,0"/>
+                                        </DockPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
 
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition/>
-                                                <ColumnDefinition/>
-                                                <ColumnDefinition/>
-                                                <ColumnDefinition/>
-                                                <ColumnDefinition/>
-                                            </Grid.ColumnDefinitions>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition/>
-                                                <RowDefinition/>
-                                            </Grid.RowDefinitions>
+                        </ListView>
 
-                                            <Label Content="Description:" Margin="15,0" Grid.Column="0" Grid.Row="0"/>
-                                            <Label Content="Delivery Date:" Margin="15,0" Grid.Column="1" Grid.Row="0"/>
-                                            <Label Content="Importance:" Margin="15,0" Grid.Column="2" Grid.Row="0"/>
-                                            <Label Content="Hours:" Margin="15,0" Grid.Column="3" Grid.Row="0"/>
-                                            <Label Content="allocationWeighting:" Margin="15,0" Grid.Column="4" Grid.Row="0"/>
+                        <!-- Upcoming section -->
+                        <Label Style="{StaticResource Label}" Content="Upcoming" DockPanel.Dock="Top" BorderBrush="#abadb3" BorderThickness="1,0,1,0" Padding="6,4" FontWeight="SemiBold" FontSize="12" Margin="0,8,0,0"/>
+                        <ListView BorderThickness="1,0,1,1" x:Name="Lv_UpcomingTodos" DockPanel.Dock="Top">
 
-                                            <Label Content="{Binding Description}" Style="{StaticResource Lv_item}" Grid.Column="0" Grid.Row="1"/>
-                                            <Label Content="{Binding Delivery}" Style="{StaticResource Lv_item}"  Grid.Column="1" Grid.Row="1"/>
-                                            <Label Content="{Binding Importance}" Style="{StaticResource Lv_item}"  Grid.Column="2" Grid.Row="1"/>
-                                            <Label Content="{Binding Hours}" Style="{StaticResource Lv_item}"  Grid.Column="3" Grid.Row="1"/>
-                                            <Label Content="{Binding AllocationWeighting}" Style="{StaticResource Lv_item}"  Grid.Column="4" Grid.Row="1"/>
-                                        </Grid>
+                            <ListView.ItemTemplate >
+                                <DataTemplate>
+                                    <Border BorderBrush="#C9C9C9" BorderThickness="1" CornerRadius="2" Padding="6,4" Margin="4,2">
+                                        <DockPanel>
+                                            <Label Content="{Binding Description}" FontSize="12" Padding="0"/>
+                                            <Label Content="{Binding Hours, StringFormat={}{0:F1}h}" DockPanel.Dock="Right" FontSize="11" Opacity="0.7" Padding="4,0,0,0"/>
+                                        </DockPanel>
                                     </Border>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
@@ -232,8 +229,10 @@
                     </Grid.RowDefinitions>
 
                     <DockPanel Grid.Row="0" Margin="0,0,0,10">
-                        <Label Style="{StaticResource Label}" x:Name="Termine_Label" Content="Termine" BorderBrush="#abadb3" BorderThickness="1,1,1,0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" />
-
+                        <DockPanel DockPanel.Dock="Top" LastChildFill="True">
+                            <Button Style="{StaticResource Border}" Content="Redistribute" Padding="10,2" Margin="4,2" DockPanel.Dock="Right" Click="Redistribute_Click" ToolTip="Re-run task distribution (respects current CalendarEvents)"/>
+                            <Label Style="{StaticResource Label}" x:Name="Termine_Label" Content="Termine" BorderBrush="#abadb3" BorderThickness="1,1,1,0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" />
+                        </DockPanel>
                         <ListView x:Name="Lv_WeekPlan" BorderThickness="1,0,1,1">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
@@ -394,33 +393,15 @@
 
                         <ListView.ItemTemplate >
                             <DataTemplate>
-                                <Border BorderBrush="#C9C9C9" BorderThickness="1.5" CornerRadius="2" Padding="5" Margin="10,3,0,3" >
-
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition/>
-                                            <ColumnDefinition/>
-                                            <ColumnDefinition/>
-                                            <ColumnDefinition/>
-                                            <ColumnDefinition/>
-                                        </Grid.ColumnDefinitions>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition/>
-                                            <RowDefinition/>
-                                        </Grid.RowDefinitions>
-
-                                        <Label Content="Description:" Margin="15,0" Grid.Column="0" Grid.Row="0"/>
-                                        <Label Content="Delivery Date:" Margin="15,0" Grid.Column="1" Grid.Row="0"/>
-                                        <Label Content="Importance:" Margin="15,0" Grid.Column="2" Grid.Row="0"/>
-                                        <Label Content="Hours:" Margin="15,0" Grid.Column="3" Grid.Row="0"/>
-                                        <Label Content="allocationWeighting:" Margin="15,0" Grid.Column="4" Grid.Row="0"/>
-
-                                        <Label Content="{Binding Description}" Style="{StaticResource Lv_item}" Grid.Column="0" Grid.Row="1"/>
-                                        <Label Content="{Binding Delivery}" Style="{StaticResource Lv_item}"  Grid.Column="1" Grid.Row="1"/>
-                                        <Label Content="{Binding Importance}" Style="{StaticResource Lv_item}"  Grid.Column="2" Grid.Row="1"/>
-                                        <Label Content="{Binding Hours}" Style="{StaticResource Lv_item}"  Grid.Column="3" Grid.Row="1"/>
-                                        <Label Content="{Binding AllocationWeighting}" Style="{StaticResource Lv_item}"  Grid.Column="4" Grid.Row="1"/>
-                                    </Grid>
+                                <Border BorderBrush="#C9C9C9" BorderThickness="1" CornerRadius="3" Padding="8,6" Margin="4,3" Background="#FFFFFFFF">
+                                    <DockPanel>
+                                        <Border Background="#FFEFD9" BorderThickness="0" Padding="6,2" CornerRadius="2" DockPanel.Dock="Right" Margin="6,0,0,0">
+                                            <Label Padding="0" FontSize="11" FontWeight="SemiBold" Content="{Binding Importance, StringFormat='P{0}'}"/>
+                                        </Border>
+                                        <Label Padding="0" FontSize="11" Foreground="Gray" DockPanel.Dock="Right" Margin="0,0,8,0" Content="{Binding Hours, StringFormat={}{0:F1}h}"/>
+                                        <Label Padding="0" DockPanel.Dock="Right" Margin="0,0,8,0" FontSize="11" Foreground="Gray" Content="{Binding Delivery, StringFormat='due {0:dd.MM.}'}"/>
+                                        <Label Padding="0" FontWeight="SemiBold" Content="{Binding Description}"/>
+                                    </DockPanel>
                                 </Border>
                             </DataTemplate>
                         </ListView.ItemTemplate>
