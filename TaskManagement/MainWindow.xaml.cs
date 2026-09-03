@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Navigation;
 using System.Diagnostics;
 
 namespace TaskManagement
@@ -30,9 +31,11 @@ namespace TaskManagement
                 BtnTimerStop.IsEnabled = _timer.IsRunning;
                 BtnTimerSkip.IsEnabled = _timer.Session.IsOnBreak;
             };
+            Settings.Load();
             StartUp();
             SetColors();
             InitPlanView();
+            InitSettingsUi();
         }
 
         private void StartUp()
@@ -318,6 +321,156 @@ namespace TaskManagement
         private void Settings_page(object sender, RoutedEventArgs e)
         {
             ChangePage(Pages.Settings);
+            RefreshSettingsUi();
+        }
+
+        private void RefreshSettingsUi()
+        {
+            Sl_maxHours.Value = Settings.maxHoursPerDay;
+            Lbl_maxHours.Text = $"{Settings.maxHoursPerDay:F1}h";
+
+            Sl_planableDays.Value = Settings.maxPlanableDays;
+            Lbl_planableDays.Text = $"{Settings.maxPlanableDays}d";
+
+            Sl_focusMin.Value = Settings.focusBlockMinutes;
+            Lbl_focusMin.Text = $"{Settings.focusBlockMinutes}min";
+
+            Sl_shortBreak.Value = Settings.shortBreakMinutes;
+            Lbl_shortBreak.Text = $"{Settings.shortBreakMinutes}min";
+
+            Sl_longBreak.Value = Settings.longBreakMinutes;
+            Lbl_longBreak.Text = $"{Settings.longBreakMinutes}min";
+
+            Sl_blocksBeforeLong.Value = Settings.blocksBeforeLongBreak;
+            Lbl_blocksBeforeLong.Text = $"{Settings.blocksBeforeLongBreak}";
+
+            Cb_workStart.SelectedIndex = Settings.workStartHour;
+            Cb_workEnd.SelectedIndex = Settings.workEndHour;
+
+            Tg_darkMode.IsChecked = Settings.darkMode;
+            Tg_darkMode.Content = Settings.darkMode ? "On" : "Off";
+
+            Lbl_dataPath.Text = System.AppContext.BaseDirectory;
+            Lbl_version.Text = "Version 0.1 \u2014 in active development";
+        }
+
+        private void InitSettingsUi()
+        {
+            // Populate 0..24 hour pickers for work-day boundaries
+            for (int h = 0; h <= 24; h++)
+            {
+                Cb_workStart.Items.Add($"{h:D2}:00");
+                Cb_workEnd.Items.Add($"{h:D2}:00");
+            }
+            RefreshSettingsUi();
+        }
+
+        private void Sl_maxHours_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            Settings.maxHoursPerDay = (float)e.NewValue;
+            Lbl_maxHours.Text = $"{Settings.maxHoursPerDay:F1}h";
+            Settings.Save();
+        }
+
+        private void Sl_planableDays_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            Settings.maxPlanableDays = (byte)e.NewValue;
+            Lbl_planableDays.Text = $"{Settings.maxPlanableDays}d";
+            Settings.Save();
+        }
+
+        private void Sl_focusMin_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            Settings.focusBlockMinutes = (int)e.NewValue;
+            Lbl_focusMin.Text = $"{Settings.focusBlockMinutes}min";
+            Settings.Save();
+        }
+
+        private void Sl_shortBreak_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            Settings.shortBreakMinutes = (int)e.NewValue;
+            Lbl_shortBreak.Text = $"{Settings.shortBreakMinutes}min";
+            Settings.Save();
+        }
+
+        private void Sl_longBreak_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            Settings.longBreakMinutes = (int)e.NewValue;
+            Lbl_longBreak.Text = $"{Settings.longBreakMinutes}min";
+            Settings.Save();
+        }
+
+        private void Sl_blocksBeforeLong_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            Settings.blocksBeforeLongBreak = (int)e.NewValue;
+            Lbl_blocksBeforeLong.Text = $"{Settings.blocksBeforeLongBreak}";
+            Settings.Save();
+        }
+
+        private void Cb_workHours_Changed(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if (Cb_workStart.SelectedIndex < 0 || Cb_workEnd.SelectedIndex < 0) return;
+            if (Cb_workEnd.SelectedIndex <= Cb_workStart.SelectedIndex) return;
+            Settings.workStartHour = Cb_workStart.SelectedIndex;
+            Settings.workEndHour = Cb_workEnd.SelectedIndex;
+            Settings.Save();
+        }
+
+        private void Tg_darkMode_Changed(object sender, RoutedEventArgs e)
+        {
+            Settings.darkMode = Tg_darkMode.IsChecked == true;
+            Tg_darkMode.Content = Settings.darkMode ? "On" : "Off";
+            Settings.Save();
+        }
+
+        private void OpenDataFolder_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var folder = System.AppContext.BaseDirectory;
+                System.Diagnostics.Process.Start("explorer.exe", folder);
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"OpenDataFolder failed: {ex.Message}");
+                Lbl_exportStatus.Text = $"Could not open folder: {ex.Message}";
+            }
+        }
+
+        private void ExportData_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var folder = System.AppContext.BaseDirectory;
+                var file = System.IO.Path.Combine(folder, $"taskmanagement-export-{DateTime.Now:yyyyMMdd-HHmmss}.json");
+                var payload = new
+                {
+                    exportedAt = DateTime.Now,
+                    tasks = Tasks.tasks,
+                    calendarEvents = CalendarEvents.events,
+                    settings = Settings.ToData()
+                };
+                System.IO.File.WriteAllText(file, Newtonsoft.Json.JsonConvert.SerializeObject(payload, Formatting.Indented));
+                Lbl_exportStatus.Text = $"Exported to {file}";
+                Lbl_exportStatus.Foreground = Brushes.DarkGreen;
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"Export failed: {ex.Message}");
+                Lbl_exportStatus.Text = $"Export failed: {ex.Message}";
+                Lbl_exportStatus.Foreground = Brushes.IndianRed;
+            }
+        }
+
+        private void Link_github_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+        {
+            try
+            {
+                if (e.Uri == null) return;
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+                e.Handled = true;
+            }
+            catch (Exception ex) { Trace.WriteLine($"Link click failed: {ex.Message}"); }
         }
 
         // === Plan view (calendar / fixed events) ===

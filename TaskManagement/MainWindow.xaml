@@ -457,7 +457,129 @@
 
             <!--Settings-->
             <Grid Grid.Column="1" x:Name="Settings" Visibility="Collapsed">
-                
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
+                    <StackPanel MaxWidth="700" HorizontalAlignment="Left">
+
+                        <TextBlock Text="Settings" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <TextBlock Text="Personalize the planner and timer to match how you actually work." Foreground="Gray" FontSize="12" Margin="0,0,0,20"/>
+
+                        <!-- Planner section -->
+                        <Border Background="#ffffff" BorderBrush="#abadb3" BorderThickness="1" CornerRadius="4" Padding="16" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Planner" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,12"/>
+                                <TextBlock Text="How many hours per day are realistic, and how far ahead should the planner look?" Foreground="Gray" FontSize="11" Margin="0,0,0,12"/>
+
+                                <TextBlock Text="Max hours per day" Margin="0,0,0,4"/>
+                                <DockPanel Margin="0,0,0,12" LastChildFill="True">
+                                    <TextBlock x:Name="Lbl_maxHours" DockPanel.Dock="Right" Width="60" TextAlignment="Right" Text="3.5h" VerticalAlignment="Center"/>
+                                    <Slider x:Name="Sl_maxHours" Minimum="0.5" Maximum="12" TickFrequency="0.5" IsSnapToTickEnabled="True" ValueChanged="Sl_maxHours_Changed"/>
+                                </DockPanel>
+
+                                <TextBlock Text="Plan horizon (days)" Margin="0,0,0,4"/>
+                                <DockPanel Margin="0,0,0,12" LastChildFill="True">
+                                    <TextBlock x:Name="Lbl_planableDays" DockPanel.Dock="Right" Width="60" TextAlignment="Right" Text="10d" VerticalAlignment="Center"/>
+                                    <Slider x:Name="Sl_planableDays" Minimum="1" Maximum="30" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="Sl_planableDays_Changed"/>
+                                </DockPanel>
+
+                                <TextBlock Text="Work-day boundaries" Margin="0,0,0,4"/>
+                                <TextBlock Text="Tasks are placed only inside this window unless you mark time as Free/Sleep elsewhere." Foreground="Gray" FontSize="11" Margin="0,0,0,8"/>
+                                <Grid Margin="0,0,0,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                        <TextBlock Text="Start" Margin="0,0,0,4"/>
+                                        <ComboBox x:Name="Cb_workStart" SelectionChanged="Cb_workHours_Changed"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                        <TextBlock Text="End" Margin="0,0,0,4"/>
+                                        <ComboBox x:Name="Cb_workEnd" SelectionChanged="Cb_workHours_Changed"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Focus / Timer section -->
+                        <Border Background="#ffffff" BorderBrush="#abadb3" BorderThickness="1" CornerRadius="4" Padding="16" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Focus timer" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,12"/>
+                                <TextBlock Text="Length of one focus block, breaks, and when to take a long one." Foreground="Gray" FontSize="11" Margin="0,0,0,12"/>
+
+                                <TextBlock Text="Focus block length" Margin="0,0,0,4"/>
+                                <DockPanel Margin="0,0,0,12" LastChildFill="True">
+                                    <TextBlock x:Name="Lbl_focusMin" DockPanel.Dock="Right" Width="60" TextAlignment="Right" Text="50min" VerticalAlignment="Center"/>
+                                    <Slider x:Name="Sl_focusMin" Minimum="15" Maximum="90" TickFrequency="5" IsSnapToTickEnabled="True" ValueChanged="Sl_focusMin_Changed"/>
+                                </DockPanel>
+
+                                <TextBlock Text="Short break" Margin="0,0,0,4"/>
+                                <DockPanel Margin="0,0,0,12" LastChildFill="True">
+                                    <TextBlock x:Name="Lbl_shortBreak" DockPanel.Dock="Right" Width="60" TextAlignment="Right" Text="5min" VerticalAlignment="Center"/>
+                                    <Slider x:Name="Sl_shortBreak" Minimum="1" Maximum="15" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="Sl_shortBreak_Changed"/>
+                                </DockPanel>
+
+                                <TextBlock Text="Long break" Margin="0,0,0,4"/>
+                                <DockPanel Margin="0,0,0,12" LastChildFill="True">
+                                    <TextBlock x:Name="Lbl_longBreak" DockPanel.Dock="Right" Width="60" TextAlignment="Right" Text="15min" VerticalAlignment="Center"/>
+                                    <Slider x:Name="Sl_longBreak" Minimum="10" Maximum="30" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="Sl_longBreak_Changed"/>
+                                </DockPanel>
+
+                                <TextBlock Text="Long break every Nth block" Margin="0,0,0,4"/>
+                                <DockPanel Margin="0,0,0,4" LastChildFill="True">
+                                    <TextBlock x:Name="Lbl_blocksBeforeLong" DockPanel.Dock="Right" Width="60" TextAlignment="Right" Text="3" VerticalAlignment="Center"/>
+                                    <Slider x:Name="Sl_blocksBeforeLong" Minimum="2" Maximum="6" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="Sl_blocksBeforeLong_Changed"/>
+                                </DockPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Appearance section -->
+                        <Border Background="#ffffff" BorderBrush="#abadb3" BorderThickness="1" CornerRadius="4" Padding="16" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Appearance" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,12"/>
+
+                                <DockPanel Margin="0,0,0,4" LastChildFill="True">
+                                    <TextBlock Text="Dark mode" VerticalAlignment="Center"/>
+                                    <ToggleButton x:Name="Tg_darkMode" DockPanel.Dock="Right" Content="Off" Width="60" Checked="Tg_darkMode_Changed" Unchecked="Tg_darkMode_Changed"/>
+                                </DockPanel>
+                                <TextBlock Text="(Not yet implemented in this build — coming soon.)" Foreground="Gray" FontSize="11" Margin="0,0,0,12"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Data section -->
+                        <Border Background="#ffffff" BorderBrush="#abadb3" BorderThickness="1" CornerRadius="4" Padding="16" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Data" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,12"/>
+
+                                <DockPanel Margin="0,0,0,8" LastChildFill="True">
+                                    <TextBlock Text="Save location" VerticalAlignment="Center"/>
+                                    <Button DockPanel.Dock="Right" Content="Open folder" Padding="12,4" Click="OpenDataFolder_Click"/>
+                                </DockPanel>
+                                <TextBlock x:Name="Lbl_dataPath" Text="..." Foreground="Gray" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,12"/>
+
+                                <DockPanel Margin="0,0,0,4" LastChildFill="True">
+                                    <TextBlock Text="Export all data (JSON)" VerticalAlignment="Center"/>
+                                    <Button DockPanel.Dock="Right" Content="Export" Padding="12,4" Click="ExportData_Click"/>
+                                </DockPanel>
+                                <TextBlock x:Name="Lbl_exportStatus" Foreground="Gray" FontSize="11" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- About -->
+                        <Border Background="#ffffff" BorderBrush="#abadb3" BorderThickness="1" CornerRadius="4" Padding="16">
+                            <StackPanel>
+                                <TextBlock Text="About" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,8"/>
+                                <TextBlock Text="Task Management — A planner that respects your calendar and your time." Margin="0,0,0,4"/>
+                                <TextBlock x:Name="Lbl_version" Foreground="Gray" FontSize="11" Margin="0,0,0,8"/>
+                                <TextBlock>
+                                    <Hyperlink x:Name="Link_github" NavigateUri="https://github.com/nico25112005/TaskManagement_App" RequestNavigate="Link_github_RequestNavigate">
+                                        github.com/nico25112005/TaskManagement_App
+                                    </Hyperlink>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                    </StackPanel>
+                </ScrollViewer>
             </Grid>
         </Grid>
     </Grid>
