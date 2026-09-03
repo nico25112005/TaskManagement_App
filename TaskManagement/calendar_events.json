@@ -1,0 +1,20 @@
+[
+  {
+    "Id": "67d5bbec",
+    "Title": "work",
+    "Start": "2026-09-03T19:00:00+02:00",
+    "End": "2026-09-03T20:00:00+02:00",
+    "Type": 1,
+    "Recurrence": null,
+    "Duration": "01:00:00"
+  },
+  {
+    "Id": "42bd47b2",
+    "Title": "work",
+    "Start": "2026-09-03T19:00:00+02:00",
+    "End": "2026-09-03T21:00:00+02:00",
+    "Type": 1,
+    "Recurrence": null,
+    "Duration": "02:00:00"
+  }
+]

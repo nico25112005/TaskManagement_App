@@ -126,7 +126,7 @@ namespace TaskManagement
             int totalFree = freeMinutesPerDay.Values.Where(m => m > 0).Sum();
             int needed = (int)(taskHours * 60f);
             if (totalFree <= 0 || needed <= 0) return 1;
-            int totalCap = freeMinutesPerDay.Count(m => m > 0) * 60 * (int)Settings.maxHoursPerDay;
+            int totalCap = freeMinutesPerDay.Count(m => m.Value > 0) * 60 * (int)Settings.maxHoursPerDay;
             // Use the day's max capacity for a pessimistic estimate
             return Math.Max(1, (int)Math.Ceiling(needed / (double)Math.Max(1, freeMinutesPerDay.Values.DefaultIfEmpty(1).Max())));
         }

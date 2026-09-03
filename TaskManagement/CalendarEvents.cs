@@ -118,7 +118,7 @@ namespace TaskManagement
                 }
             }
             // Filter out slots shorter than 30 minutes – not worth scheduling
-            return slots.Where(s => (s.End - s.Start).TotalMinutes >= 30).ToList();
+            return slots.Where(s => (s.Item1 - s.Item2).TotalMinutes >= 30).ToList();
         }
     }
 }
