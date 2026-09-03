@@ -177,6 +177,7 @@
                             <Button x:Name="BtnTimerStop" Style="{StaticResource Label}" Content="Stop" Height="40" Width="80" Margin="4" DockPanel.Dock="Left" Click="Timer_Stop" IsEnabled="False"/>
                             <Button x:Name="BtnTimerSkip" Style="{StaticResource Label}" Content="Skip break" Height="40" Width="80" Margin="4,4,20,4" DockPanel.Dock="Left" Click="Timer_SkipBreak" IsEnabled="False"/>
                         </DockPanel>
+                        <TextBlock x:Name="Lbl_focusStats" HorizontalAlignment="Center" FontSize="11" Foreground="Gray" Margin="0,4,0,0" Text="Loading focus stats..."/>
 
                     </StackPanel>
 

@@ -60,10 +60,41 @@ namespace TaskManagement
                 TaskSorter.Distributor();
                 RefreshTodoList();
                 RefreshWeekPlan();
+                RefreshFocusStats();
             }
             catch (Exception ex)
             {
                 Trace.WriteLine($"Fehler bei StartUp: {ex.Message}");
+            }
+        }
+
+        private void RefreshFocusStats()
+        {
+            try
+            {
+                var statsPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "focus_stats.json");
+                if (!System.IO.File.Exists(statsPath))
+                {
+                    Lbl_focusStats.Text = "Focus stats: no completed blocks yet \u2014 start the timer to begin.";
+                    return;
+                }
+                var stats = Newtonsoft.Json.JsonConvert.DeserializeObject<FocusStats>(System.IO.File.ReadAllText(statsPath));
+                if (stats == null)
+                {
+                    Lbl_focusStats.Text = "";
+                    return;
+                }
+                // Auto-reset today's counter if the file is from a previous day
+                if (stats.LastDay.Date != DateTime.Today)
+                {
+                    stats.LastDay = DateTime.Today;
+                    stats.TodayBlocks = 0;
+                }
+                Lbl_focusStats.Text = $"Today: {stats.TodayBlocks} focus block{(stats.TodayBlocks == 1 ? "" : "s")} \u2014 Lifetime: {stats.TotalBlocks}";
+            }
+            catch (Exception ex)
+            {
+                Lbl_focusStats.Text = $"Focus stats unavailable ({ex.Message})";
             }
         }
 
@@ -1135,6 +1166,7 @@ namespace TaskManagement
             _timer.Stop();
             // Re-distribute because task hours may have changed
             Calculate();
+            RefreshFocusStats();
         }
 
         private void Timer_SkipBreak(object sender, RoutedEventArgs e)

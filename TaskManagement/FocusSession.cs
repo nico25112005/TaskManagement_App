@@ -1,5 +1,7 @@
 using System;
 using System.Diagnostics;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace TaskManagement
 {
@@ -123,6 +125,32 @@ namespace TaskManagement
 
             CompletedFocusBlocks++;
             IsOnBreak = true;
+
+            // Persist this completed block to a small JSON log so the Home dashboard
+            // can show 'you did N focus blocks today' without holding state in memory
+            // across app restarts. Best-effort: a failed write doesn't break the timer.
+            try
+            {
+                var statsPath = Path.Combine(AppContext.BaseDirectory, "focus_stats.json");
+                var stats = File.Exists(statsPath)
+                    ? JsonConvert.DeserializeObject<FocusStats>(File.ReadAllText(statsPath)) ?? new FocusStats()
+                    : new FocusStats();
+                var today = DateTime.Today;
+                if (stats.LastDay != today)
+                {
+                    // New day: only reset the daily counter, keep the lifetime total.
+                    stats.LastDay = today;
+                    stats.TodayBlocks = 0;
+                }
+                stats.TodayBlocks++;
+                stats.TotalBlocks++;
+                File.WriteAllText(statsPath, JsonConvert.SerializeObject(stats, Formatting.Indented));
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"FocusStats persist failed: {ex.Message}");
+            }
+
             FocusBlockCompleted?.Invoke(this, EventArgs.Empty);
         }
 
@@ -132,5 +160,17 @@ namespace TaskManagement
             _stopwatch.Restart(); // reset for next focus block
             BreakCompleted?.Invoke(this, EventArgs.Empty);
         }
+    }
+
+    /// <summary>
+    /// Persistent counter for completed focus blocks. Stored in focus_stats.json
+    /// next to the executable. Reset of the daily counter happens automatically
+    /// when the date rolls over (no scheduled job needed).
+    /// </summary>
+    public class FocusStats
+    {
+        public DateTime LastDay { get; set; } = DateTime.Today;
+        public int TodayBlocks { get; set; } = 0;
+        public int TotalBlocks { get; set; } = 0;
     }
 }
