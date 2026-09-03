@@ -393,16 +393,12 @@
 
                         <ListView.ItemTemplate >
                             <DataTemplate>
-                                <Border BorderBrush="#C9C9C9" BorderThickness="1" CornerRadius="3" Padding="8,6" Margin="4,3" Background="#FFFFFFFF">
-                                    <DockPanel>
-                                        <Border Background="#FFEFD9" BorderThickness="0" Padding="6,2" CornerRadius="2" DockPanel.Dock="Right" Margin="6,0,0,0">
-                                            <Label Padding="0" FontSize="11" FontWeight="SemiBold" Content="{Binding Importance, StringFormat='P{0}'}"/>
-                                        </Border>
-                                        <Label Padding="0" FontSize="11" Foreground="Gray" DockPanel.Dock="Right" Margin="0,0,8,0" Content="{Binding Hours, StringFormat={}{0:F1}h}"/>
-                                        <Label Padding="0" DockPanel.Dock="Right" Margin="0,0,8,0" FontSize="11" Foreground="Gray" Content="{Binding Delivery, StringFormat='due {0:dd.MM.}'}"/>
-                                        <Label Padding="0" FontWeight="SemiBold" Content="{Binding Description}"/>
-                                    </DockPanel>
-                                </Border>
+                                <DockPanel Margin="4,3">
+                                    <Button DockPanel.Dock="Right" Content="Delete" Padding="8,2" Margin="8,0,0,0" Click="DeleteTodo_Click" Tag="{Binding}"/>
+                                    <Label DockPanel.Dock="Right" Content="{Binding Hours, StringFormat={}{0:F1}h}" FontSize="11" Foreground="Gray" Padding="0" VerticalContentAlignment="Center"/>
+                                    <Label DockPanel.Dock="Right" Content="{Binding Delivery, StringFormat='due {0:dd.MM.}'}" FontSize="11" Foreground="Gray" Margin="8,0" Padding="0" VerticalContentAlignment="Center"/>
+                                    <Label Content="{Binding Description}" VerticalContentAlignment="Center"/>
+                                </DockPanel>
                             </DataTemplate>
                         </ListView.ItemTemplate>
 
@@ -420,7 +416,7 @@
                 <!-- Toolbar: add event of currently selected type -->
                 <DockPanel Grid.Row="0" Margin="10" LastChildFill="False">
                     <Label Style="{StaticResource Label}" DockPanel.Dock="Left" Content="Type:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                    <ComboBox x:Name="Cb_eventType" DockPanel.Dock="Left" Width="180" SelectedIndex="0" VerticalAlignment="Center">
+                    <ComboBox x:Name="Cb_eventType" DockPanel.Dock="Left" Width="180" SelectedIndex="0" VerticalAlignment="Center" SelectionChanged="Cb_eventType_SelectionChanged">
                         <ComboBoxItem Content="Fixed appointment"/>
                         <ComboBoxItem Content="Work hours (for tasks)"/>
                         <ComboBoxItem Content="Free time (no tasks)"/>

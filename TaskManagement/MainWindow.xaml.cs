@@ -205,6 +205,51 @@ namespace TaskManagement
         }
 
 
+        private void Cb_eventType_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Auto-fill "Work" when Work hours is selected, but only if the user hasn't
+            // already typed a meaningful title. Don't overwrite real user input.
+            if (Cb_eventType.SelectedIndex == (int)CalendarEventType.WorkHours)
+            {
+                if (string.IsNullOrWhiteSpace(Tb_eventTitle.Text) || Tb_eventTitle.Text == "Work")
+                    Tb_eventTitle.Text = "Work";
+            }
+            else if (Tb_eventTitle.Text == "Work")
+            {
+                Tb_eventTitle.Clear();
+            }
+        }
+
+        private void DeleteTodo_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement fe || fe.Tag is not Task task) return;
+
+            var result = MessageBox.Show(
+                $"Delete task '{task.Description}'?",
+                "Delete task",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+            if (result != MessageBoxResult.Yes) return;
+
+            // Remove from the dictionary by matching description (matches our todo-key pattern)
+            var key = Tasks.tasks.FirstOrDefault(kvp => kvp.Value == task).Key;
+            if (key == null)
+            {
+                // Fallback: search by reference equality via fields
+                key = Tasks.tasks.FirstOrDefault(kvp => ReferenceEquals(kvp.Value, task)).Key;
+            }
+            if (key == null)
+            {
+                Trace.WriteLine($"DeleteTodo_Click: task reference not found in dictionary.");
+                return;
+            }
+
+            Tasks.tasks.Remove(key);
+            Tasks.WriteDataToJson<Dictionary<string, Task>>("todos", Tasks.tasks);
+            Calculate(); // re-distribute + refresh all views
+            Trace.WriteLine($"Deleted task '{task.Description}'.");
+        }
+
         private void SetColors()
         {
             Timer_Label.Background = Colorpalet(0);
@@ -373,8 +418,9 @@ namespace TaskManagement
                     Margin = new Thickness(0, 2, 0, 2),
                     Background = ColorForEventType(ev.Type),
                     Cursor = System.Windows.Input.Cursors.Hand,
-                    ToolTip = $"Right-click to remove '{ev.Title}'",
-                    Child = new StackPanel
+                    ToolTip = $"Right-click or press ✕ to remove '{ev.Title}'",
+                    Tag = ev,
+                    Child = new DockPanel
                     {
                         Children =
                         {
@@ -395,6 +441,36 @@ namespace TaskManagement
                         }
                     }
                 };
+
+                // Visible Remove button (✕) inside the event tile. The event reference
+                // travels via Border.Tag, so the click handler can pull it back out.
+                var removeBtn = new Button
+                {
+                    Content = "✕",
+                    Padding = new Thickness(4, 0, 4, 0),
+                    Margin = new Thickness(4, 0, 0, 0),
+                    FontSize = 10,
+                    Background = Brushes.Transparent,
+                    BorderBrush = Brushes.Transparent,
+                    Cursor = System.Windows.Input.Cursors.Hand,
+                    Tag = ev,
+                    ToolTip = "Remove event"
+                };
+                removeBtn.Click += (s, e2) =>
+                {
+                    e2.Handled = true;
+                    var result = MessageBox.Show(
+                        $"Remove '{ev.Title}' ({ev.Start:ddd HH:mm}–{ev.End:HH:mm})?",
+                        "Remove calendar event",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        RemoveCalendarEvent(ev);
+                    }
+                };
+                DockPanel.SetDock(removeBtn, Dock.Right);
+                ((DockPanel)evBorder.Child).Children.Insert(0, removeBtn);
 
                 // Right-click to remove. Use MouseRightButtonDown (not Up) because
                 // Up can be swallowed by ancestor context-menus or scroll-behaviour;
