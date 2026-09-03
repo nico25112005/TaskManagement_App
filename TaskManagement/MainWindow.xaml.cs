@@ -61,6 +61,10 @@ namespace TaskManagement
                 RefreshTodoList();
                 RefreshWeekPlan();
                 RefreshFocusStats();
+
+                // Default create-form values for first-time users
+                if (Dp_delivery_date != null)
+                    Dp_delivery_date.SelectedDate = DateTime.Today.AddDays(7);
             }
             catch (Exception ex)
             {
@@ -108,10 +112,27 @@ namespace TaskManagement
                 Trace.WriteLine($"Neue Aufgabe '{Tb_description.Text}' erstellt.");
                 Tasks.WriteDataToJson<Dictionary<string, Task>>("todos", Tasks.tasks); // <string, Task>
                 Calculate();
+
+                // Clear the form for the next entry so the user can keep typing.
+                Tb_description.Clear();
+                Tb_hours.Clear();
+                Tb_importancy.Clear();
+                Dp_delivery_date.SelectedDate = DateTime.Today.AddDays(7);
+                Tb_description.Focus();
             }
             catch (Exception ex)
             {
                 Trace.WriteLine($"Fehler beim Erstellen der Aufgabe: {ex.Message}");
+            }
+        }
+
+        private void CreateForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            // Press Enter in any of the create-form text boxes to submit the new task.
+            if (e.Key == Key.Enter)
+            {
+                Create(sender, e);
+                e.Handled = true;
             }
         }
 
@@ -164,6 +185,48 @@ namespace TaskManagement
             Lv_DoneTodos.ItemsSource = _homeTodo.Done;
             TodoLoadLabel.Content = _homeTodo.TodayLoadLabel;
             TodoLoadLabel.Foreground = _homeTodo.IsOverloaded ? Brushes.IndianRed : Brushes.Gray;
+
+            RefreshStatusBar();
+        }
+
+        /// <summary>
+        /// Update the bottom status bar with open tasks, today's load, and focus blocks.
+        /// Called whenever the planner data or task list changes.
+        /// </summary>
+        private void RefreshStatusBar()
+        {
+            int openTasks = Tasks.tasks.Count;
+            float todayHours = Tasks.nWeek.Values
+                .Where(w => w.Date.Date == DateTime.Today)
+                .Sum(w => w.PlanedHours);
+
+            int todayFocusBlocks = 0;
+            try
+            {
+                var statsPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "focus_stats.json");
+                if (System.IO.File.Exists(statsPath))
+                {
+                    var stats = Newtonsoft.Json.JsonConvert.DeserializeObject<FocusStats>(System.IO.File.ReadAllText(statsPath));
+                    if (stats != null && stats.LastDay.Date == DateTime.Today)
+                        todayFocusBlocks = stats.TodayBlocks;
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"StatusBar focus stats read failed: {ex.Message}");
+            }
+
+            Status_OpenTasks.Text = $"Open tasks: {openTasks}";
+            Status_TodayHours.Text = $"Today: {todayHours:F1}h";
+            Status_FocusBlocks.Text = $"Focus blocks today: {todayFocusBlocks}";
+
+            // Quick health message
+            if (_homeTodo.IsOverloaded)
+                Status_Message.Text = "Overloaded today — consider moving work to tomorrow.";
+            else if (openTasks == 0)
+                Status_Message.Text = "All caught up — great job!";
+            else
+                Status_Message.Text = "Ctrl+Shift+N to capture a new task quickly.";
         }
 
         private void RefreshWeekPlan()

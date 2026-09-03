@@ -77,16 +77,14 @@
     </Window.Resources>
     
     <Grid Background="#ededed">
-        
-        
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
             <RowDefinition/>
+            <RowDefinition Height="26"/>
         </Grid.RowDefinitions>
 
         <DockPanel Grid.Column="0" Background="#ffffff">
 
-            
 
         </DockPanel>
 
@@ -345,7 +343,7 @@
                 </Grid.ColumnDefinitions>
 
                 
-                <StackPanel Margin="10" Background="White" Grid.Column="0">
+                <StackPanel Margin="10" Background="White" Grid.Column="0" KeyDown="CreateForm_KeyDown">
 
                     <Label Style="{StaticResource Color}" x:Name="Description_Label" Margin="10,20,10,2" Content="Description"/>
 
@@ -614,5 +612,16 @@
                 </ScrollViewer>
             </Grid>
         </Grid>
+
+        <!-- Status bar: always visible, shows live counts -->
+        <Border Grid.Row="2" Background="#ffffff" BorderBrush="#abadb3" BorderThickness="0,1,0,0" Padding="10,4"
+                x:Name="StatusBar">
+            <DockPanel LastChildFill="True">
+                <TextBlock DockPanel.Dock="Left" x:Name="Status_OpenTasks" VerticalAlignment="Center" FontSize="11" Foreground="Gray" Margin="0,0,20,0"/>
+                <TextBlock DockPanel.Dock="Left" x:Name="Status_TodayHours" VerticalAlignment="Center" FontSize="11" Foreground="Gray" Margin="0,0,20,0"/>
+                <TextBlock DockPanel.Dock="Left" x:Name="Status_FocusBlocks" VerticalAlignment="Center" FontSize="11" Foreground="Gray" Margin="0,0,20,0"/>
+                <TextBlock x:Name="Status_Message" VerticalAlignment="Center" FontSize="11" Foreground="Gray" TextTrimming="CharacterEllipsis"/>
+            </DockPanel>
+        </Border>
     </Grid>
 </Window>
