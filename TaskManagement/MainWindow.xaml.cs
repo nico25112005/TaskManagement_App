@@ -345,13 +345,44 @@ namespace TaskManagement
             if (_planGrid == null) return;
             _planGrid.Children.Clear();
             _planGrid.RowDefinitions.Clear();
+            _planGrid.ColumnDefinitions.Clear();
 
-            // Start from today, run 7 days. This matches the TaskSorter horizon
-            // (Tasks.nWeek is keyed by DateTime.Today.AddDays(N)), so we can map
-            // tasks to days directly by their Date property.
+            // Outer grid: 1 hour-label column + 7 day columns.
+            // Layout matches Google Calendar week-view: time on the left, days as columns.
+            _planGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(48) });
+            for (int i = 0; i < 7; i++)
+                _planGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
             var startDay = DateTime.Today;
             var dayNames = new[] { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
 
+            // === Hour-label column (left rail) ===
+            for (int h = 0; h < 24; h++)
+            {
+                _planGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(28) });
+                var hourLabel = new Border
+                {
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(0xDD, 0xDD, 0xDD)),
+                    BorderThickness = new Thickness(0, 0, 1, 1),
+                    Padding = new Thickness(2, 0, 4, 0),
+                    Child = new TextBlock
+                    {
+                        Text = $"{h:D2}:00",
+                        FontSize = 10,
+                        Foreground = Brushes.Gray,
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        VerticalAlignment = VerticalAlignment.Top
+                    }
+                };
+                Grid.SetRow(hourLabel, h);
+                Grid.SetColumn(hourLabel, 0);
+                _planGrid.Children.Add(hourLabel);
+            }
+
+            // Spacer row below the hour grid (for tasks footer)
+            _planGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridLength.Auto) });
+
+            // === Day columns ===
             for (int col = 0; col < 7; col++)
             {
                 var day = startDay.AddDays(col);
@@ -362,9 +393,72 @@ namespace TaskManagement
                 var availableHours = CalendarEvents.GetAvailableHoursForDay(day);
                 var dayTasks = GetTasksForDay(day);
 
-                var dayPanel = BuildDayPanel(day, dayNames[(int)day.DayOfWeek], dayEvents, availableHours, dayTasks);
-                Grid.SetColumn(dayPanel, col);
-                _planGrid.Children.Add(dayPanel);
+                // Day-column container: a Grid with 25 rows (24 hours + 1 footer for tasks).
+                var dayCol = new Grid();
+                for (int h = 0; h < 25; h++)
+                    dayCol.RowDefinitions.Add(new RowDefinition { Height = h == 24 ? GridLength.Auto : new GridLength(28) });
+
+                // Background cell grid (so empty hours still show the line)
+                for (int h = 0; h < 24; h++)
+                {
+                    var cell = new Border
+                    {
+                        BorderBrush = new SolidColorBrush(Color.FromRgb(0xE5, 0xE5, 0xE5)),
+                        BorderThickness = new Thickness(1, 0, 0, 1) // left edge only (right edge is the next column's left edge)
+                    };
+                    Grid.SetRow(cell, h);
+                    dayCol.Children.Add(cell);
+                }
+
+                // Vertical day separator on the right edge of the column (except last)
+                if (col < 6)
+                {
+                    var rightEdge = new Border
+                    {
+                        BorderBrush = new SolidColorBrush(Color.FromRgb(0xAB, 0xAD, 0xB3)),
+                        BorderThickness = new Thickness(0, 0, 1, 0)
+                    };
+                    Grid.SetRow(rightEdge, 0);
+                    Grid.SetRowSpan(rightEdge, 24);
+                    dayCol.Children.Add(rightEdge);
+                }
+
+                // Events: position each into its hour-row, span multi-hour events
+                foreach (var ev in dayEvents)
+                {
+                    var startH = Math.Max(0, ev.Start.Hour);
+                    var endH = Math.Min(24, ev.End.Hour + (ev.End.Minute > 0 ? 1 : 0));
+                    var span = Math.Max(1, endH - startH);
+
+                    var evTile = BuildCalendarEventTile(ev, day);
+                    Grid.SetRow(evTile, startH);
+                    Grid.SetRowSpan(evTile, span);
+                    Grid.SetColumn(evTile, 0); // always column 0 inside the day-col
+                    Grid.SetZIndex(evTile, 1);
+                    dayCol.Children.Add(evTile);
+                }
+
+                // Header overlay (day name + date + available badge) sits on top of row 0
+                var header = BuildDayHeader(day, dayNames[(int)day.DayOfWeek], availableHours);
+                Grid.SetRow(header, 0);
+                Grid.SetColumn(header, 0);
+                Grid.SetRowSpan(header, 1);
+                Grid.SetZIndex(header, 5);
+                dayCol.Children.Add(header);
+
+                // Tasks footer (row 24): summary of tasks scheduled for this day
+                if (dayTasks.Count > 0)
+                {
+                    var tasksFooter = BuildDayTasksFooter(dayTasks);
+                    Grid.SetRow(tasksFooter, 24);
+                    Grid.SetColumn(tasksFooter, 0);
+                    dayCol.Children.Add(tasksFooter);
+                }
+
+                Grid.SetColumn(dayCol, col + 1);
+                Grid.SetRow(dayCol, 0);
+                Grid.SetRowSpan(dayCol, 25);
+                _planGrid.Children.Add(dayCol);
             }
         }
 
@@ -382,192 +476,145 @@ namespace TaskManagement
                 .ToList();
         }
 
-        private Border BuildDayPanel(DateTime day, string dayName, List<CalendarEvent> events, float availableHours, List<Task> scheduledTasks)
+        private Border BuildCalendarEventTile(CalendarEvent ev, DateTime day)
         {
-            var stack = new StackPanel { Margin = new Thickness(4) };
-
-            // Header: day name + date + available-hours badge
-            var header = new DockPanel { Margin = new Thickness(0, 0, 0, 6) };
-            var dayLabel = new Label
+            var tile = new Border
             {
-                Content = $"{dayName} {day:dd.MM}",
-                FontWeight = FontWeights.Bold,
-                FontSize = 13
+                CornerRadius = new CornerRadius(3),
+                Margin = new Thickness(2, 1, 2, 1),
+                Padding = new Thickness(4, 2, 4, 2),
+                Background = ColorForEventType(ev.Type),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(0x80, 0x80, 0x80)),
+                BorderThickness = new Thickness(1),
+                Cursor = System.Windows.Input.Cursors.Hand,
+                Tag = ev,
+                ToolTip = $"Right-click or press ✕ to remove '{ev.Title}'"
+            };
+
+            var content = new DockPanel { Margin = new Thickness(0) };
+            tile.Child = content;
+
+            // Remove button (top-right)
+            var removeBtn = new Button
+            {
+                Content = "✕",
+                Padding = new Thickness(4, 0, 4, 0),
+                Margin = new Thickness(4, 0, 0, 0),
+                FontSize = 10,
+                Background = Brushes.Transparent,
+                BorderBrush = Brushes.Transparent,
+                Cursor = System.Windows.Input.Cursors.Hand,
+                Tag = ev,
+                ToolTip = "Remove event"
+            };
+            removeBtn.Click += (s, e2) =>
+            {
+                e2.Handled = true;
+                var result = MessageBox.Show(
+                    $"Remove '{ev.Title}' ({ev.Start:ddd HH:mm}–{ev.End:HH:mm})?",
+                    "Remove calendar event",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+                if (result == MessageBoxResult.Yes) RemoveCalendarEvent(ev);
+            };
+            DockPanel.SetDock(removeBtn, Dock.Top);
+            content.Children.Add(removeBtn);
+
+            // Title + time stack
+            var textStack = new StackPanel();
+            textStack.Children.Add(new TextBlock
+            {
+                Text = ev.Title,
+                FontWeight = FontWeights.SemiBold,
+                FontSize = 11,
+                TextTrimming = TextTrimming.CharacterEllipsis
+            });
+            textStack.Children.Add(new TextBlock
+            {
+                Text = $"{ev.Start:HH:mm}–{ev.End:HH:mm}",
+                FontSize = 10,
+                Opacity = 0.75
+            });
+            content.Children.Add(textStack);
+
+            // Right-click to remove
+            tile.MouseRightButtonDown += (s, e) =>
+            {
+                e.Handled = true;
+                var result = MessageBox.Show(
+                    $"Remove '{ev.Title}' ({ev.Start:ddd HH:mm}–{ev.End:HH:mm})?",
+                    "Remove calendar event",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+                if (result == MessageBoxResult.Yes) RemoveCalendarEvent(ev);
+            };
+
+            return tile;
+        }
+
+        private Border BuildDayHeader(DateTime day, string dayName, float availableHours)
+        {
+            var dock = new DockPanel();
+            var dayLabel = new TextBlock
+            {
+                Text = $"{dayName} {day:dd.MM.}",
+                FontWeight = FontWeights.SemiBold,
+                FontSize = 11,
+                Margin = new Thickness(2, 0, 0, 0)
             };
             DockPanel.SetDock(dayLabel, Dock.Left);
-            header.Children.Add(dayLabel);
+            dock.Children.Add(dayLabel);
 
-            var availLabel = new Label
+            var availLabel = new TextBlock
             {
-                Content = availableHours > 0 ? $"{availableHours:F1}h free" : "full",
+                Text = availableHours > 0 ? $"{availableHours:F1}h free" : "full",
+                FontSize = 10,
+                Foreground = availableHours > 0 ? Brushes.DarkGreen : Brushes.IndianRed,
                 HorizontalAlignment = HorizontalAlignment.Right,
-                FontSize = 11,
-                Foreground = availableHours > 0 ? Brushes.DarkGreen : Brushes.IndianRed
+                Margin = new Thickness(0, 0, 4, 0)
             };
             DockPanel.SetDock(availLabel, Dock.Right);
-            header.Children.Add(availLabel);
-            stack.Children.Add(header);
-
-            // Events for the day, color-coded by type
-            foreach (var ev in events)
-            {
-                var evBorder = new Border
-                {
-                    CornerRadius = new CornerRadius(3),
-                    Padding = new Thickness(6, 3, 6, 3),
-                    Margin = new Thickness(0, 2, 0, 2),
-                    Background = ColorForEventType(ev.Type),
-                    Cursor = System.Windows.Input.Cursors.Hand,
-                    ToolTip = $"Right-click or press ✕ to remove '{ev.Title}'",
-                    Tag = ev,
-                    Child = new DockPanel
-                    {
-                        Children =
-                        {
-                            new Label
-                            {
-                                Content = ev.Title,
-                                FontWeight = FontWeights.SemiBold,
-                                FontSize = 11,
-                                Padding = new Thickness(0)
-                            },
-                            new Label
-                            {
-                                Content = $"{ev.Start:HH:mm}–{ev.End:HH:mm}",
-                                FontSize = 10,
-                                Opacity = 0.7,
-                                Padding = new Thickness(0)
-                            }
-                        }
-                    }
-                };
-
-                // Visible Remove button (✕) inside the event tile. The event reference
-                // travels via Border.Tag, so the click handler can pull it back out.
-                var removeBtn = new Button
-                {
-                    Content = "✕",
-                    Padding = new Thickness(4, 0, 4, 0),
-                    Margin = new Thickness(4, 0, 0, 0),
-                    FontSize = 10,
-                    Background = Brushes.Transparent,
-                    BorderBrush = Brushes.Transparent,
-                    Cursor = System.Windows.Input.Cursors.Hand,
-                    Tag = ev,
-                    ToolTip = "Remove event"
-                };
-                removeBtn.Click += (s, e2) =>
-                {
-                    e2.Handled = true;
-                    var result = MessageBox.Show(
-                        $"Remove '{ev.Title}' ({ev.Start:ddd HH:mm}–{ev.End:HH:mm})?",
-                        "Remove calendar event",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Question);
-                    if (result == MessageBoxResult.Yes)
-                    {
-                        RemoveCalendarEvent(ev);
-                    }
-                };
-                DockPanel.SetDock(removeBtn, Dock.Right);
-                ((DockPanel)evBorder.Child).Children.Insert(0, removeBtn);
-
-                // Right-click to remove. Use MouseRightButtonDown (not Up) because
-                // Up can be swallowed by ancestor context-menus or scroll-behaviour;
-                // Down + e.Handled = true guarantees the event is consumed.
-                evBorder.MouseRightButtonDown += (s, e) =>
-                {
-                    e.Handled = true;
-                    var result = MessageBox.Show(
-                        $"Remove '{ev.Title}' ({ev.Start:ddd HH:mm}–{ev.End:HH:mm})?",
-                        "Remove calendar event",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Question);
-                    if (result == MessageBoxResult.Yes)
-                    {
-                        RemoveCalendarEvent(ev);
-                    }
-                };
-
-                stack.Children.Add(evBorder);
-            }
-
-            // === Scheduled tasks section ===
-            // Visual separator between events (immovable) and tasks (movable).
-            // This makes the planner read top-to-bottom: what's locked in first,
-            // then what you're working through.
-            if (scheduledTasks.Count > 0)
-            {
-                var separator = new Border
-                {
-                    Height = 1,
-                    Background = new SolidColorBrush(Color.FromRgb(0xDD, 0xDD, 0xDD)),
-                    Margin = new Thickness(0, 6, 0, 4)
-                };
-                stack.Children.Add(separator);
-
-                var tasksHeader = new Label
-                {
-                    Content = "Tasks",
-                    FontSize = 10,
-                    FontWeight = FontWeights.SemiBold,
-                    Foreground = Brushes.Gray,
-                    Padding = new Thickness(0, 0, 0, 2)
-                };
-                stack.Children.Add(tasksHeader);
-
-                foreach (var task in scheduledTasks.OrderByDescending(t => t.Importance))
-                {
-                    var hoursLabel = new Label
-                    {
-                        Content = $"{task.Hours:F1}h",
-                        FontSize = 10,
-                        Opacity = 0.7,
-                        Padding = new Thickness(0, 0, 0, 0)
-                    };
-                    var descLabel = new Label
-                    {
-                        Content = task.Description,
-                        FontSize = 11,
-                        FontWeight = FontWeights.SemiBold,
-                        Padding = new Thickness(0),
-                        TextTrimming = TextTrimming.CharacterEllipsis
-                    };
-
-                    var innerDock = new DockPanel();
-                    DockPanel.SetDock(hoursLabel, Dock.Right);
-                    innerDock.Children.Add(hoursLabel);
-                    innerDock.Children.Add(descLabel);
-
-                    var taskBorder = new Border
-                    {
-                        CornerRadius = new CornerRadius(3),
-                        Padding = new Thickness(6, 3, 6, 3),
-                        Margin = new Thickness(0, 2, 0, 2),
-                        Background = ImportanceBrush(task.Importance),
-                        ToolTip = $"{task.Description} – {task.Hours:F1}h, importance {task.Importance}, deadline {task.Delivery:dd.MM.}",
-                        Child = innerDock
-                    };
-
-                    stack.Children.Add(taskBorder);
-                }
-            }
+            dock.Children.Add(availLabel);
 
             return new Border
             {
+                Background = new SolidColorBrush(Color.FromRgb(0xF8, 0xF8, 0xF8)),
                 BorderBrush = new SolidColorBrush(Color.FromRgb(0xAB, 0xAD, 0xB3)),
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(2),
-                Margin = new Thickness(2),
-                Padding = new Thickness(4),
-                Child = stack
+                BorderThickness = new Thickness(0, 0, 0, 1),
+                Padding = new Thickness(2, 1, 2, 1),
+                Child = dock
             };
         }
 
-        /// <summary>
-        /// Color coding for task chips based on importance (1=low, 3=high).
-        /// Cool to warm: pale yellow -> orange -> red.
-        /// </summary>
+        private Border BuildDayTasksFooter(List<Task> scheduledTasks)
+        {
+            var wrap = new WrapPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(2, 4, 2, 4) };
+            foreach (var task in scheduledTasks.OrderByDescending(t => t.Importance))
+            {
+                wrap.Children.Add(new Border
+                {
+                    CornerRadius = new CornerRadius(3),
+                    Padding = new Thickness(6, 2, 6, 2),
+                    Margin = new Thickness(2),
+                    Background = ImportanceBrush(task.Importance),
+                    Child = new TextBlock
+                    {
+                        Text = $"{task.Description} ({task.Hours:F1}h)",
+                        FontSize = 10,
+                        FontWeight = FontWeights.SemiBold
+                    },
+                    ToolTip = $"{task.Description} – {task.Hours:F1}h, P{task.Importance}, deadline {task.Delivery:dd.MM.}"
+                });
+            }
+            return new Border
+            {
+                BorderBrush = new SolidColorBrush(Color.FromRgb(0xAB, 0xAD, 0xB3)),
+                BorderThickness = new Thickness(0, 1, 0, 0),
+                Padding = new Thickness(0),
+                Child = wrap
+            };
+        }
+
         private Brush ImportanceBrush(byte importance) => importance switch
         {
             1 => new SolidColorBrush(Color.FromRgb(0xFF, 0xF3, 0xCD)), // pale yellow
