@@ -272,6 +272,7 @@
                                                         Background="Transparent"
                                                         Drop="DayTaskContainer_Drop"
                                                         DragEnter="DayTaskContainer_DragEnter"
+                                                        DragLeave="DayTaskContainer_DragLeave"
                                                         DragOver="DayTaskContainer_DragOver"
                                                         Tag="{Binding}">
                                                 <ItemsControl ItemsSource="{Binding Tasks}">

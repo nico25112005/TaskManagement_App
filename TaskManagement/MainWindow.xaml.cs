@@ -7,6 +7,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Navigation;
 using System.Diagnostics;
+using System.Windows.Threading;
 
 namespace TaskManagement
 {
@@ -14,6 +15,12 @@ namespace TaskManagement
     {
         private TaskViewModel _draggedTask;
         private TimerViewModel _timer = new();
+
+        // Drag-and-drop visual feedback state
+        private readonly Brush _dragHoverHighlightBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0xEF, 0xD9)); // #FFEFD9 (pale yellow)
+        private readonly Brush _dropFlashBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0xC9, 0x41));        // #FFC941 (yellow)
+        private Brush? _dragHoverOriginalBackground;
+        private DispatcherTimer? _dropFlashTimer;
 
         // Plan view: currently displayed week. Always anchored to Monday.
         private DateTime _planStartDay = DateTime.Today;
@@ -159,12 +166,64 @@ namespace TaskManagement
         private void DayTaskContainer_DragEnter(object sender, DragEventArgs e)
         {
             e.Effects = e.Data.GetDataPresent(typeof(TaskViewModel)) ? DragDropEffects.Move : DragDropEffects.None;
+
+            if (sender is not FrameworkElement container) return;
+
+            // Remember the original background on first enter so DragLeave can restore it.
+            if (_dragHoverOriginalBackground == null)
+                _dragHoverOriginalBackground = container.Background;
+
+            container.Background = _dragHoverHighlightBrush;
+        }
+
+        private void DayTaskContainer_DragLeave(object sender, DragEventArgs e)
+        {
+            if (sender is not FrameworkElement container) return;
+
+            container.Background = _dragHoverOriginalBackground ?? Brushes.Transparent;
+            _dragHoverOriginalBackground = null;
         }
 
         private void DayTaskContainer_DragOver(object sender, DragEventArgs e)
         {
             e.Effects = e.Data.GetDataPresent(typeof(TaskViewModel)) ? DragDropEffects.Move : DragDropEffects.None;
             e.Handled = true;
+        }
+
+        /// <summary>
+        /// Flashes the target day container's background from the accent yellow
+        /// back to its original color over ~600ms to give the user clear drop feedback.
+        /// </summary>
+        private void FlashDropTarget(FrameworkElement container)
+        {
+            // Stop any previous flash so we don't stack timers on rapid drops.
+            _dropFlashTimer?.Stop();
+
+            var originalBrush = container.Background;
+            container.Background = _dropFlashBrush;
+
+            _dropFlashTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(600),
+                Tag = (container, originalBrush)
+            };
+
+            _dropFlashTimer.Tick += (s, e) =>
+            {
+                var timer = (DispatcherTimer)s;
+                timer.Stop();
+
+                if (timer.Tag is ValueTuple<FrameworkElement, Brush> flashInfo)
+                {
+                    var (element, restoreBrush) = flashInfo;
+                    element.Background = restoreBrush;
+                }
+
+                timer.Tick -= (s, e) => { }; // Detach via no-op; the closure holds the only reference.
+                _dropFlashTimer = null;
+            };
+
+            _dropFlashTimer.Start();
         }
 
         private void DayTaskContainer_Drop(object sender, DragEventArgs e)
@@ -195,6 +254,11 @@ namespace TaskManagement
             }
 
             _draggedTask = null;
+
+            // Visual drop feedback: flash the target container before the view refreshes.
+            if (sender is FrameworkElement dropContainer)
+                FlashDropTarget(dropContainer);
+
             RefreshWeekPlan();
         }
 
