@@ -556,6 +556,14 @@ namespace TaskManagement
                 page.Value.Visibility = page.Key == pages ? Visibility.Visible : Visibility.Collapsed;
             }
 
+            // Update sidebar nav button styles: active = NavButtonActive, others = NavButton
+            var navActive = (Style)FindResource("NavButtonActive");
+            var navNormal = (Style)FindResource("NavButton");
+            if (NavHome != null) NavHome.Style = pages == Pages.Home ? navActive : navNormal;
+            if (NavTodo != null) NavTodo.Style = pages == Pages.Todo ? navActive : navNormal;
+            if (NavPlan != null) NavPlan.Style = pages == Pages.Plan ? navActive : navNormal;
+            if (NavSettings != null) NavSettings.Style = pages == Pages.Settings ? navActive : navNormal;
+
             // Update window title to reflect current page so users always know where they are.
             Title = pages switch
             {

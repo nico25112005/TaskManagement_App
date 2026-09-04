@@ -383,30 +383,30 @@
                     <!-- App icon / logo -->
                     <Image Source="/Icons/Home_mine.png" Height="28" Width="28" Stretch="Uniform" Margin="0,0,0,16" HorizontalAlignment="Center"/>
 
-                    <Button Style="{StaticResource NavButtonActive}" Click="Home_page" Margin="0,0,0,2">
+                    <Button Style="{StaticResource NavButtonActive}" Click="Home_page" Margin="0,0,0,2" x:Name="NavHome">
                         <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="🏠" FontSize="26" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                            <Image Source="/Icons/Home_mine.png" Height="24" Width="24" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,0,0,2"/>
                             <TextBlock Text="Home" FontSize="11" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
-                    <Button Style="{StaticResource NavButton}" Click="Todo_page">
+                    <Button Style="{StaticResource NavButton}" Click="Todo_page" x:Name="NavTodo">
                         <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="✅" FontSize="26" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                            <Image Source="/Icons/Todo.png" Height="24" Width="24" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,0,0,2"/>
                             <TextBlock Text="Todo" FontSize="11" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
-                    <Button Style="{StaticResource NavButton}" Click="Plan_page">
+                    <Button Style="{StaticResource NavButton}" Click="Plan_page" x:Name="NavPlan">
                         <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="📅" FontSize="26" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                            <Image Source="/Icons/Tasks.png" Height="24" Width="24" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,0,0,2"/>
                             <TextBlock Text="Plan" FontSize="11" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
-                    <Button Style="{StaticResource NavButton}" Click="Settings_page">
+                    <Button Style="{StaticResource NavButton}" Click="Settings_page" x:Name="NavSettings">
                         <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="⚙️" FontSize="26" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                            <Image Source="/Icons/Settings.png" Height="24" Width="24" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,0,0,2"/>
                             <TextBlock Text="Settings" FontSize="11" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Button>
@@ -513,10 +513,7 @@
                     <!-- Termine card -->
                     <Border Style="{StaticResource CardBorder}" Grid.Row="0" Margin="0,0,0,12" Padding="16">
                         <DockPanel>
-                            <DockPanel DockPanel.Dock="Top" LastChildFill="True" Margin="0,0,0,8">
-                                <Button Style="{StaticResource SecondaryBtn}" Content="Redistribute" Padding="10,4" Margin="0,0,0,0" DockPanel.Dock="Right" Click="Redistribute_Click" ToolTip="Re-run task distribution (respects current CalendarEvents)"/>
-                                <Label Style="{StaticResource SectionHeader}" x:Name="Termine_Label" Content="📅 Termine" DockPanel.Dock="Left" Padding="0" VerticalAlignment="Center"/>
-                            </DockPanel>
+                            <Label Style="{StaticResource SectionHeader}" x:Name="Termine_Label" Content="📅 Termine" DockPanel.Dock="Top" Padding="0" Margin="0,0,0,8"/>
                             <ListView x:Name="Lv_WeekPlan" Style="{StaticResource CardListView}">
                                 <ListView.ItemTemplate>
                                     <DataTemplate>
@@ -592,7 +589,7 @@
                 <!-- Create form -->
                 <Border Style="{StaticResource CardBorder}" Margin="12,12,6,12" Padding="20" Background="White">
                     <StackPanel KeyDown="CreateForm_KeyDown">
-                        <TextBlock Text="New Task" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,16" Foreground="#333"/>
+                        <TextBlock Text="New Task" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,16" Foreground="Black"/>
 
                         <Label Style="{StaticResource FieldLabel}" x:Name="Description_Label" Content="Description" Margin="0,0,0,2"/>
                         <TextBox Style="{StaticResource RoundTextBox}" Text="" x:Name="Tb_description" Margin="0,0,0,0"/>
@@ -687,42 +684,36 @@
                 <!-- Event toolbar -->
                 <Border Style="{StaticResource CardBorder}" Grid.Row="1" Margin="12,8,12,0" Padding="12,8">
                     <DockPanel LastChildFill="False">
-                        <Label DockPanel.Dock="Left" Content="Type:" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12" Foreground="#777" Padding="0"/>
-                        <Border Style="{StaticResource RoundInputBorder}" DockPanel.Dock="Left" Padding="1">
-                            <ComboBox x:Name="Cb_eventType" Width="170" SelectedIndex="0" VerticalAlignment="Center" Background="White" BorderBrush="Transparent" BorderThickness="0" SelectionChanged="Cb_eventType_SelectionChanged"/>
-                        </Border>
+                        <Label DockPanel.Dock="Left" Content="Type:" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12" Foreground="Black" Padding="0"/>
+                        <ComboBox x:Name="Cb_eventType" Width="170" SelectedIndex="0" VerticalAlignment="Center" Background="White" BorderBrush="#ededed" BorderThickness="1" Padding="6,4" SelectionChanged="Cb_eventType_SelectionChanged"/>
                         <Label DockPanel.Dock="Left" Content="Title:" VerticalAlignment="Center" Margin="12,0,6,0" FontSize="12" Foreground="#777" Padding="0"/>
                         <TextBox x:Name="Tb_eventTitle" Style="{StaticResource RoundTextBox}" DockPanel.Dock="Left" Width="180" VerticalAlignment="Center"/>
                         <Label DockPanel.Dock="Left" Content="Day:" VerticalAlignment="Center" Margin="12,0,6,0" FontSize="12" Foreground="#777" Padding="0"/>
-                        <Border Style="{StaticResource RoundInputBorder}" DockPanel.Dock="Left" Padding="1">
-                            <DatePicker x:Name="Dp_eventDay" VerticalAlignment="Center" Width="130" Background="White" BorderBrush="Transparent" BorderThickness="0"/>
-                        </Border>
+                        <DatePicker x:Name="Dp_eventDay" VerticalAlignment="Center" Width="130" Background="White" BorderBrush="#ededed" BorderThickness="1" Padding="6,4"/>
                         <Label DockPanel.Dock="Left" Content="From:" VerticalAlignment="Center" Margin="12,0,6,0" FontSize="12" Foreground="#777" Padding="0"/>
-                        <Border Style="{StaticResource RoundInputBorder}" DockPanel.Dock="Left" Padding="1">
-                            <ComboBox x:Name="Cb_eventStart" Width="72" VerticalAlignment="Center" Background="White" BorderBrush="Transparent" BorderThickness="0"/>
-                        </Border>
+                        <ComboBox x:Name="Cb_eventStart" Width="72" VerticalAlignment="Center" Background="White" BorderBrush="#ededed" BorderThickness="1" Padding="6,4"/>
                         <Label DockPanel.Dock="Left" Content="To:" VerticalAlignment="Center" Margin="6,0,6,0" FontSize="12" Foreground="#777" Padding="0"/>
-                        <Border Style="{StaticResource RoundInputBorder}" DockPanel.Dock="Left" Padding="1">
-                            <ComboBox x:Name="Cb_eventEnd" Width="72" VerticalAlignment="Center" Background="White" BorderBrush="Transparent" BorderThickness="0"/>
-                        </Border>
+                        <ComboBox x:Name="Cb_eventEnd" Width="72" VerticalAlignment="Center" Background="White" BorderBrush="#ededed" BorderThickness="1" Padding="6,4"/>
                         <Button Style="{StaticResource PrimaryBtn}" DockPanel.Dock="Right" Content="Add event" Padding="12,6" Margin="8,0,0,0" Click="AddCalendarEvent"/>
                     </DockPanel>
                 </Border>
 
                 <!-- Week grid -->
                 <Border Style="{StaticResource CardBorder}" Grid.Row="2" Margin="12,8,12,12" Padding="12">
-                    <Grid x:Name="PlanCalendarGrid">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <!-- Day headers + content generated in code-behind. See RefreshPlanView(). -->
-                    </Grid>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <Grid x:Name="PlanCalendarGrid">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <!-- Day headers + content generated in code-behind. See RefreshPlanView(). -->
+                        </Grid>
+                    </ScrollViewer>
                 </Border>
             </Grid>
 
@@ -740,19 +731,19 @@
                                 <TextBlock Text="Planner" FontWeight="SemiBold" FontSize="18" Margin="0,0,0,4"/>
                                 <TextBlock Text="How many hours per day are realistic, and how far ahead should the planner look?" Foreground="Gray" FontSize="11" Margin="0,0,0,16"/>
 
-                                <TextBlock Text="Max hours per day" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                                <TextBlock Text="Max hours per day" FontSize="12" Foreground="Black" Margin="0,0,0,4"/>
                                 <DockPanel Margin="0,0,0,16" LastChildFill="True">
                                     <TextBlock x:Name="Lbl_maxHours" DockPanel.Dock="Right" Width="50" TextAlignment="Right" Text="3.5h" VerticalAlignment="Center" FontSize="12"/>
                                     <Slider x:Name="Sl_maxHours" Minimum="0.5" Maximum="12" TickFrequency="0.5" IsSnapToTickEnabled="True" ValueChanged="Sl_maxHours_Changed"/>
                                 </DockPanel>
 
-                                <TextBlock Text="Plan horizon (days)" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                                <TextBlock Text="Plan horizon (days)" FontSize="12" Foreground="Black" Margin="0,0,0,4"/>
                                 <DockPanel Margin="0,0,0,16" LastChildFill="True">
                                     <TextBlock x:Name="Lbl_planableDays" DockPanel.Dock="Right" Width="50" TextAlignment="Right" Text="10d" VerticalAlignment="Center" FontSize="12"/>
                                     <Slider x:Name="Sl_planableDays" Minimum="1" Maximum="30" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="Sl_planableDays_Changed"/>
                                 </DockPanel>
 
-                                <TextBlock Text="Work-day boundaries" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                                <TextBlock Text="Work-day boundaries" FontSize="12" Foreground="Black" Margin="0,0,0,4"/>
                                 <TextBlock Text="Tasks are placed only inside this window unless you mark time as Free/Sleep elsewhere." Foreground="Gray" FontSize="11" Margin="0,0,0,10"/>
                                 <Grid Margin="0,0,0,4">
                                     <Grid.ColumnDefinitions>
@@ -760,16 +751,12 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                                        <TextBlock Text="Start" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
-                                        <Border Style="{StaticResource RoundInputBorder}" Padding="1">
-                                            <ComboBox x:Name="Cb_workStart" SelectionChanged="Cb_workHours_Changed" Background="White" BorderBrush="Transparent" BorderThickness="0"/>
-                                        </Border>
+                                        <TextBlock Text="Start" FontSize="12" Foreground="Black" Margin="0,0,0,4"/>
+                                        <ComboBox x:Name="Cb_workStart" SelectionChanged="Cb_workHours_Changed" Background="White" BorderBrush="#ededed" BorderThickness="1" Padding="6,4"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="1" Margin="8,0,0,0">
-                                        <TextBlock Text="End" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
-                                        <Border Style="{StaticResource RoundInputBorder}" Padding="1">
-                                            <ComboBox x:Name="Cb_workEnd" SelectionChanged="Cb_workHours_Changed" Background="White" BorderBrush="Transparent" BorderThickness="0"/>
-                                        </Border>
+                                        <TextBlock Text="End" FontSize="12" Foreground="Black" Margin="0,0,0,4"/>
+                                        <ComboBox x:Name="Cb_workEnd" SelectionChanged="Cb_workHours_Changed" Background="White" BorderBrush="#ededed" BorderThickness="1" Padding="6,4"/>
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>
@@ -781,25 +768,25 @@
                                 <TextBlock Text="Focus timer" FontWeight="SemiBold" FontSize="18" Margin="0,0,0,4"/>
                                 <TextBlock Text="Length of one focus block, breaks, and when to take a long one." Foreground="Gray" FontSize="11" Margin="0,0,0,16"/>
 
-                                <TextBlock Text="Focus block length" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                                <TextBlock Text="Focus block length" FontSize="12" Foreground="Black" Margin="0,0,0,4"/>
                                 <DockPanel Margin="0,0,0,16" LastChildFill="True">
                                     <TextBlock x:Name="Lbl_focusMin" DockPanel.Dock="Right" Width="50" TextAlignment="Right" Text="50min" VerticalAlignment="Center" FontSize="12"/>
                                     <Slider x:Name="Sl_focusMin" Minimum="15" Maximum="90" TickFrequency="5" IsSnapToTickEnabled="True" ValueChanged="Sl_focusMin_Changed"/>
                                 </DockPanel>
 
-                                <TextBlock Text="Short break" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                                <TextBlock Text="Short break" FontSize="12" Foreground="Black" Margin="0,0,0,4"/>
                                 <DockPanel Margin="0,0,0,16" LastChildFill="True">
                                     <TextBlock x:Name="Lbl_shortBreak" DockPanel.Dock="Right" Width="50" TextAlignment="Right" Text="5min" VerticalAlignment="Center" FontSize="12"/>
                                     <Slider x:Name="Sl_shortBreak" Minimum="1" Maximum="15" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="Sl_shortBreak_Changed"/>
                                 </DockPanel>
 
-                                <TextBlock Text="Long break" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                                <TextBlock Text="Long break" FontSize="12" Foreground="Black" Margin="0,0,0,4"/>
                                 <DockPanel Margin="0,0,0,16" LastChildFill="True">
                                     <TextBlock x:Name="Lbl_longBreak" DockPanel.Dock="Right" Width="50" TextAlignment="Right" Text="15min" VerticalAlignment="Center" FontSize="12"/>
                                     <Slider x:Name="Sl_longBreak" Minimum="10" Maximum="30" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="Sl_longBreak_Changed"/>
                                 </DockPanel>
 
-                                <TextBlock Text="Long break every Nth block" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                                <TextBlock Text="Long break every Nth block" FontSize="12" Foreground="Black" Margin="0,0,0,4"/>
                                 <DockPanel Margin="0,0,0,4" LastChildFill="True">
                                     <TextBlock x:Name="Lbl_blocksBeforeLong" DockPanel.Dock="Right" Width="50" TextAlignment="Right" Text="3" VerticalAlignment="Center" FontSize="12"/>
                                     <Slider x:Name="Sl_blocksBeforeLong" Minimum="2" Maximum="6" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="Sl_blocksBeforeLong_Changed"/>
