@@ -1436,9 +1436,9 @@ if (Sl_maxHours != null) Sl_maxHours.Value = Settings.maxHoursPerDay;
                     Text = $"{tasks.Sum(t => t.Hours):F1}h",
                     FontSize = 11,
                     Foreground = Brushes.Gray,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    DockPanel.Dock = Dock.Right
+                    VerticalAlignment = VerticalAlignment.Center
                 };
+                DockPanel.SetDock(hoursText, Dock.Right);
                 headerPanel.Children.Add(hoursText);
                 columnPanel.Children.Add(headerPanel);
 
