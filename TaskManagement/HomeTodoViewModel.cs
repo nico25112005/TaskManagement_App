@@ -81,15 +81,8 @@ namespace TaskManagement
                 .SelectMany(w => w.Tasks)
                 .ToList();
 
-            // "Today" = planned for today, OR deadline today, OR overdue (deadline in past).
-            // We union with the original Task objects by Description so the user sees
-            // one entry per logical task, not per split chunk.
-            var descriptionsToday = todayScheduled.Select(t => StripPartLabel(t.Description)).ToHashSet();
-
+            // "Today" = ONLY tasks scheduled for today via the planner.
             Today = todayScheduled
-                .Concat(Tasks.tasks.Values.Where(t =>
-                    t.Delivery.Date == today ||
-                    (t.Delivery.Date < today && t.Hours > 0)))
                 .DistinctBy(t => StripPartLabel(t.Description))
                 .OrderByDescending(t => t.Importance)
                 .Select(t => new TaskViewModel { Description = t.Description, Hours = t.Hours })

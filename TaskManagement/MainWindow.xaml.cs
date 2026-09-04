@@ -298,19 +298,32 @@ namespace TaskManagement
 
         private void RefreshWeekPlan()
         {
-            // Home panel: only show today's appointments
-            var todayPlan = Tasks.nWeek
-                .Where(kvp => kvp.Value.Date.Date == DateTime.Today)
-                .Select(kvp => new WeekPlanViewModel
-                {
-                    Day = $"{kvp.Value.Date:ddd dd.MM.}",
-                    DayDate = kvp.Value.Date.Date,
-                    PlanedHours = kvp.Value.PlanedHours,
-                    Tasks = kvp.Value.Tasks.Select(task => new TaskViewModel { Description = task.Description, Hours = task.Hours }).ToList()
-                })
-                .ToList();
+            // Home panel: show today's distributed tasks AND calendar events
+            var today = DateTime.Today;
+            var result = new List<WeekPlanViewModel>();
 
-            if (Lv_WeekPlan != null) Lv_WeekPlan.ItemsSource = todayPlan;
+            // Today's distributed tasks
+            var todayWeek = Tasks.nWeek.Values.FirstOrDefault(w => w.Date.Date == today);
+            var todayTasks = todayWeek?.Tasks ?? new List<Task>();
+            var todayHours = todayWeek?.PlanedHours ?? 0;
+
+            // Today's calendar events
+            var todayEvents = CalendarEvents.events.Where(ev => ev.IsOnDay(today)).ToList();
+
+            // Combine: show tasks first, then events
+            var allItems = new List<TaskViewModel>();
+            allItems.AddRange(todayTasks.Select(t => new TaskViewModel { Description = "📋 " + t.Description, Hours = t.Hours }));
+            allItems.AddRange(todayEvents.Select(ev => new TaskViewModel { Description = $"📅 {ev.Title} ({ev.Start:HH:mm}–{ev.End:HH:mm})", Hours = (float)(ev.End - ev.Start).TotalHours }));
+
+            result.Add(new WeekPlanViewModel
+            {
+                Day = $"{today:ddd dd.MM.}",
+                DayDate = today,
+                PlanedHours = todayHours,
+                Tasks = allItems
+            });
+
+            if (Lv_WeekPlan != null) Lv_WeekPlan.ItemsSource = result;
         }
 
         private void WeekPlan_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

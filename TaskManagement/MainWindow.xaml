@@ -424,7 +424,7 @@
 
                     <Button Style="{StaticResource NavButton}" Click="Week_page" x:Name="NavWeek">
                         <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="🗓" FontSize="26" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                            <Image Source="/Icons/Tasks.png" Height="24" Width="24" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,0,0,2"/>
                             <TextBlock Text="Week" FontSize="11" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Button>
