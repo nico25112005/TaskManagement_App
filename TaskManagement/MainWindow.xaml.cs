@@ -931,17 +931,28 @@ namespace TaskManagement
                     dayCol.Children.Add(rightEdge);
                 }
 
-                // Events: position each into its hour-row, span multi-hour events
+                // Events: position each into its hour-row, with a tile height
+                // proportional to its actual duration. 1h maps to one 28px row.
                 foreach (var ev in dayEvents)
                 {
                     var startH = Math.Max(0, ev.Start.Hour);
-                    var endH = Math.Min(24, ev.End.Hour + (ev.End.Minute > 0 ? 1 : 0));
+                    var endH = Math.Min(24, ev.End.Hour);
+                    var duration = ev.End - ev.Start;
                     var span = Math.Max(1, endH - startH);
 
-                    var evTile = BuildCalendarEventTile(ev, day);
+                    // Margins trim the tile to fractional hours. A 30-minute event
+                    // starting on the hour gets a bottom margin of half a row.
+                    const double rowHeight = 28.0;
+                    var startOffset = (ev.Start.Minute / 60.0) * rowHeight;
+                    var endOffset = (ev.End.Minute / 60.0) * rowHeight;
+                    var tileHeight = duration.TotalHours * rowHeight;
+                    var topMargin = startOffset;
+                    var bottomMargin = Math.Max(0, span * rowHeight - endOffset - tileHeight);
+
+                    var evTile = BuildCalendarEventTile(ev, day, topMargin, bottomMargin, tileHeight);
                     Grid.SetRow(evTile, startH);
                     Grid.SetRowSpan(evTile, span);
-                    Grid.SetColumn(evTile, 0); // always column 0 inside the day-col
+                    Grid.SetColumn(evTile, 0);
                     Grid.SetZIndex(evTile, 1);
                     dayCol.Children.Add(evTile);
                 }
@@ -1012,12 +1023,12 @@ namespace TaskManagement
             };
         }
 
-        private Border BuildCalendarEventTile(CalendarEvent ev, DateTime day)
+        private Border BuildCalendarEventTile(CalendarEvent ev, DateTime day, double topMargin, double bottomMargin, double desiredHeight)
         {
             var tile = new Border
             {
-                CornerRadius = new CornerRadius(3),
-                Margin = new Thickness(2, 1, 2, 1),
+                CornerRadius = new CornerRadius(4),
+                Margin = new Thickness(2, topMargin, 2, bottomMargin),
                 Padding = new Thickness(4, 2, 4, 2),
                 Background = ColorForEventType(ev.Type),
                 BorderBrush = new SolidColorBrush(Color.FromRgb(0x80, 0x80, 0x80)),
@@ -1027,36 +1038,10 @@ namespace TaskManagement
                 ToolTip = $"Right-click or press ✕ to remove '{ev.Title}'"
             };
 
-            var content = new DockPanel { Margin = new Thickness(0) };
+            var content = new DockPanel { Margin = new Thickness(0), LastChildFill = true };
             tile.Child = content;
 
-            // Remove button (top-right)
-            var removeBtn = new Button
-            {
-                Content = "✕",
-                Padding = new Thickness(4, 0, 4, 0),
-                Margin = new Thickness(4, 0, 0, 0),
-                FontSize = 10,
-                Background = Brushes.Transparent,
-                BorderBrush = Brushes.Transparent,
-                Cursor = System.Windows.Input.Cursors.Hand,
-                Tag = ev,
-                ToolTip = "Remove event"
-            };
-            removeBtn.Click += (s, e2) =>
-            {
-                e2.Handled = true;
-                var result = MessageBox.Show(
-                    $"Remove '{ev.Title}' ({ev.Start:ddd HH:mm}–{ev.End:HH:mm})?",
-                    "Remove calendar event",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
-                if (result == MessageBoxResult.Yes) RemoveCalendarEvent(ev);
-            };
-            DockPanel.SetDock(removeBtn, Dock.Top);
-            content.Children.Add(removeBtn);
-
-            // Title + time stack
+            // Title + time stack fills remaining space
             var textStack = new StackPanel();
             textStack.Children.Add(new TextBlock
             {
@@ -1072,6 +1057,33 @@ namespace TaskManagement
                 Opacity = 0.75
             });
             content.Children.Add(textStack);
+
+            // Remove button on the right side of the tile
+            var removeBtn = new Button
+            {
+                Content = "✕",
+                Padding = new Thickness(4, 0, 4, 0),
+                Margin = new Thickness(4, 0, 0, 0),
+                FontSize = 10,
+                Background = Brushes.Transparent,
+                BorderBrush = Brushes.Transparent,
+                Cursor = System.Windows.Input.Cursors.Hand,
+                Tag = ev,
+                ToolTip = "Remove event",
+                VerticalAlignment = VerticalAlignment.Top
+            };
+            removeBtn.Click += (s, e2) =>
+            {
+                e2.Handled = true;
+                var result = MessageBox.Show(
+                    $"Remove '{ev.Title}' ({ev.Start:ddd HH:mm}–{ev.End:HH:mm})?",
+                    "Remove calendar event",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+                if (result == MessageBoxResult.Yes) RemoveCalendarEvent(ev);
+            };
+            DockPanel.SetDock(removeBtn, Dock.Right);
+            content.Children.Add(removeBtn);
 
             // Right-click to remove
             tile.MouseRightButtonDown += (s, e) =>

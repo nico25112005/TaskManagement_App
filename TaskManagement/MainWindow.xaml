@@ -415,13 +415,34 @@
 
                         <ListView.ItemTemplate >
                             <DataTemplate>
-                                <DockPanel Margin="4,3">
-                                    <Button DockPanel.Dock="Right" Content="Delete" Padding="8,2" Margin="8,0,0,0" Click="DeleteTodo_Click" Tag="{Binding}"/>
-                                    <Button DockPanel.Dock="Right" Content="✓ Done" Padding="8,2" Margin="4,0,0,0" Click="MarkTodoDone_Click" Tag="{Binding}" Background="#509C6E" Foreground="White"/>
-                                    <Label DockPanel.Dock="Right" Content="{Binding Hours, StringFormat={}{0:F1}h}" FontSize="11" Foreground="Gray" Padding="0" VerticalContentAlignment="Center"/>
-                                    <Label DockPanel.Dock="Right" Content="{Binding Delivery, StringFormat='due {0:dd.MM.}'}" FontSize="11" Foreground="Gray" Margin="8,0" Padding="0" VerticalContentAlignment="Center"/>
-                                    <Label Content="{Binding Description}" VerticalContentAlignment="Center"/>
-                                </DockPanel>
+                                <Border BorderBrush="#C9C9C9" BorderThickness="1.5" CornerRadius="4" Padding="5" Margin="10,3,0,3" Background="#ffffff">
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition/>
+                                            <RowDefinition/>
+                                        </Grid.RowDefinitions>
+
+                                        <Label Content="Description:" Margin="15,0" Grid.Column="0" Grid.Row="0" FontWeight="SemiBold" FontSize="11" Foreground="Gray"/>
+                                        <Label Content="Delivery Date:" Margin="15,0" Grid.Column="1" Grid.Row="0" FontWeight="SemiBold" FontSize="11" Foreground="Gray"/>
+                                        <Label Content="Importance:" Margin="15,0" Grid.Column="2" Grid.Row="0" FontWeight="SemiBold" FontSize="11" Foreground="Gray"/>
+                                        <Label Content="Hours:" Margin="15,0" Grid.Column="3" Grid.Row="0" FontWeight="SemiBold" FontSize="11" Foreground="Gray"/>
+                                        <Label Content="Weighting:" Margin="15,0" Grid.Column="4" Grid.Row="0" FontWeight="SemiBold" FontSize="11" Foreground="Gray"/>
+
+                                        <Label Content="{Binding Description}" Style="{StaticResource Lv_item}" Grid.Column="0" Grid.Row="1" FontSize="12"/>
+                                        <Label Content="{Binding Delivery, StringFormat='{}{0:dd.MM.yyyy}'}" Style="{StaticResource Lv_item}" Grid.Column="1" Grid.Row="1" FontSize="12"/>
+                                        <Label Content="{Binding Importance}" Style="{StaticResource Lv_item}" Grid.Column="2" Grid.Row="1" FontSize="12"/>
+                                        <Label Content="{Binding Hours}" Style="{StaticResource Lv_item}" Grid.Column="3" Grid.Row="1" FontSize="12"/>
+                                        <Label Content="{Binding AllocationWeighting, StringFormat='{}{0:F0}'}" Style="{StaticResource Lv_item}" Grid.Column="4" Grid.Row="1" FontSize="12"/>
+                                    </Grid>
+                                </Border>
                             </DataTemplate>
                         </ListView.ItemTemplate>
 
