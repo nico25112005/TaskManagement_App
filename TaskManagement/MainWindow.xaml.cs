@@ -1229,7 +1229,7 @@ if (Sl_maxHours != null) Sl_maxHours.Value = Settings.maxHoursPerDay;
 
             var day = Dp_eventDay.SelectedDate.Value.Date;
             var startH = Cb_eventStart.SelectedIndex;
-            var endH = Cb_eventEnd.SelectedIndex;
+            var endH = Cb_eventEnd.SelectedIndex + 1;   // End combo starts at 01:00, so index 0 = hour 1
             if (endH <= startH) return;
 
             var ev = new CalendarEvent
