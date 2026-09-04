@@ -1447,8 +1447,8 @@ if (Sl_maxHours != null) Sl_maxHours.Value = Settings.maxHoursPerDay;
                         BorderBrush = (Brush)FindResource("BorderBrush"),
                         BorderThickness = new Thickness(1),
                         CornerRadius = new CornerRadius(6),
-                        Padding = new Thickness(8, 4),
-                        Margin = new Thickness(0, 2),
+                        Padding = new Thickness(8, 4, 8, 4),
+                        Margin = new Thickness(0, 2, 0, 2),
                         Tag = task
                     };
                     chip.MouseLeftButtonDown += WeekDnd_ChipMouseLeftButtonDown;
