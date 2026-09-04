@@ -381,6 +381,9 @@ namespace TaskManagement
 
         private void Cb_eventType_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // During InitializeComponent the controls may not be ready yet. Guard against it.
+            if (Tb_eventTitle == null) return;
+
             // Auto-fill "Work" when Work hours is selected, but only if the user hasn't
             // already typed a meaningful title. Don't overwrite real user input.
             if (Cb_eventType.SelectedIndex == (int)CalendarEventType.WorkHours)
