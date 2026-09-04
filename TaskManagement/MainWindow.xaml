@@ -13,118 +13,321 @@
 
         <local:TaskWidthConverter x:Key="TaskWidthConverter"/>
 
-        <Style x:Key="MenuButtons" TargetType="Button">
-            <Setter Property="Foreground" Value="Black"/>
-            <Setter Property="Margin" Value="10,4"/>
-            <Setter Property="Height" Value="75"/>
-        </Style>
-        <Style x:Key="Label"  TargetType="Control">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="FontFamily" Value="Bahnschrift"/>
+        <!-- ===== COLOR BRUSHES ===== -->
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#5E97D9"/>
+        <SolidColorBrush x:Key="DangerBrush" Color="#e35d48"/>
+        <SolidColorBrush x:Key="HighlightBrush" Color="#FFC941"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="#509C6E"/>
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#ededed"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="#ffffff"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#969696"/>
+        <SolidColorBrush x:Key="BorderLightBrush" Color="#abadb3"/>
+        <SolidColorBrush x:Key="HoverBrush" Color="#FFEFD9"/>
+
+        <!-- ===== FONT FAMILY ===== -->
+        <FontFamily x:Key="AppFont">Bahnschrift</FontFamily>
+
+        <!-- ===== IMPLICIT BASE STYLES ===== -->
+        <Style TargetType="Label">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
             <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Background" Value="Transparent"/>
         </Style>
-        <Style TargetType="Control" x:Key="Color">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="FontSize" Value="15"/>
-            <Setter Property="Padding" Value="5"/>
-            <Setter Property="FontFamily" Value="Bahnschrift"/>
+        <Style TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
         </Style>
-
-        <Style TargetType="Control" x:Key="Border" BasedOn="{StaticResource Color}">
-            <Setter Property="BorderBrush" Value="#969696"/>
-            <Setter Property="BorderThickness" Value="1"/>
-        </Style>
-
-        <Style TargetType="Control" x:Key="Lv_item">
-            <Setter Property="BorderBrush" Value="#969696"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Margin" Value="15,0"/>
-        </Style>
-
-        <!-- Modern global button style -->
-        <Style TargetType="Button" x:Key="RoundButton">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="#969696"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="FontFamily" Value="Bahnschrift"/>
+        <Style TargetType="Button">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
             <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+        <Style TargetType="DatePicker">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+        <Style TargetType="Slider">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+        </Style>
+        <Style TargetType="ToggleButton">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+        </Style>
+
+        <!-- ===== NAMED STYLES ===== -->
+
+        <!-- Sidebar nav button -->
+        <Style x:Key="NavButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="3,0,0,0"/>
+            <Setter Property="Padding" Value="0,10"/>
+            <Setter Property="Margin" Value="0,2,0,0"/>
+            <Setter Property="Height" Value="64"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#555"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                                BorderBrush="{TemplateBinding BorderBrush}" 
-                                BorderThickness="{TemplateBinding BorderThickness}" 
-                                CornerRadius="10"
-                                Padding="{TemplateBinding Padding}">
+                        <Border x:Name="navBorder" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="0,8,8,0"
+                                Margin="0,0,6,0">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="navBorder" Property="Background" Value="{StaticResource HoverBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
 
-        <!-- Modern text input style -->
-        <Style TargetType="TextBox" x:Key="RoundTextBox">
+        <!-- Active nav button (blue left border) -->
+        <Style x:Key="NavButtonActive" TargetType="Button" BasedOn="{StaticResource NavButton}">
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="#222"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <!-- Primary button (blue bg, white text) -->
+        <Style x:Key="PrimaryBtn" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="btnBorder" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="btnBorder" Property="Opacity" Value="0.88"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="btnBorder" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Secondary button (white bg, border) -->
+        <Style x:Key="SecondaryBtn" TargetType="Button">
             <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="#969696"/>
+            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="10,6"/>
-            <Setter Property="FontFamily" Value="Bahnschrift"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="btnBorder" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="btnBorder" Property="Background" Value="{StaticResource HoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="btnBorder" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Danger button (red bg) -->
+        <Style x:Key="DangerBtn" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource DangerBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource DangerBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="btnBorder" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="btnBorder" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Small icon button -->
+        <Style x:Key="IconBtn" TargetType="Button" BasedOn="{StaticResource SecondaryBtn}">
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+
+        <!-- Round TextBox (CornerRadius=6) -->
+        <Style x:Key="RoundTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#ededed"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
-                        <Border Background="{TemplateBinding Background}" 
-                                BorderBrush="{TemplateBinding BorderBrush}" 
-                                BorderThickness="{TemplateBinding BorderThickness}" 
-                                CornerRadius="17">
-                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" 
+                        <Border x:Name="txtBorder" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"
                                           VerticalAlignment="Center"/>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="txtBorder" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                <Setter TargetName="txtBorder" Property="BorderThickness" Value="1.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
 
-        <!-- Modern DatePicker/ComboBox host style -->
-        <Style TargetType="Border" x:Key="RoundInputBorder">
-            <Setter Property="CornerRadius" Value="17"/>
+        <!-- Round input border for DatePicker/ComboBox -->
+        <Style x:Key="RoundInputBorder" TargetType="Border">
+            <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="#969696"/>
+            <Setter Property="BorderBrush" Value="#ededed"/>
             <Setter Property="BorderThickness" Value="1"/>
         </Style>
 
-        <!-- Modern label value display -->
-        <Style TargetType="Label" x:Key="RoundValueLabel" BasedOn="{StaticResource Label}">
+        <!-- Card border -->
+        <Style x:Key="CardBorder" TargetType="Border">
             <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="#969696"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
-
-        <Style TargetType="Border" x:Key="CardBorder">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="#969696"/>
+            <Setter Property="BorderBrush" Value="#ededed"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="10"/>
         </Style>
 
-        <Style TargetType="Border" x:Key="HeaderBorder" BasedOn="{StaticResource CardBorder}">
-            <Setter Property="CornerRadius" Value="10,10,0,0"/>
-            <Setter Property="BorderThickness" Value="1,1,1,0"/>
-            <Setter Property="Padding" Value="6,4"/>
+        <!-- Section header label -->
+        <Style x:Key="SectionHeader" TargetType="Label">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="Padding" Value="0,0,0,4"/>
         </Style>
 
-        <Style TargetType="ListView" x:Key="RoundListView">
+        <!-- Field label -->
+        <Style x:Key="FieldLabel" TargetType="Label">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#777"/>
+            <Setter Property="Padding" Value="0,0,0,2"/>
+            <Setter Property="Margin" Value="0,10,0,0"/>
+        </Style>
+
+        <!-- Value display label -->
+        <Style x:Key="ValueLabel" TargetType="Label">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="#969696"/>
+        </Style>
+
+        <!-- Borderless ListView -->
+        <Style x:Key="CardListView" TargetType="ListView">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+        </Style>
+
+        <!-- ListView item card -->
+        <Style x:Key="LvItemCard" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#ededed"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Margin" Value="0,3"/>
+        </Style>
+
+        <!-- Legacy compat styles referenced by code-behind lookups -->
+        <Style x:Key="MenuButtons" TargetType="Button">
+            <Setter Property="Foreground" Value="#555"/>
+            <Setter Property="Margin" Value="0,2,0,0"/>
+            <Setter Property="Height" Value="64"/>
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+        </Style>
+        <Style x:Key="Label" TargetType="Control">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        <Style x:Key="Color" TargetType="Control">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="0,2"/>
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+        </Style>
+        <Style x:Key="Border" TargetType="Control" BasedOn="{StaticResource Color}">
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
         </Style>
+        <Style x:Key="Lv_item" TargetType="Control">
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+        </Style>
+        <Style x:Key="RoundButton" TargetType="Button" BasedOn="{StaticResource SecondaryBtn}">
+            <Setter Property="Padding" Value="14,6"/>
+        </Style>
+        <Style x:Key="RoundValueLabel" TargetType="Label" BasedOn="{StaticResource ValueLabel}"/>
+        <Style x:Key="RoundListView" TargetType="ListView" BasedOn="{StaticResource CardListView}"/>
 
+        <!-- Legacy button template triggers (referenced by name in code-behind) -->
         <SolidColorBrush x:Key="Button.MouseOver.Background" Color="Transparent"/>
         <SolidColorBrush x:Key="Button.MouseOver.Border" Color="#FF3C7FB1"/>
         <SolidColorBrush x:Key="Button.Pressed.Background" Color="#FFC4E5F6"/>
@@ -133,12 +336,12 @@
         <SolidColorBrush x:Key="Button.Disabled.Border" Color="#FFADB2B5"/>
         <SolidColorBrush x:Key="Button.Disabled.Foreground" Color="#FF838383"/>
         <ControlTemplate x:Key="ButtonTemplate1" TargetType="{x:Type ButtonBase}">
-            <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="true">
+            <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="true" CornerRadius="8">
                 <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
             </Border>
             <ControlTemplate.Triggers>
                 <Trigger Property="Button.IsDefaulted" Value="true">
-                    <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                    <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource SystemColors.HighlightBrushKey}"/>
                 </Trigger>
                 <Trigger Property="IsMouseOver" Value="true">
                     <Setter Property="Background" TargetName="border" Value="{StaticResource Button.MouseOver.Background}"/>
@@ -156,195 +359,174 @@
             </ControlTemplate.Triggers>
         </ControlTemplate>
 
-
-
     </Window.Resources>
 
-    <Grid Background="#f3f3f3">
+    <Grid Background="#ededed">
         <Grid.RowDefinitions>
-            <RowDefinition Height="40"/>
+            <RowDefinition Height="8"/>
             <RowDefinition/>
-            <RowDefinition Height="26"/>
+            <RowDefinition Height="32"/>
         </Grid.RowDefinitions>
 
-        <DockPanel Grid.Column="0" Background="#ffffff">
-
-
-        </DockPanel>
-
+        <!-- Top accent strip -->
+        <Border Grid.Row="0" Background="{StaticResource PrimaryBrush}" CornerRadius="0,0,0,0"/>
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="88"/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Background="#ffffff" BorderBrush="#969696" BorderThickness="0,0,1,0" CornerRadius="0,10,10,0" Margin="4,5,0,5">
-                <StackPanel>
-                <Button Template="{DynamicResource ButtonTemplate1}" Style="{StaticResource MenuButtons}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0.5" Margin="10,20,10,0" Click="Home_page">
-                    <StackPanel>
-                        <Image Source="/Icons/Home_mine.png" Height="35" Width="35" Stretch="Uniform"/>
-                        <Label Style="{StaticResource Label}" Background="Transparent" Content="Home" HorizontalAlignment="Center"/>
-                    </StackPanel>
+            <!-- ===== SIDEBAR ===== -->
+            <Border Grid.Column="0" Background="White" BorderBrush="#ededed" BorderThickness="0,0,1,0" Margin="0,0,0,0">
+                <StackPanel Margin="0,16,0,0">
+                    <!-- App icon / logo -->
+                    <Image Source="/Icons/Home_mine.png" Height="28" Width="28" Stretch="Uniform" Margin="0,0,0,16" HorizontalAlignment="Center"/>
 
-                </Button>
+                    <Button Style="{StaticResource NavButtonActive}" Click="Home_page" Margin="0,0,0,2">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="🏠" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                            <TextBlock Text="Home" FontSize="11" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
 
-                <Button Style="{StaticResource MenuButtons}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0.5" Click="Todo_page">
-                    <StackPanel>
-                        <Image Source="/icons/Tasks.png" Height="35" Width="35" Stretch="Uniform"/>
-                        <Label Style="{StaticResource Label}" Background="Transparent" Content="To-do" HorizontalAlignment="Center"/>
-                    </StackPanel>
+                    <Button Style="{StaticResource NavButton}" Click="Todo_page">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="✅" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                            <TextBlock Text="Todo" FontSize="11" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
 
-                </Button>
+                    <Button Style="{StaticResource NavButton}" Click="Plan_page">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="📅" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                            <TextBlock Text="Plan" FontSize="11" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
 
-                <Button Style="{StaticResource MenuButtons}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0.5" Click="Plan_page">
-                    <StackPanel>
-                        <Image Source="/icons/Todo.png" Height="35" Width="35" Stretch="Uniform"/>
-                        <Label Style="{StaticResource Label}" Background="Transparent" Content="Plan" HorizontalAlignment="Center"/>
-                    </StackPanel>
+                    <Button Style="{StaticResource NavButton}" Click="Settings_page">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="⚙️" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                            <TextBlock Text="Settings" FontSize="11" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
 
-                </Button>
-
-                <Button Style="{StaticResource MenuButtons}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0.5" Click="Settings_page">
-                    <StackPanel>
-                        <Image Source="/icons/Settings.png" Height="35" Width="35" Stretch="Uniform"/>
-                        <Label Style="{StaticResource Label}" Background="Transparent" Content="Settings" HorizontalAlignment="Center"/>
-                    </StackPanel>
-
-                </Button>
-            </StackPanel>
-        </Border>
-
-            <!--Home-->
+            <!-- ===== HOME PAGE ===== -->
             <Grid Grid.Column="1" x:Name="Home" Visibility="Visible">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
 
-                <!--Left Side-->
-                <Grid Margin="10">
-
+                <!-- Left side -->
+                <Grid Margin="12,12,6,12">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
 
-                    <Border Style="{StaticResource CardBorder}" Margin="0,0,0,10" Grid.Row="0" Padding="10">
+                    <!-- Timer card -->
+                    <Border Style="{StaticResource CardBorder}" Grid.Row="0" Margin="0,0,0,12" Padding="16">
                         <StackPanel>
-                            <Label Style="{StaticResource Label}" x:Name="Timer_Label" DockPanel.Dock="Top" BorderBrush="#969696" BorderThickness="1,1,1,0" VerticalAlignment="Center" HorizontalContentAlignment="Center" Content="Timer">
-                            </Label>
-                            <Label x:Name="TimerDisplay" Style="{StaticResource RoundValueLabel}" DockPanel.Dock="Top" BorderBrush="#969696" BorderThickness="1,0,1,0" Height="60" Content="00:00" FontSize="30">
-                            </Label>
-                            <Label x:Name="TimerState" Style="{StaticResource RoundValueLabel}" DockPanel.Dock="Top" BorderBrush="#969696" BorderThickness="1,0,1,1" Height="22" Content="Ready" FontSize="11" Foreground="Gray">
-                            </Label>
-                            <DockPanel DockPanel.Dock="Top" LastChildFill="False" Margin="0,8,0,0">
-                                <Button x:Name="BtnTimerStart" Style="{StaticResource RoundButton}" Content="Start" Height="40" Width="80" Margin="20,4,4,4" DockPanel.Dock="Left" Click="Timer_Start"/>
-                                <Button x:Name="BtnTimerPause" Style="{StaticResource RoundButton}" Content="Pause" Height="40" Width="80" Margin="4" DockPanel.Dock="Left" Click="Timer_Pause" IsEnabled="False"/>
-                                <Button x:Name="BtnTimerStop" Style="{StaticResource RoundButton}" Content="Stop" Height="40" Width="80" Margin="4" DockPanel.Dock="Left" Click="Timer_Stop" IsEnabled="False"/>
-                                <Button x:Name="BtnTimerSkip" Style="{StaticResource RoundButton}" Content="Skip break" Height="40" Width="80" Margin="4,4,20,4" DockPanel.Dock="Left" Click="Timer_SkipBreak" IsEnabled="False"/>
+                            <Label Style="{StaticResource SectionHeader}" x:Name="Timer_Label" Content="⏱ Timer" HorizontalAlignment="Center" Padding="0" Margin="0,0,0,8"/>
+                            <Label x:Name="TimerDisplay" Style="{StaticResource ValueLabel}" Content="00:00" FontSize="36" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" Padding="0" Margin="0,0,0,2"/>
+                            <Label x:Name="TimerState" Style="{StaticResource ValueLabel}" Content="Ready" FontSize="11" Foreground="Gray" Padding="0" Margin="0,0,0,10"/>
+                            <DockPanel LastChildFill="False" Margin="0,4,0,0">
+                                <Button x:Name="BtnTimerStart" Style="{StaticResource PrimaryBtn}" Content="Start" Width="76" Height="36" Margin="0,0,6,0" DockPanel.Dock="Left" Click="Timer_Start"/>
+                                <Button x:Name="BtnTimerPause" Style="{StaticResource SecondaryBtn}" Content="Pause" Width="76" Height="36" Margin="0,0,6,0" DockPanel.Dock="Left" Click="Timer_Pause" IsEnabled="False"/>
+                                <Button x:Name="BtnTimerStop" Style="{StaticResource SecondaryBtn}" Content="Stop" Width="76" Height="36" Margin="0,0,6,0" DockPanel.Dock="Left" Click="Timer_Stop" IsEnabled="False"/>
+                                <Button x:Name="BtnTimerSkip" Style="{StaticResource SecondaryBtn}" Content="Skip break" Width="80" Height="36" Margin="0" DockPanel.Dock="Left" Click="Timer_SkipBreak" IsEnabled="False"/>
                             </DockPanel>
-                            <TextBlock x:Name="Lbl_focusStats" HorizontalAlignment="Center" FontSize="11" Foreground="Gray" Margin="0,4,0,0" Text="Loading focus stats..."/>
+                            <TextBlock x:Name="Lbl_focusStats" HorizontalAlignment="Center" FontSize="11" Foreground="Gray" Margin="0,8,0,0" Text="Loading focus stats..."/>
                         </StackPanel>
                     </Border>
 
-
-                    <Border Style="{StaticResource CardBorder}" Grid.Row="1" Margin="0,10,0,0" Padding="10">
+                    <!-- To-do card -->
+                    <Border Style="{StaticResource CardBorder}" Grid.Row="1" Margin="0,0,0,0" Padding="16">
                         <DockPanel>
-                            <Label Style="{StaticResource Label}" x:Name="Todo_Label" Content="To-do" BorderBrush="#969696" BorderThickness="1,1,1,0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" >
-                            </Label>
-                            <Label x:Name="TodoLoadLabel" Style="{StaticResource Label}" BorderBrush="#969696" BorderThickness="0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" FontSize="11" Padding="0,0,0,4" Content=""/>
+                            <Label Style="{StaticResource SectionHeader}" x:Name="Todo_Label" Content="📋 To-do" DockPanel.Dock="Top" Padding="0" Margin="0,0,0,2"/>
+                            <Label x:Name="TodoLoadLabel" Style="{StaticResource FieldLabel}" Content="" DockPanel.Dock="Top" Padding="0" Margin="0,0,0,4" Foreground="Gray" FontSize="11"/>
 
-                            <!-- Today section -->
-                            <Label Style="{StaticResource Label}" x:Name="TodayHeader" Content="Today" DockPanel.Dock="Top" BorderBrush="#969696" BorderThickness="1,0,1,0" Padding="6,4" FontWeight="SemiBold" FontSize="12">
-                            </Label>
-                            <ListView Style="{StaticResource RoundListView}" BorderThickness="1,0,1,1" x:Name="Lv_TodayTodos" DockPanel.Dock="Top" MaxHeight="240" Visibility="Collapsed">
-
-                                <ListView.ItemTemplate >
+                            <!-- Today -->
+                            <Label Style="{StaticResource FieldLabel}" x:Name="TodayHeader" Content="Today" DockPanel.Dock="Top" FontWeight="SemiBold" FontSize="12" Padding="0,2" Margin="0,6,0,2"/>
+                            <ListView Style="{StaticResource CardListView}" x:Name="Lv_TodayTodos" DockPanel.Dock="Top" MaxHeight="240" Visibility="Collapsed">
+                                <ListView.ItemTemplate>
                                     <DataTemplate>
-                                        <Border BorderBrush="#969696" BorderThickness="1" CornerRadius="10" Padding="6,4" Margin="4,2" Background="White">
+                                        <Border Style="{StaticResource LvItemCard}">
                                             <DockPanel>
+                                                <TextBlock Text="●" Foreground="{StaticResource PrimaryBrush}" FontSize="10" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                                 <Label Content="{Binding Description}" FontWeight="SemiBold" FontSize="12" Padding="0"/>
-                                                <Label Content="{Binding Hours, StringFormat={}{0:F1}h}" DockPanel.Dock="Right" FontSize="11" Opacity="0.7" Padding="4,0,0,0"/>
+                                                <Label Content="{Binding Hours, StringFormat={}{0:F1}h}" DockPanel.Dock="Right" FontSize="11" Foreground="Gray" Padding="4,0,0,0"/>
                                             </DockPanel>
                                         </Border>
                                     </DataTemplate>
                                 </ListView.ItemTemplate>
-
                             </ListView>
-                            <TextBlock x:Name="Tb_TodayEmpty" DockPanel.Dock="Top" Text="Nothing on your plate for today." FontSize="12" Foreground="Gray" Margin="12,8,12,8" TextWrapping="Wrap" Visibility="Collapsed"/>
+                            <TextBlock x:Name="Tb_TodayEmpty" DockPanel.Dock="Top" Text="Nothing on your plate for today." FontSize="12" Foreground="Gray" Margin="8,6,8,6" TextWrapping="Wrap" Visibility="Collapsed"/>
 
-                            <!-- Upcoming section -->
-                            <Label Style="{StaticResource Label}" Content="Upcoming" DockPanel.Dock="Top" BorderBrush="#969696" BorderThickness="1,0,1,0" Padding="6,4" FontWeight="SemiBold" FontSize="12" Margin="0,8,0,0">
-                            </Label>
-                            <ListView Style="{StaticResource RoundListView}" BorderThickness="1,0,1,1" x:Name="Lv_UpcomingTodos" DockPanel.Dock="Top" Visibility="Collapsed">
-
-                                <ListView.ItemTemplate >
+                            <!-- Upcoming -->
+                            <Label Style="{StaticResource FieldLabel}" Content="Upcoming" DockPanel.Dock="Top" FontWeight="SemiBold" FontSize="12" Padding="0,2" Margin="0,8,0,2"/>
+                            <ListView Style="{StaticResource CardListView}" x:Name="Lv_UpcomingTodos" DockPanel.Dock="Top" Visibility="Collapsed">
+                                <ListView.ItemTemplate>
                                     <DataTemplate>
-                                        <Border BorderBrush="#969696" BorderThickness="1" CornerRadius="10" Padding="6,4" Margin="4,2" Background="White">
+                                        <Border Style="{StaticResource LvItemCard}">
                                             <DockPanel>
+                                                <TextBlock Text="○" Foreground="{StaticResource HighlightBrush}" FontSize="10" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                                 <Label Content="{Binding Description}" FontSize="12" Padding="0"/>
-                                                <Label Content="{Binding Hours, StringFormat={}{0:F1}h}" DockPanel.Dock="Right" FontSize="11" Opacity="0.7" Padding="4,0,0,0"/>
+                                                <Label Content="{Binding Hours, StringFormat={}{0:F1}h}" DockPanel.Dock="Right" FontSize="11" Foreground="Gray" Padding="4,0,0,0"/>
                                             </DockPanel>
                                         </Border>
                                     </DataTemplate>
                                 </ListView.ItemTemplate>
-
                             </ListView>
-                            <TextBlock x:Name="Tb_UpcomingEmpty" DockPanel.Dock="Top" Text="No upcoming tasks. You're either all caught up or no delivery dates are set." FontSize="12" Foreground="Gray" Margin="12,8,12,8" TextWrapping="Wrap" Visibility="Collapsed"/>
+                            <TextBlock x:Name="Tb_UpcomingEmpty" DockPanel.Dock="Top" Text="No upcoming tasks. You're either all caught up or no delivery dates are set." FontSize="12" Foreground="Gray" Margin="8,6,8,6" TextWrapping="Wrap" Visibility="Collapsed"/>
 
-                            <!-- Recently done section -->
-                            <Label Style="{StaticResource Label}" Content="Recently done" DockPanel.Dock="Top" BorderBrush="#969696" BorderThickness="1,0,1,0" Padding="6,4" FontWeight="SemiBold" FontSize="12" Margin="0,8,0,0" Foreground="#509C6E">
-                            </Label>
-                            <ListView Style="{StaticResource RoundListView}" BorderThickness="1,0,1,1" x:Name="Lv_DoneTodos" DockPanel.Dock="Top" MaxHeight="160">
-
-                                <ListView.ItemTemplate >
+                            <!-- Recently done -->
+                            <Label Style="{StaticResource FieldLabel}" Content="Recently done" DockPanel.Dock="Top" FontWeight="SemiBold" FontSize="12" Padding="0,2" Margin="0,8,0,2" Foreground="{StaticResource SuccessBrush}"/>
+                            <ListView Style="{StaticResource CardListView}" x:Name="Lv_DoneTodos" DockPanel.Dock="Top" MaxHeight="160">
+                                <ListView.ItemTemplate>
                                     <DataTemplate>
-                                        <Border BorderBrush="#969696" BorderThickness="1" CornerRadius="10" Padding="6,4" Margin="4,2" Background="White">
+                                        <Border Style="{StaticResource LvItemCard}">
                                             <DockPanel>
-                                                <Button DockPanel.Dock="Right" Content="↶ Undo" Padding="6,2" Margin="8,0,0,0" FontSize="10" Click="UndoDoneTodo_Click" Tag="{Binding}" Background="Transparent" BorderBrush="#969696" Style="{StaticResource RoundButton}"/>
+                                                <Button DockPanel.Dock="Right" Content="↶ Undo" Style="{StaticResource IconBtn}" Padding="6,2" Margin="8,0,0,0" FontSize="10" Click="UndoDoneTodo_Click" Tag="{Binding}"/>
                                                 <Label DockPanel.Dock="Right" Content="{Binding DoneAtLabel}" FontSize="10" Foreground="Gray" Padding="4,0,0,0" VerticalContentAlignment="Center"/>
-                                                <TextBlock Text="{Binding Description}" FontSize="12" Padding="0" TextDecorations="Strikethrough" Foreground="Gray" VerticalAlignment="Center"/>
+                                                <TextBlock Text="✓" Foreground="{StaticResource SuccessBrush}" FontSize="12" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                <TextBlock Text="{Binding Description}" FontSize="12" TextDecorations="Strikethrough" Foreground="Gray" VerticalAlignment="Center"/>
                                             </DockPanel>
                                         </Border>
                                     </DataTemplate>
                                 </ListView.ItemTemplate>
-
                             </ListView>
-
                         </DockPanel>
                     </Border>
-
                 </Grid>
 
-                <!--Right Side-->
-                <Grid Grid.Column="1" Margin="10">
+                <!-- Right side -->
+                <Grid Grid.Column="1" Margin="6,12,12,12">
                     <Grid.RowDefinitions>
                         <RowDefinition/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
 
-                    <Border Style="{StaticResource CardBorder}" Grid.Row="0" Margin="0,0,0,10" Padding="10">
+                    <!-- Termine card -->
+                    <Border Style="{StaticResource CardBorder}" Grid.Row="0" Margin="0,0,0,12" Padding="16">
                         <DockPanel>
-                            <DockPanel DockPanel.Dock="Top" LastChildFill="True">
-                                <Button Style="{StaticResource RoundButton}" Content="Redistribute" Padding="10,2" Margin="4,2" DockPanel.Dock="Right" Click="Redistribute_Click" ToolTip="Re-run task distribution (respects current CalendarEvents)"/>
-                                <Label Style="{StaticResource Label}" x:Name="Termine_Label" Content="Termine" BorderBrush="#969696" BorderThickness="1,1,1,0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" >
-                                </Label>
+                            <DockPanel DockPanel.Dock="Top" LastChildFill="True" Margin="0,0,0,8">
+                                <Button Style="{StaticResource SecondaryBtn}" Content="Redistribute" Padding="10,4" Margin="0,0,0,0" DockPanel.Dock="Right" Click="Redistribute_Click" ToolTip="Re-run task distribution (respects current CalendarEvents)"/>
+                                <Label Style="{StaticResource SectionHeader}" x:Name="Termine_Label" Content="📅 Termine" DockPanel.Dock="Left" Padding="0" VerticalAlignment="Center"/>
                             </DockPanel>
-                            <ListView x:Name="Lv_WeekPlan" Style="{StaticResource RoundListView}" BorderThickness="1,0,1,1">
+                            <ListView x:Name="Lv_WeekPlan" Style="{StaticResource CardListView}">
                                 <ListView.ItemTemplate>
                                     <DataTemplate>
-                                        <Border BorderBrush="#969696" BorderThickness="1" CornerRadius="10" Padding="5" Margin="10,3,0,3" Background="White">
+                                        <Border Style="{StaticResource LvItemCard}" Padding="6,4">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="2*"/>
                                                     <ColumnDefinition Width="5*"/>
                                                 </Grid.ColumnDefinitions>
-
-                                                <!-- Tagesbezeichnung -->
-                                                <Label Content="{Binding Day}" Grid.Column="0" FontWeight="Bold"/>
-
-                                                <!-- Task-Zeitleistenbereich (drop target for dragged tasks) -->
+                                                <Label Content="{Binding Day}" Grid.Column="0" FontWeight="Bold" FontSize="12" Padding="0" VerticalContentAlignment="Center"/>
                                                 <StackPanel x:Name="DayTaskContainer" Grid.Column="1"
                                                             AllowDrop="True"
                                                             Background="Transparent"
@@ -356,8 +538,8 @@
                                                     <ItemsControl ItemsSource="{Binding Tasks}">
                                                         <ItemsControl.ItemTemplate>
                                                             <DataTemplate>
-                                                                <Border Background="White" Height="30" CornerRadius="8" Margin="5,3"
-                                                                        BorderBrush="#969696" BorderThickness="1"
+                                                                <Border Background="White" Height="28" CornerRadius="6" Margin="4,2"
+                                                                        BorderBrush="#ededed" BorderThickness="1"
                                                                         MouseLeftButtonDown="TaskChip_MouseLeftButtonDown"
                                                                         Cursor="Hand"
                                                                         Tag="{Binding}">
@@ -366,13 +548,9 @@
                                                                             <ColumnDefinition Width="Auto"/>
                                                                             <ColumnDefinition Width="*"/>
                                                                         </Grid.ColumnDefinitions>
-
-                                                                        <!-- Taskbeschreibung -->
-                                                                        <Label Content="{Binding Description}" Grid.Column="0" Margin="5,0" FontWeight="Bold"/>
-
-                                                                        <!-- Zeitleiste basierend auf Task-Dauer (max-width ~250) -->
-                                                                        <Rectangle Grid.Column="1" Fill="#00d1ff" Margin="5,0" Height="15"
-                                                                                   Width="{Binding Hours, Converter={StaticResource TaskWidthConverter}, ConverterParameter=10}"/>
+                                                                        <Label Content="{Binding Description}" Grid.Column="0" Margin="4,0" FontWeight="Bold" FontSize="11" Padding="0" VerticalContentAlignment="Center"/>
+                                                                        <Rectangle Grid.Column="1" Fill="#5E97D9" Margin="4,0" Height="12"
+                                                                                   Width="{Binding Hours, Converter={StaticResource TaskWidthConverter}, ConverterParameter=10}" RadiusX="3" RadiusY="3"/>
                                                                     </Grid>
                                                                 </Border>
                                                             </DataTemplate>
@@ -384,103 +562,75 @@
                                     </DataTemplate>
                                 </ListView.ItemTemplate>
                             </ListView>
-
-
                         </DockPanel>
                     </Border>
 
-                    <Border Style="{StaticResource CardBorder}" Grid.Row="1" Margin="0,10,0,0" Padding="10">
+                    <!-- Fertig card -->
+                    <Border Style="{StaticResource CardBorder}" Grid.Row="1" Margin="0,0,0,0" Padding="16">
                         <DockPanel>
-                            <Label Style="{StaticResource Label}" x:Name="Fertig_Label" Content="Fertig" BorderBrush="#969696" BorderThickness="1,1,1,0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" >
-                            </Label>
-
-                            <Grid >
+                            <Label Style="{StaticResource SectionHeader}" x:Name="Fertig_Label" Content="✓ Fertig" DockPanel.Dock="Top" Padding="0" Margin="0,0,0,8"/>
+                            <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition/>
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
-
-                                <ListView Grid.Row="0" Style="{StaticResource RoundListView}" BorderThickness="1,0,1,1">
-
-
-                                </ListView>
-
-                                <ListView Grid.Column="1"  Grid.Row="0" Style="{StaticResource RoundListView}" BorderThickness="0,0,1,1">
-
-                                </ListView>
-
+                                <ListView Grid.Column="0" Style="{StaticResource CardListView}" Margin="0,0,6,0"/>
+                                <ListView Grid.Column="1" Style="{StaticResource CardListView}" Margin="6,0,0,0"/>
                             </Grid>
-
-
                         </DockPanel>
                     </Border>
-
-
                 </Grid>
             </Grid>
-            <!--Todo Page-->
-            <Grid Grid.Column="1" x:Name="Todo" Visibility="Collapsed">
 
+            <!-- ===== TODO PAGE ===== -->
+            <Grid Grid.Column="1" x:Name="Todo" Visibility="Collapsed">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*"/>
                     <ColumnDefinition Width="3*"/>
                 </Grid.ColumnDefinitions>
 
-
-                <Border Style="{StaticResource CardBorder}" Margin="10" Background="White" Grid.Column="0" Padding="10">
+                <!-- Create form -->
+                <Border Style="{StaticResource CardBorder}" Margin="12,12,6,12" Padding="20" Background="White">
                     <StackPanel KeyDown="CreateForm_KeyDown">
+                        <TextBlock Text="New Task" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16" Foreground="#333"/>
 
-                        <Label Style="{StaticResource Color}" x:Name="Description_Label" Margin="10,20,10,2" Content="Description"/>
+                        <Label Style="{StaticResource FieldLabel}" x:Name="Description_Label" Content="Description" Margin="0,0,0,2"/>
+                        <TextBox Style="{StaticResource RoundTextBox}" Text="" x:Name="Tb_description" Margin="0,0,0,0"/>
 
+                        <Label Style="{StaticResource FieldLabel}" x:Name="Hours_Label" Content="Hours" Margin="0,12,0,2"/>
+                        <TextBox Style="{StaticResource RoundTextBox}" Text="" x:Name="Tb_hours"/>
 
-
-                        <TextBox Style="{StaticResource RoundTextBox}" Margin="10,0,10,5" Text="" x:Name="Tb_description"/>
-
-                        <Label Style="{StaticResource Color}" x:Name="Hours_Label" Margin="10,15,10,2" Content="Hours"/>
-
-
-                        <TextBox Style="{StaticResource RoundTextBox}" Margin="10,0,10,5" Text="" x:Name="Tb_hours"/>
-
-
-                        <Label Style="{StaticResource Color}" x:Name="DeliveryDate_Label" Margin="10,15,10,2" Content="Delivery Date"/>
-
-
-                        <Border Style="{StaticResource RoundInputBorder}" Margin="10,0,10,5" Padding="1">
-                            <DatePicker x:Name="Dp_delivery_date" Background="White" BorderBrush="#969696" BorderThickness="1" Padding="4"/>
+                        <Label Style="{StaticResource FieldLabel}" x:Name="DeliveryDate_Label" Content="Delivery Date" Margin="0,12,0,2"/>
+                        <Border Style="{StaticResource RoundInputBorder}" Padding="1">
+                            <DatePicker x:Name="Dp_delivery_date" Background="White" BorderBrush="Transparent" BorderThickness="0" Padding="6"/>
                         </Border>
 
+                        <Label Style="{StaticResource FieldLabel}" x:Name="Importancy_Label" Content="Importancy" Margin="0,12,0,2"/>
+                        <TextBox Style="{StaticResource RoundTextBox}" x:Name="Tb_importancy"/>
 
-                        <Label Style="{StaticResource Color}" x:Name="Importancy_Label" Margin="10,15,10,2" Content="Importancy"/>
-
-
-                        <TextBox Style="{StaticResource RoundTextBox}" Margin="10,0,10,5" x:Name="Tb_importancy"/>
-
-
-                        <Button Style="{StaticResource RoundButton}" HorizontalAlignment="Center" Padding="20,2" Margin="0,20,0,5" Content="Create" Click="Create"/>
+                        <Button Style="{StaticResource PrimaryBtn}" HorizontalAlignment="Stretch" Margin="0,24,0,0" Content="Create" Click="Create" Padding="0,10"/>
                     </StackPanel>
                 </Border>
 
-
-                <StackPanel Grid.Column="1" Margin="10">
-                    <!-- Filter / Sort toolbar -->
-                    <Border Style="{StaticResource CardBorder}" Padding="8" Margin="0,0,0,8">
+                <!-- Task list -->
+                <StackPanel Grid.Column="1" Margin="6,12,12,12">
+                    <!-- Filter toolbar -->
+                    <Border Style="{StaticResource CardBorder}" Padding="10" Margin="0,0,0,8">
                         <DockPanel LastChildFill="True">
-                            <ComboBox x:Name="Cb_todoSort" DockPanel.Dock="Right" Width="130" Margin="8,0,0,0" SelectedIndex="0" SelectionChanged="Cb_todoSort_SelectionChanged" Background="White" BorderBrush="#969696" BorderThickness="1">
+                            <ComboBox x:Name="Cb_todoSort" DockPanel.Dock="Right" Width="140" Margin="8,0,0,0" SelectedIndex="0" SelectionChanged="Cb_todoSort_SelectionChanged" Background="White" BorderBrush="#ededed" BorderThickness="1">
                                 <ComboBoxItem Content="Sort: Due date"/>
                                 <ComboBoxItem Content="Sort: Importance"/>
                                 <ComboBoxItem Content="Sort: Hours"/>
                                 <ComboBoxItem Content="Sort: Description"/>
                             </ComboBox>
-                            <TextBox x:Name="Tb_todoFilter" Style="{StaticResource RoundTextBox}" DockPanel.Dock="Left" Width="200" TextChanged="Tb_todoFilter_TextChanged" VerticalAlignment="Center"/>
+                            <TextBox x:Name="Tb_todoFilter" Style="{StaticResource RoundTextBox}" DockPanel.Dock="Left" Width="220" TextChanged="Tb_todoFilter_TextChanged" VerticalAlignment="Center"/>
                         </DockPanel>
                     </Border>
 
-                    <ListView Margin="0" d:ItemsSource="{d:SampleData ItemCount=5}" Style="{StaticResource RoundListView}" BorderThickness="0" x:Name="Lv_Todos" MouseDoubleClick="Lv_Todos_MouseDoubleClick" Visibility="Collapsed">
-
-                        <ListView.ItemTemplate >
+                    <ListView Margin="0" d:ItemsSource="{d:SampleData ItemCount=5}" Style="{StaticResource CardListView}" x:Name="Lv_Todos" MouseDoubleClick="Lv_Todos_MouseDoubleClick" Visibility="Collapsed">
+                        <ListView.ItemTemplate>
                             <DataTemplate>
-                                <Border BorderBrush="#969696" BorderThickness="1" CornerRadius="10" Padding="5" Margin="10,3,0,3" Background="#ffffff">
-
+                                <Border Style="{StaticResource LvItemCard}" Padding="10,6">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition/>
@@ -495,89 +645,72 @@
                                             <RowDefinition/>
                                         </Grid.RowDefinitions>
 
-                                        <Label Content="Description:" Margin="15,0" Grid.Column="0" Grid.Row="0" FontWeight="SemiBold" FontSize="11" Foreground="Gray"/>
-                                        <Label Content="Delivery Date:" Margin="15,0" Grid.Column="1" Grid.Row="0" FontWeight="SemiBold" FontSize="11" Foreground="Gray"/>
-                                        <Label Content="Importance:" Margin="15,0" Grid.Column="2" Grid.Row="0" FontWeight="SemiBold" FontSize="11" Foreground="Gray"/>
-                                        <Label Content="Hours:" Margin="15,0" Grid.Column="3" Grid.Row="0" FontWeight="SemiBold" FontSize="11" Foreground="Gray"/>
-                                        <Label Content="Weighting:" Margin="15,0" Grid.Column="4" Grid.Row="0" FontWeight="SemiBold" FontSize="11" Foreground="Gray"/>
+                                        <Label Content="Description:" Margin="8,0" Grid.Column="0" Grid.Row="0" FontWeight="SemiBold" FontSize="10" Foreground="Gray" Padding="0"/>
+                                        <Label Content="Delivery:" Margin="8,0" Grid.Column="1" Grid.Row="0" FontWeight="SemiBold" FontSize="10" Foreground="Gray" Padding="0"/>
+                                        <Label Content="Importance:" Margin="8,0" Grid.Column="2" Grid.Row="0" FontWeight="SemiBold" FontSize="10" Foreground="Gray" Padding="0"/>
+                                        <Label Content="Hours:" Margin="8,0" Grid.Column="3" Grid.Row="0" FontWeight="SemiBold" FontSize="10" Foreground="Gray" Padding="0"/>
+                                        <Label Content="Weight:" Margin="8,0" Grid.Column="4" Grid.Row="0" FontWeight="SemiBold" FontSize="10" Foreground="Gray" Padding="0"/>
 
-                                        <Label Content="{Binding Description}" Style="{StaticResource Lv_item}" Grid.Column="0" Grid.Row="1" FontSize="12" Background="White">
-                                        </Label>
-                                        <Label Content="{Binding Delivery, StringFormat='{}{0:dd.MM.yyyy}'}" Style="{StaticResource Lv_item}" Grid.Column="1" Grid.Row="1" FontSize="12" Background="White">
-                                        </Label>
-                                        <Label Content="{Binding Importance}" Style="{StaticResource Lv_item}" Grid.Column="2" Grid.Row="1" FontSize="12" Background="White">
-                                        </Label>
-                                        <Label Content="{Binding Hours}" Style="{StaticResource Lv_item}" Grid.Column="3" Grid.Row="1" FontSize="12" Background="White">
-                                        </Label>
-                                        <Label Content="{Binding AllocationWeighting, StringFormat='{}{0:F0}'}" Style="{StaticResource Lv_item}" Grid.Column="4" Grid.Row="1" FontSize="12" Background="White">
-                                        </Label>
-                                        <Button Content="✕" Grid.Column="5" Grid.Row="0" Grid.RowSpan="2" Width="24" Height="24" Margin="4,0,0,0" VerticalAlignment="Center" Background="#e35d48" Foreground="White" BorderThickness="0" Click="DeleteTodo_Click" Tag="{Binding}" FontSize="12">
-                                        </Button>
+                                        <Label Content="{Binding Description}" Style="{StaticResource Lv_item}" Grid.Column="0" Grid.Row="1" FontSize="12" Background="Transparent" Padding="0" Margin="8,0"/>
+                                        <Label Content="{Binding Delivery, StringFormat='{}{0:dd.MM.yyyy}'}" Style="{StaticResource Lv_item}" Grid.Column="1" Grid.Row="1" FontSize="12" Background="Transparent" Padding="0" Margin="8,0"/>
+                                        <Label Content="{Binding Importance}" Style="{StaticResource Lv_item}" Grid.Column="2" Grid.Row="1" FontSize="12" Background="Transparent" Padding="0" Margin="8,0"/>
+                                        <Label Content="{Binding Hours}" Style="{StaticResource Lv_item}" Grid.Column="3" Grid.Row="1" FontSize="12" Background="Transparent" Padding="0" Margin="8,0"/>
+                                        <Label Content="{Binding AllocationWeighting, StringFormat='{}{0:F0}'}" Style="{StaticResource Lv_item}" Grid.Column="4" Grid.Row="1" FontSize="12" Background="Transparent" Padding="0" Margin="8,0"/>
+                                        <Button Content="✕" Grid.Column="5" Grid.Row="0" Grid.RowSpan="2" Width="28" Height="28" Margin="4,0,0,0" VerticalAlignment="Center" Style="{StaticResource DangerBtn}" Click="DeleteTodo_Click" Tag="{Binding}" FontSize="12" Padding="0"/>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
                         </ListView.ItemTemplate>
-
-
                     </ListView>
                 </StackPanel>
-                <TextBlock x:Name="Tb_TodoEmpty" Grid.Column="1" Margin="10" Text="No tasks yet. Create your first one above or press Ctrl+Shift+N." FontSize="14" Foreground="Gray" TextWrapping="Wrap" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" Visibility="Visible"/>
-
+                <TextBlock x:Name="Tb_TodoEmpty" Grid.Column="1" Margin="12" Text="No tasks yet. Create your first one above or press Ctrl+Shift+N." FontSize="14" Foreground="Gray" TextWrapping="Wrap" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" Visibility="Visible"/>
             </Grid>
-            <!--Plan (Calendar / fixed events + free time blocks)-->
+
+            <!-- ===== PLAN PAGE ===== -->
             <Grid Grid.Column="1" x:Name="Plan" Visibility="Collapsed">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="auto"/>
-                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <Border Style="{StaticResource CardBorder}" Grid.Row="0" Margin="10,6,10,0" Padding="6">
-                    <!-- Date navigation bar -->
+                <!-- Date navigation -->
+                <Border Style="{StaticResource CardBorder}" Grid.Row="0" Margin="12,12,12,0" Padding="12,8">
                     <DockPanel LastChildFill="True">
-                        <Button DockPanel.Dock="Left" Style="{StaticResource RoundButton}" Content="◀" Padding="8,2" Margin="0,0,8,0" Click="PlanPrevWeek_Click"/>
+                        <Button DockPanel.Dock="Left" Style="{StaticResource SecondaryBtn}" Content="◀" Padding="10,4" Margin="0,0,8,0" Click="PlanPrevWeek_Click"/>
                         <TextBlock x:Name="Tb_PlanWeekLabel" DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Margin="0,0,8,0" Text="Week of 03.09.2026 – 09.09.2026"/>
-                        <Button DockPanel.Dock="Left" Style="{StaticResource RoundButton}" Content="▶" Padding="8,2" Margin="0,0,8,0" Click="PlanNextWeek_Click"/>
-                        <Button DockPanel.Dock="Left" Style="{StaticResource RoundButton}" Content="Today" Padding="8,2" Margin="0,0,0,0" Click="PlanToday_Click"/>
+                        <Button DockPanel.Dock="Left" Style="{StaticResource SecondaryBtn}" Content="▶" Padding="10,4" Margin="0,0,8,0" Click="PlanNextWeek_Click"/>
+                        <Button DockPanel.Dock="Left" Style="{StaticResource SecondaryBtn}" Content="Today" Padding="10,4" Margin="0,0,0,0" Click="PlanToday_Click"/>
                     </DockPanel>
                 </Border>
 
-                <!-- Toolbar: add event of currently selected type -->
-                <Border Style="{StaticResource CardBorder}" Grid.Row="1" Margin="10" Padding="6">
+                <!-- Event toolbar -->
+                <Border Style="{StaticResource CardBorder}" Grid.Row="1" Margin="12,8,12,0" Padding="12,8">
                     <DockPanel LastChildFill="False">
-                        <Label Style="{StaticResource Label}" DockPanel.Dock="Left" Content="Type:" VerticalAlignment="Center" Margin="0,0,8,0" BorderThickness="0"/>
+                        <Label DockPanel.Dock="Left" Content="Type:" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12" Foreground="#777" Padding="0"/>
                         <Border Style="{StaticResource RoundInputBorder}" DockPanel.Dock="Left" Padding="1">
-                            <ComboBox x:Name="Cb_eventType" Width="180" SelectedIndex="0" VerticalAlignment="Center" Background="White" BorderBrush="#969696" BorderThickness="1" SelectionChanged="Cb_eventType_SelectionChanged">
-                                <ComboBoxItem Content="Fixed appointment"/>
-                                <ComboBoxItem Content="Work hours (for tasks)"/>
-                                <ComboBoxItem Content="Free time (no tasks)"/>
-                                <ComboBoxItem Content="Sleep"/>
-                            </ComboBox>
+                            <ComboBox x:Name="Cb_eventType" Width="170" SelectedIndex="0" VerticalAlignment="Center" Background="White" BorderBrush="Transparent" BorderThickness="0" SelectionChanged="Cb_eventType_SelectionChanged"/>
                         </Border>
-
-                        <Label Style="{StaticResource Label}" DockPanel.Dock="Left" Content="Title:" VerticalAlignment="Center" Margin="16,0,8,0" BorderThickness="0"/>
-                        <TextBox x:Name="Tb_eventTitle" Style="{StaticResource RoundTextBox}" DockPanel.Dock="Left" Width="200" VerticalAlignment="Center"/>
-
-                        <Label Style="{StaticResource Label}" DockPanel.Dock="Left" Content="Day:" VerticalAlignment="Center" Margin="16,0,8,0" BorderThickness="0"/>
+                        <Label DockPanel.Dock="Left" Content="Title:" VerticalAlignment="Center" Margin="12,0,6,0" FontSize="12" Foreground="#777" Padding="0"/>
+                        <TextBox x:Name="Tb_eventTitle" Style="{StaticResource RoundTextBox}" DockPanel.Dock="Left" Width="180" VerticalAlignment="Center"/>
+                        <Label DockPanel.Dock="Left" Content="Day:" VerticalAlignment="Center" Margin="12,0,6,0" FontSize="12" Foreground="#777" Padding="0"/>
                         <Border Style="{StaticResource RoundInputBorder}" DockPanel.Dock="Left" Padding="1">
-                            <DatePicker x:Name="Dp_eventDay" VerticalAlignment="Center" Width="140" Background="White" BorderBrush="#969696" BorderThickness="1"/>
+                            <DatePicker x:Name="Dp_eventDay" VerticalAlignment="Center" Width="130" Background="White" BorderBrush="Transparent" BorderThickness="0"/>
                         </Border>
-
-                        <Label Style="{StaticResource Label}" DockPanel.Dock="Left" Content="From:" VerticalAlignment="Center" Margin="16,0,8,0" BorderThickness="0"/>
+                        <Label DockPanel.Dock="Left" Content="From:" VerticalAlignment="Center" Margin="12,0,6,0" FontSize="12" Foreground="#777" Padding="0"/>
                         <Border Style="{StaticResource RoundInputBorder}" DockPanel.Dock="Left" Padding="1">
-                            <ComboBox x:Name="Cb_eventStart" Width="80" VerticalAlignment="Center" Background="White" BorderBrush="#969696" BorderThickness="1"/>
+                            <ComboBox x:Name="Cb_eventStart" Width="72" VerticalAlignment="Center" Background="White" BorderBrush="Transparent" BorderThickness="0"/>
                         </Border>
-                        <Label Style="{StaticResource Label}" DockPanel.Dock="Left" Content="To:" VerticalAlignment="Center" Margin="8,0,8,0" BorderThickness="0"/>
+                        <Label DockPanel.Dock="Left" Content="To:" VerticalAlignment="Center" Margin="6,0,6,0" FontSize="12" Foreground="#777" Padding="0"/>
                         <Border Style="{StaticResource RoundInputBorder}" DockPanel.Dock="Left" Padding="1">
-                            <ComboBox x:Name="Cb_eventEnd" Width="80" VerticalAlignment="Center" Background="White" BorderBrush="#969696" BorderThickness="1"/>
+                            <ComboBox x:Name="Cb_eventEnd" Width="72" VerticalAlignment="Center" Background="White" BorderBrush="Transparent" BorderThickness="0"/>
                         </Border>
-
-                        <Button Style="{StaticResource RoundButton}" DockPanel.Dock="Right" Content="Add event" Padding="14,4" Margin="10,0,0,0" Click="AddCalendarEvent"/>
+                        <Button Style="{StaticResource PrimaryBtn}" DockPanel.Dock="Right" Content="Add event" Padding="12,6" Margin="8,0,0,0" Click="AddCalendarEvent"/>
                     </DockPanel>
                 </Border>
 
-                <!-- Week overview: 7 columns, one per day -->
-                <Border Style="{StaticResource CardBorder}" Grid.Row="2" Margin="10" Padding="10">
+                <!-- Week grid -->
+                <Border Style="{StaticResource CardBorder}" Grid.Row="2" Margin="12,8,12,12" Padding="12">
                     <Grid x:Name="PlanCalendarGrid">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -588,127 +721,126 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-
-                        <!-- Day headers + content generated in code-behind.
-                             See RefreshPlanView(). -->
+                        <!-- Day headers + content generated in code-behind. See RefreshPlanView(). -->
                     </Grid>
                 </Border>
             </Grid>
 
-            <!--Settings-->
+            <!-- ===== SETTINGS PAGE ===== -->
             <Grid Grid.Column="1" x:Name="SettingsPage" Visibility="Collapsed">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
-                    <StackPanel MaxWidth="700" HorizontalAlignment="Left">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0">
+                    <StackPanel MaxWidth="680" HorizontalAlignment="Left" Margin="20,16,20,16">
 
-                        <TextBlock Text="Settings" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <TextBlock Text="Settings" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,4"/>
                         <TextBlock Text="Personalize the planner and timer to match how you actually work." Foreground="Gray" FontSize="12" Margin="0,0,0,20"/>
 
-                        <!-- Planner section -->
-                        <Border Style="{StaticResource CardBorder}" Padding="16" Margin="0,0,0,16">
+                        <!-- Planner -->
+                        <Border Style="{StaticResource CardBorder}" Padding="20" Margin="0,0,0,12">
                             <StackPanel>
-                                <TextBlock Text="Planner" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,12"/>
-                                <TextBlock Text="How many hours per day are realistic, and how far ahead should the planner look?" Foreground="Gray" FontSize="11" Margin="0,0,0,12"/>
+                                <TextBlock Text="Planner" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,4"/>
+                                <TextBlock Text="How many hours per day are realistic, and how far ahead should the planner look?" Foreground="Gray" FontSize="11" Margin="0,0,0,16"/>
 
-                                <TextBlock Text="Max hours per day" Margin="0,0,0,4"/>
-                                <DockPanel Margin="0,0,0,12" LastChildFill="True">
-                                    <TextBlock x:Name="Lbl_maxHours" DockPanel.Dock="Right" Width="60" TextAlignment="Right" Text="3.5h" VerticalAlignment="Center"/>
+                                <TextBlock Text="Max hours per day" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                                <DockPanel Margin="0,0,0,16" LastChildFill="True">
+                                    <TextBlock x:Name="Lbl_maxHours" DockPanel.Dock="Right" Width="50" TextAlignment="Right" Text="3.5h" VerticalAlignment="Center" FontSize="12"/>
                                     <Slider x:Name="Sl_maxHours" Minimum="0.5" Maximum="12" TickFrequency="0.5" IsSnapToTickEnabled="True" ValueChanged="Sl_maxHours_Changed"/>
                                 </DockPanel>
 
-                                <TextBlock Text="Plan horizon (days)" Margin="0,0,0,4"/>
-                                <DockPanel Margin="0,0,0,12" LastChildFill="True">
-                                    <TextBlock x:Name="Lbl_planableDays" DockPanel.Dock="Right" Width="60" TextAlignment="Right" Text="10d" VerticalAlignment="Center"/>
+                                <TextBlock Text="Plan horizon (days)" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                                <DockPanel Margin="0,0,0,16" LastChildFill="True">
+                                    <TextBlock x:Name="Lbl_planableDays" DockPanel.Dock="Right" Width="50" TextAlignment="Right" Text="10d" VerticalAlignment="Center" FontSize="12"/>
                                     <Slider x:Name="Sl_planableDays" Minimum="1" Maximum="30" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="Sl_planableDays_Changed"/>
                                 </DockPanel>
 
-                                <TextBlock Text="Work-day boundaries" Margin="0,0,0,4"/>
-                                <TextBlock Text="Tasks are placed only inside this window unless you mark time as Free/Sleep elsewhere." Foreground="Gray" FontSize="11" Margin="0,0,0,8"/>
+                                <TextBlock Text="Work-day boundaries" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                                <TextBlock Text="Tasks are placed only inside this window unless you mark time as Free/Sleep elsewhere." Foreground="Gray" FontSize="11" Margin="0,0,0,10"/>
                                 <Grid Margin="0,0,0,4">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                                        <TextBlock Text="Start" Margin="0,0,0,4"/>
-                                        <ComboBox x:Name="Cb_workStart" SelectionChanged="Cb_workHours_Changed"/>
+                                        <TextBlock Text="Start" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                                        <Border Style="{StaticResource RoundInputBorder}" Padding="1">
+                                            <ComboBox x:Name="Cb_workStart" SelectionChanged="Cb_workHours_Changed" Background="White" BorderBrush="Transparent" BorderThickness="0"/>
+                                        </Border>
                                     </StackPanel>
                                     <StackPanel Grid.Column="1" Margin="8,0,0,0">
-                                        <TextBlock Text="End" Margin="0,0,0,4"/>
-                                        <ComboBox x:Name="Cb_workEnd" SelectionChanged="Cb_workHours_Changed"/>
+                                        <TextBlock Text="End" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                                        <Border Style="{StaticResource RoundInputBorder}" Padding="1">
+                                            <ComboBox x:Name="Cb_workEnd" SelectionChanged="Cb_workHours_Changed" Background="White" BorderBrush="Transparent" BorderThickness="0"/>
+                                        </Border>
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>
                         </Border>
 
-                        <!-- Focus / Timer section -->
-                        <Border Style="{StaticResource CardBorder}" Padding="16" Margin="0,0,0,16">
+                        <!-- Focus timer -->
+                        <Border Style="{StaticResource CardBorder}" Padding="20" Margin="0,0,0,12">
                             <StackPanel>
-                                <TextBlock Text="Focus timer" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,12"/>
-                                <TextBlock Text="Length of one focus block, breaks, and when to take a long one." Foreground="Gray" FontSize="11" Margin="0,0,0,12"/>
+                                <TextBlock Text="Focus timer" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,4"/>
+                                <TextBlock Text="Length of one focus block, breaks, and when to take a long one." Foreground="Gray" FontSize="11" Margin="0,0,0,16"/>
 
-                                <TextBlock Text="Focus block length" Margin="0,0,0,4"/>
-                                <DockPanel Margin="0,0,0,12" LastChildFill="True">
-                                    <TextBlock x:Name="Lbl_focusMin" DockPanel.Dock="Right" Width="60" TextAlignment="Right" Text="50min" VerticalAlignment="Center"/>
+                                <TextBlock Text="Focus block length" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                                <DockPanel Margin="0,0,0,16" LastChildFill="True">
+                                    <TextBlock x:Name="Lbl_focusMin" DockPanel.Dock="Right" Width="50" TextAlignment="Right" Text="50min" VerticalAlignment="Center" FontSize="12"/>
                                     <Slider x:Name="Sl_focusMin" Minimum="15" Maximum="90" TickFrequency="5" IsSnapToTickEnabled="True" ValueChanged="Sl_focusMin_Changed"/>
                                 </DockPanel>
 
-                                <TextBlock Text="Short break" Margin="0,0,0,4"/>
-                                <DockPanel Margin="0,0,0,12" LastChildFill="True">
-                                    <TextBlock x:Name="Lbl_shortBreak" DockPanel.Dock="Right" Width="60" TextAlignment="Right" Text="5min" VerticalAlignment="Center"/>
+                                <TextBlock Text="Short break" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                                <DockPanel Margin="0,0,0,16" LastChildFill="True">
+                                    <TextBlock x:Name="Lbl_shortBreak" DockPanel.Dock="Right" Width="50" TextAlignment="Right" Text="5min" VerticalAlignment="Center" FontSize="12"/>
                                     <Slider x:Name="Sl_shortBreak" Minimum="1" Maximum="15" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="Sl_shortBreak_Changed"/>
                                 </DockPanel>
 
-                                <TextBlock Text="Long break" Margin="0,0,0,4"/>
-                                <DockPanel Margin="0,0,0,12" LastChildFill="True">
-                                    <TextBlock x:Name="Lbl_longBreak" DockPanel.Dock="Right" Width="60" TextAlignment="Right" Text="15min" VerticalAlignment="Center"/>
+                                <TextBlock Text="Long break" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
+                                <DockPanel Margin="0,0,0,16" LastChildFill="True">
+                                    <TextBlock x:Name="Lbl_longBreak" DockPanel.Dock="Right" Width="50" TextAlignment="Right" Text="15min" VerticalAlignment="Center" FontSize="12"/>
                                     <Slider x:Name="Sl_longBreak" Minimum="10" Maximum="30" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="Sl_longBreak_Changed"/>
                                 </DockPanel>
 
-                                <TextBlock Text="Long break every Nth block" Margin="0,0,0,4"/>
+                                <TextBlock Text="Long break every Nth block" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
                                 <DockPanel Margin="0,0,0,4" LastChildFill="True">
-                                    <TextBlock x:Name="Lbl_blocksBeforeLong" DockPanel.Dock="Right" Width="60" TextAlignment="Right" Text="3" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="Lbl_blocksBeforeLong" DockPanel.Dock="Right" Width="50" TextAlignment="Right" Text="3" VerticalAlignment="Center" FontSize="12"/>
                                     <Slider x:Name="Sl_blocksBeforeLong" Minimum="2" Maximum="6" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="Sl_blocksBeforeLong_Changed"/>
                                 </DockPanel>
                             </StackPanel>
                         </Border>
 
-                        <!-- Appearance section -->
-                        <Border Style="{StaticResource CardBorder}" Padding="16" Margin="0,0,0,16">
+                        <!-- Appearance -->
+                        <Border Style="{StaticResource CardBorder}" Padding="20" Margin="0,0,0,12">
                             <StackPanel>
                                 <TextBlock Text="Appearance" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,12"/>
-
                                 <DockPanel Margin="0,0,0,4" LastChildFill="True">
-                                    <TextBlock Text="Dark mode" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Dark mode" VerticalAlignment="Center" FontSize="13"/>
                                     <ToggleButton x:Name="Tg_darkMode" DockPanel.Dock="Right" Content="Off" Width="60" Checked="Tg_darkMode_Changed" Unchecked="Tg_darkMode_Changed"/>
                                 </DockPanel>
-                                <TextBlock Text="(Not yet implemented in this build — coming soon.)" Foreground="Gray" FontSize="11" Margin="0,0,0,12"/>
+                                <TextBlock Text="(Not yet implemented in this build — coming soon.)" Foreground="Gray" FontSize="11" Margin="0,0,0,8"/>
                             </StackPanel>
                         </Border>
 
-                        <!-- Data section -->
-                        <Border Style="{StaticResource CardBorder}" Padding="16" Margin="0,0,0,16">
+                        <!-- Data -->
+                        <Border Style="{StaticResource CardBorder}" Padding="20" Margin="0,0,0,12">
                             <StackPanel>
                                 <TextBlock Text="Data" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,12"/>
-
                                 <DockPanel Margin="0,0,0,8" LastChildFill="True">
-                                    <TextBlock Text="Save location" VerticalAlignment="Center"/>
-                                    <Button DockPanel.Dock="Right" Style="{StaticResource RoundButton}" Content="Open folder" Padding="12,4" Click="OpenDataFolder_Click"/>
+                                    <TextBlock Text="Save location" VerticalAlignment="Center" FontSize="13"/>
+                                    <Button DockPanel.Dock="Right" Style="{StaticResource SecondaryBtn}" Content="Open folder" Padding="12,4" Click="OpenDataFolder_Click"/>
                                 </DockPanel>
                                 <TextBlock x:Name="Lbl_dataPath" Text="..." Foreground="Gray" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,12"/>
-
                                 <DockPanel Margin="0,0,0,4" LastChildFill="True">
-                                    <TextBlock Text="Export all data (JSON)" VerticalAlignment="Center"/>
-                                    <Button DockPanel.Dock="Right" Style="{StaticResource RoundButton}" Content="Export" Padding="12,4" Click="ExportData_Click"/>
+                                    <TextBlock Text="Export all data (JSON)" VerticalAlignment="Center" FontSize="13"/>
+                                    <Button DockPanel.Dock="Right" Style="{StaticResource SecondaryBtn}" Content="Export" Padding="12,4" Click="ExportData_Click"/>
                                 </DockPanel>
                                 <TextBlock x:Name="Lbl_exportStatus" Foreground="Gray" FontSize="11" Margin="0,8,0,0"/>
                             </StackPanel>
                         </Border>
 
                         <!-- About -->
-                        <Border Style="{StaticResource CardBorder}" Padding="16">
+                        <Border Style="{StaticResource CardBorder}" Padding="20">
                             <StackPanel>
                                 <TextBlock Text="About" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,8"/>
-                                <TextBlock Text="Task Management — A planner that respects your calendar and your time." Margin="0,0,0,4"/>
+                                <TextBlock Text="Task Management — A planner that respects your calendar and your time." Margin="0,0,0,4" FontSize="13"/>
                                 <TextBlock x:Name="Lbl_version" Foreground="Gray" FontSize="11" Margin="0,0,0,8"/>
                                 <TextBlock>
                                     <Hyperlink x:Name="Link_github" NavigateUri="https://github.com/nico25112005/TaskManagement_App" RequestNavigate="Link_github_RequestNavigate">
@@ -717,16 +849,13 @@
                                 </TextBlock>
                             </StackPanel>
                         </Border>
-
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
         </Grid>
 
-        <!-- Status bar: always visible, shows live counts -->
-        <Border Grid.Row="2" Background="#ffffff" BorderBrush="#969696" BorderThickness="0,1,0,0" Padding="10,4"
-                CornerRadius="10,10,0,0"
-                x:Name="StatusBar">
+        <!-- ===== STATUS BAR ===== -->
+        <Border Grid.Row="2" Background="#ededed" BorderBrush="#ededed" BorderThickness="0,1,0,0" Padding="12,4" x:Name="StatusBar">
             <DockPanel LastChildFill="True">
                 <TextBlock DockPanel.Dock="Left" x:Name="Status_OpenTasks" VerticalAlignment="Center" FontSize="11" Foreground="Gray" Margin="0,0,20,0"/>
                 <TextBlock DockPanel.Dock="Left" x:Name="Status_TodayHours" VerticalAlignment="Center" FontSize="11" Foreground="Gray" Margin="0,0,20,0"/>
