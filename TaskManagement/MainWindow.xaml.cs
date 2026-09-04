@@ -49,10 +49,14 @@ namespace TaskManagement
             {
                 if (TimerDisplay != null) TimerDisplay.Content = _timer.Display;
                 if (TimerState != null) TimerState.Content = _timer.StateLabel;
-                if (BtnTimerStart != null) BtnTimerStart.IsEnabled = !_timer.IsRunning;
-                if (BtnTimerPause != null) BtnTimerPause.IsEnabled = _timer.IsRunning;
-                if (BtnTimerStop != null) BtnTimerStop.IsEnabled = _timer.IsRunning;
+                if (BtnTimerStart != null) BtnTimerStart.IsEnabled = !_timer.IsRunning && _timer.Session.Task != null == false;
+                // Pause button stays enabled while a session is active (covers pause/resume toggle)
+                if (BtnTimerPause != null) BtnTimerPause.IsEnabled = _timer.Session.Task != null;
+                if (BtnTimerStop != null) BtnTimerStop.IsEnabled = _timer.Session.Task != null;
                 if (BtnTimerSkip != null) BtnTimerSkip.IsEnabled = _timer.Session.IsOnBreak;
+                // Update pause button text to reflect state
+                if (BtnTimerPause != null)
+                    BtnTimerPause.Content = _timer.IsRunning ? "Pause" : "Resume";
             };
             Settings.Load();
             StartUp();
@@ -294,15 +298,19 @@ namespace TaskManagement
 
         private void RefreshWeekPlan()
         {
-            var weekPlan = Tasks.nWeek.Select(kvp => new WeekPlanViewModel
-            {
-                Day = $"{kvp.Value.Date:ddd dd.MM.}",
-                DayDate = kvp.Value.Date.Date,
-                PlanedHours = kvp.Value.PlanedHours,
-                Tasks = kvp.Value.Tasks.Select(task => new TaskViewModel { Description = task.Description, Hours = task.Hours }).ToList()
-            }).ToList();
+            // Home panel: only show today's appointments
+            var todayPlan = Tasks.nWeek
+                .Where(kvp => kvp.Value.Date.Date == DateTime.Today)
+                .Select(kvp => new WeekPlanViewModel
+                {
+                    Day = $"{kvp.Value.Date:ddd dd.MM.}",
+                    DayDate = kvp.Value.Date.Date,
+                    PlanedHours = kvp.Value.PlanedHours,
+                    Tasks = kvp.Value.Tasks.Select(task => new TaskViewModel { Description = task.Description, Hours = task.Hours }).ToList()
+                })
+                .ToList();
 
-            Lv_WeekPlan.ItemsSource = weekPlan;
+            if (Lv_WeekPlan != null) Lv_WeekPlan.ItemsSource = todayPlan;
         }
 
         private void WeekPlan_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -529,6 +537,7 @@ namespace TaskManagement
             Home,
             Todo,
             Plan,
+            Week,
             Settings
 
         }
@@ -548,6 +557,7 @@ namespace TaskManagement
                 { Pages.Home, Home },
                 { Pages.Todo, Todo },
                 { Pages.Plan, Plan },
+                { Pages.Week, WeekPage },
                 { Pages.Settings, SettingsPage }
             };
 
@@ -562,6 +572,7 @@ namespace TaskManagement
             if (NavHome != null) NavHome.Style = pages == Pages.Home ? navActive : navNormal;
             if (NavTodo != null) NavTodo.Style = pages == Pages.Todo ? navActive : navNormal;
             if (NavPlan != null) NavPlan.Style = pages == Pages.Plan ? navActive : navNormal;
+            if (NavWeek != null) NavWeek.Style = pages == Pages.Week ? navActive : navNormal;
             if (NavSettings != null) NavSettings.Style = pages == Pages.Settings ? navActive : navNormal;
 
             // Update window title to reflect current page so users always know where they are.
@@ -570,6 +581,7 @@ namespace TaskManagement
                 Pages.Home => "Task Management \u2014 Home",
                 Pages.Todo => "Task Management \u2014 To-do",
                 Pages.Plan => "Task Management \u2014 Plan",
+                Pages.Week => "Task Management \u2014 Week",
                 Pages.Settings => "Task Management \u2014 Settings",
                 _ => "Task Management"
             };
@@ -600,6 +612,10 @@ namespace TaskManagement
                         break;
                     case Key.D4:
                         Settings_page(this, new RoutedEventArgs());
+                        e.Handled = true;
+                        break;
+                    case Key.D5:
+                        Week_page(this, new RoutedEventArgs());
                         e.Handled = true;
                         break;
                     case Key.N:
@@ -649,6 +665,12 @@ namespace TaskManagement
         {
             ChangePage(Pages.Plan);
             RefreshPlanView();
+        }
+
+        private void Week_page(object sender, RoutedEventArgs e)
+        {
+            ChangePage(Pages.Week);
+            RefreshWeekDnd();
         }
 
         private void Settings_page(object sender, RoutedEventArgs e)
@@ -1353,6 +1375,185 @@ if (Sl_maxHours != null) Sl_maxHours.Value = Settings.maxHoursPerDay;
         private void Timer_SkipBreak(object sender, RoutedEventArgs e)
         {
             _timer.SkipBreak();
+        }
+
+        // === Week DnD page ===
+
+        private void RefreshWeekDnd()
+        {
+            if (WeekDndGrid == null) return;
+
+            var today = DateTime.Today;
+            var monday = today.AddDays(-((int)today.DayOfWeek + 6) % 7);
+
+            WeekDndGrid.ColumnDefinitions.Clear();
+            WeekDndGrid.Children.Clear();
+
+            for (int i = 0; i < 7; i++)
+            {
+                var dayDate = monday.AddDays(i);
+                var weekEntry = Tasks.nWeek.Values.FirstOrDefault(w => w.Date.Date == dayDate.Date);
+                var tasks = weekEntry?.Tasks ?? new List<Task>();
+
+                WeekDndGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+                var card = new Border
+                {
+                    Style = (Style)FindResource("CardBorder"),
+                    Margin = new Thickness(3),
+                    Padding = new Thickness(8),
+                    MinHeight = 200
+                };
+                Grid.SetColumn(card, i);
+
+                var sp = new StackPanel();
+
+                var header = new TextBlock
+                {
+                    Text = $"{dayDate:ddd dd.MM.}",
+                    FontSize = 14,
+                    FontWeight = FontWeights.SemiBold,
+                    Margin = new Thickness(0, 0, 0, 8)
+                };
+                if (dayDate.Date == DateTime.Today)
+                    header.Foreground = (Brush)FindResource("PrimaryBrush");
+                sp.Children.Add(header);
+
+                var hoursLabel = new TextBlock
+                {
+                    Text = $"{tasks.Sum(t => t.Hours):F1}h",
+                    FontSize = 11,
+                    Foreground = Brushes.Gray,
+                    Margin = new Thickness(0, 0, 0, 8)
+                };
+                sp.Children.Add(hoursLabel);
+
+                var dropPanel = new StackPanel
+                {
+                    AllowDrop = true,
+                    Background = Brushes.Transparent,
+                    Tag = dayDate.Date
+                };
+                dropPanel.Drop += WeekDnd_Drop;
+                dropPanel.DragEnter += WeekDnd_DragEnter;
+                dropPanel.DragLeave += WeekDnd_DragLeave;
+                dropPanel.DragOver += WeekDnd_DragOver;
+
+                foreach (var task in tasks)
+                {
+                    var chip = new Border
+                    {
+                        Background = Brushes.White,
+                        BorderBrush = (Brush)FindResource("BorderBrush"),
+                        BorderThickness = new Thickness(1),
+                        CornerRadius = new CornerRadius(6),
+                        Padding = new Thickness(8, 4),
+                        Margin = new Thickness(0, 2),
+                        Tag = task
+                    };
+                    chip.MouseLeftButtonDown += WeekDnd_ChipMouseLeftButtonDown;
+
+                    var grid = new Grid();
+                    grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                    grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                    var desc = new TextBlock
+                    {
+                        Text = task.Description,
+                        FontSize = 12,
+                        FontWeight = FontWeights.SemiBold,
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+                    Grid.SetColumn(desc, 0);
+                    grid.Children.Add(desc);
+
+                    var hrs = new TextBlock
+                    {
+                        Text = $"{task.Hours:F1}h",
+                        FontSize = 11,
+                        Foreground = Brushes.Gray,
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+                    Grid.SetColumn(hrs, 1);
+                    grid.Children.Add(hrs);
+
+                    chip.Child = grid;
+                    dropPanel.Children.Add(chip);
+                }
+
+                if (tasks.Count == 0)
+                {
+                    var empty = new TextBlock
+                    {
+                        Text = "No tasks",
+                        FontSize = 11,
+                        Foreground = Brushes.Gray,
+                        Margin = new Thickness(0, 8, 0, 0),
+                        HorizontalAlignment = HorizontalAlignment.Center
+                    };
+                    dropPanel.Children.Add(empty);
+                }
+
+                sp.Children.Add(dropPanel);
+                card.Child = sp;
+                WeekDndGrid.Children.Add(card);
+            }
+        }
+
+        private void WeekDnd_ChipMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is not FrameworkElement fe || fe.Tag is not Task task) return;
+            DragDrop.DoDragDrop(fe, task, DragDropEffects.Move);
+            e.Handled = true;
+        }
+
+        private void WeekDnd_DragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = e.Data.GetDataPresent(typeof(Task)) ? DragDropEffects.Move : DragDropEffects.None;
+            e.Handled = true;
+        }
+
+        private void WeekDnd_DragEnter(object sender, DragEventArgs e)
+        {
+            if (sender is Panel p)
+                p.Background = (Brush)FindResource("HoverBrush");
+            e.Handled = true;
+        }
+
+        private void WeekDnd_DragLeave(object sender, DragEventArgs e)
+        {
+            if (sender is Panel p)
+                p.Background = Brushes.Transparent;
+            e.Handled = true;
+        }
+
+        private void WeekDnd_Drop(object sender, DragEventArgs e)
+        {
+            if (sender is not FrameworkElement fe || fe.Tag is not DateTime targetDate) return;
+            var draggedTask = e.Data.GetData(typeof(Task)) as Task;
+            if (draggedTask == null) return;
+
+            var sourceDay = Tasks.nWeek.Values.FirstOrDefault(w => w.Tasks.Contains(draggedTask));
+            if (sourceDay != null)
+            {
+                sourceDay.Tasks.Remove(draggedTask);
+                sourceDay.PlanedHours -= draggedTask.Hours;
+            }
+
+            var targetWeek = Tasks.nWeek.Values.FirstOrDefault(w => w.Date.Date == targetDate.Date);
+            if (targetWeek == null)
+            {
+                int maxKey = Tasks.nWeek.Keys.Any() ? Tasks.nWeek.Keys.Max() : -1;
+                targetWeek = new Week(targetDate);
+                Tasks.nWeek[maxKey + 1] = targetWeek;
+            }
+            targetWeek.Tasks.Add(draggedTask);
+            targetWeek.PlanedHours += draggedTask.Hours;
+
+            Trace.WriteLine($"Moved '{draggedTask.Description}' to {targetDate:ddd dd.MM.}");
+            RefreshWeekDnd();
+            RefreshTodoList();
+            e.Handled = true;
         }
     }
 
