@@ -446,6 +446,16 @@ namespace TaskManagement
         }
 
         private void Tb_todoFilter_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            _todoFilterText = Tb_todoFilter?.Text ?? "";
+            RefreshTodoList();
+        }
+
+        private void Cb_todoSort_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            _todoSortIndex = Cb_todoSort?.SelectedIndex ?? 0;
+            RefreshTodoList();
+        }
 
         private void SetColors()
         {
