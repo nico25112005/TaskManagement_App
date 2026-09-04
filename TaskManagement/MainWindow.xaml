@@ -31,14 +31,70 @@
         </Style>
 
         <Style TargetType="Control" x:Key="Border" BasedOn="{StaticResource Color}">
-            <Setter Property="BorderBrush" Value="#abadb3"/>
+            <Setter Property="BorderBrush" Value="#969696"/>
             <Setter Property="BorderThickness" Value="1"/>
         </Style>
 
         <Style TargetType="Control" x:Key="Lv_item">
-            <Setter Property="BorderBrush" Value="#abadb3"/>
+            <Setter Property="BorderBrush" Value="#969696"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Margin" Value="15,0"/>
+        </Style>
+
+        <!-- Modern global button style -->
+        <Style TargetType="Button" x:Key="RoundButton">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#969696"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontFamily" Value="Bahnschrift"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="10"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Modern text input style -->
+        <Style TargetType="TextBox" x:Key="RoundTextBox">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#969696"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="FontFamily" Value="Bahnschrift"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="17">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" 
+                                          VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Modern DatePicker/ComboBox host style -->
+        <Style TargetType="Border" x:Key="RoundInputBorder">
+            <Setter Property="CornerRadius" Value="17"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#969696"/>
+            <Setter Property="BorderThickness" Value="1"/>
         </Style>
         
         <SolidColorBrush x:Key="Button.MouseOver.Background" Color="Transparent"/>
@@ -76,7 +132,7 @@
         
     </Window.Resources>
     
-    <Grid Background="#ededed">
+    <Grid Background="#f3f3f3">
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
             <RowDefinition/>
@@ -95,7 +151,8 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" Background="#ffffff">
+            <Border Grid.Column="0" Background="#ffffff" BorderBrush="#969696" BorderThickness="0,0,1,0" CornerRadius="0,10,10,0" Margin="4,5,0,5">
+                <StackPanel>
                 <Button Template="{DynamicResource ButtonTemplate1}" Style="{StaticResource MenuButtons}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0.5" Margin="10,20,10,0" Click="Home_page">
                     <StackPanel>
                         <Image Source="/Icons/Home_mine.png" Height="35" Width="35" Stretch="Uniform"/>
@@ -103,7 +160,7 @@
                     </StackPanel>
                     <Button.Resources>
                         <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="2"/>
+                            <Setter Property="CornerRadius" Value="10"/>
                         </Style>
                     </Button.Resources>
 
@@ -116,7 +173,7 @@
                     </StackPanel>
                     <Button.Resources>
                         <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="2"/>
+                            <Setter Property="CornerRadius" Value="10"/>
                         </Style>
                     </Button.Resources>
 
@@ -129,7 +186,7 @@
                     </StackPanel>
                     <Button.Resources>
                         <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="2"/>
+                            <Setter Property="CornerRadius" Value="10"/>
                         </Style>
                     </Button.Resources>
 
@@ -142,12 +199,13 @@
                     </StackPanel>
                     <Button.Resources>
                         <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="2"/>
+                            <Setter Property="CornerRadius" Value="10"/>
                         </Style>
                     </Button.Resources>
 
                 </Button>
             </StackPanel>
+        </Border>
 
             <!--Home-->
             <Grid Grid.Column="1" x:Name="Home" Visibility="Visible">
