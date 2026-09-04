@@ -16,6 +16,10 @@ namespace TaskManagement
         private TaskViewModel _draggedTask;
         private TimerViewModel _timer = new();
 
+        // Todo filter/sort state
+        private string _todoFilterText = "";
+        private int _todoSortIndex = 0;
+
         // Drag-and-drop visual feedback state
         private readonly Brush _dragHoverHighlightBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0xEF, 0xD9)); // #FFEFD9 (pale yellow)
         private readonly Brush _dropFlashBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0xC9, 0x41));        // #FFC941 (yellow)
@@ -176,12 +180,29 @@ namespace TaskManagement
 
         private void RefreshTodoList()
         {
+            // Build the filtered + sorted source for the Todo list.
+            var source = Tasks.tasks.Values.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(_todoFilterText))
+            {
+                var filter = _todoFilterText.Trim().ToLowerInvariant();
+                source = source.Where(t => t.Description.ToLowerInvariant().Contains(filter));
+            }
+
+            source = _todoSortIndex switch
+            {
+                1 => source.OrderByDescending(t => t.Importance).ThenBy(t => t.Delivery),
+                2 => source.OrderByDescending(t => t.Hours),
+                3 => source.OrderBy(t => t.Description),
+                _ => source.OrderBy(t => t.Delivery)
+            };
+
             // Refresh the Todo (create-new-task) page's full list.
             bool hasTasks = Tasks.tasks.Count > 0;
             Lv_Todos.Visibility = hasTasks ? Visibility.Visible : Visibility.Collapsed;
             Tb_TodoEmpty.Visibility = hasTasks ? Visibility.Collapsed : Visibility.Visible;
             Lv_Todos.ItemsSource = null;
-            Lv_Todos.ItemsSource = Tasks.tasks.Values;
+            Lv_Todos.ItemsSource = source.ToList();
 
             // Refresh the Home page's Today/Upcoming buckets via the view-model.
             _homeTodo.Refresh();
@@ -397,6 +418,43 @@ namespace TaskManagement
             {
                 Tb_eventTitle.Clear();
             }
+        }
+
+        private void DeleteTodo_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement fe || fe.Tag is not Task task) return;
+            var id = Tasks.tasks.FirstOrDefault(kvp => kvp.Value == task).Key;
+            if (id == null)
+                id = Tasks.tasks.FirstOrDefault(kvp => ReferenceEquals(kvp.Value, task)).Key;
+            if (id == null)
+            {
+                Trace.WriteLine($"DeleteTodo_Click: task reference not found in dictionary.");
+                return;
+            }
+
+            var result = MessageBox.Show(
+                $"Delete task '{task.Description}'?",
+                "Delete task",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+            if (result != MessageBoxResult.Yes) return;
+
+            Tasks.tasks.Remove(id);
+            Tasks.WriteDataToJson<Dictionary<string, Task>>("todos", Tasks.tasks);
+            Calculate(); // re-distribute + refresh all views
+            Trace.WriteLine($"Deleted task '{task.Description}'.");
+        }
+
+        private void Tb_todoFilter_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            _todoFilterText = Tb_todoFilter?.Text ?? "";
+            RefreshTodoList();
+        }
+
+        private void Cb_todoSort_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            _todoSortIndex = Cb_todoSort?.SelectedIndex ?? 0;
+            RefreshTodoList();
         }
 
         private void Lv_Todos_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -770,9 +828,9 @@ namespace TaskManagement
             Cb_eventEnd.SelectedIndex = 17;    // 18:00
             Dp_eventDay.SelectedDate = DateTime.Today;
 
-            // Find the inner Grid of the Plan tab and keep a reference.
-            // (The XAML has exactly one child Grid in Plan's Row 2 after adding the nav bar.)
-            _planGrid = Plan.Children.OfType<Grid>().FirstOrDefault(g => Grid.GetRow(g) == 2);
+            // Reference the calendar grid directly by name. The grid is now wrapped
+            // in a Border for styling, so searching Plan.Children would miss it.
+            _planGrid = PlanCalendarGrid;
         }
 
         /// <summary>

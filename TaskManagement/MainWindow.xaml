@@ -511,7 +511,7 @@
 
 
                         <Border Style="{StaticResource RoundInputBorder}" Margin="10,0,10,5" Padding="1">
-                            <DatePicker x:Name="Dp_delivery_date" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Padding="4"/>
+                            <DatePicker x:Name="Dp_delivery_date" Background="White" BorderBrush="#969696" BorderThickness="1" Padding="4"/>
                         </Border>
 
 
@@ -526,7 +526,21 @@
                 </Border>
 
 
-                <ListView Grid.Column="1" Margin="10" d:ItemsSource="{d:SampleData ItemCount=5}" Style="{StaticResource RoundListView}" BorderThickness="0" x:Name="Lv_Todos" MouseDoubleClick="Lv_Todos_MouseDoubleClick" Visibility="Collapsed">
+                <StackPanel Grid.Column="1" Margin="10">
+                    <!-- Filter / Sort toolbar -->
+                    <Border Style="{StaticResource CardBorder}" Padding="8" Margin="0,0,0,8">
+                        <DockPanel LastChildFill="True">
+                            <ComboBox x:Name="Cb_todoSort" DockPanel.Dock="Right" Width="130" Margin="8,0,0,0" SelectedIndex="0" SelectionChanged="Cb_todoSort_SelectionChanged" Background="White" BorderBrush="#969696" BorderThickness="1">
+                                <ComboBoxItem Content="Sort: Due date"/>
+                                <ComboBoxItem Content="Sort: Importance"/>
+                                <ComboBoxItem Content="Sort: Hours"/>
+                                <ComboBoxItem Content="Sort: Description"/>
+                            </ComboBox>
+                            <TextBox x:Name="Tb_todoFilter" Style="{StaticResource RoundTextBox}" DockPanel.Dock="Left" Width="200" TextChanged="Tb_todoFilter_TextChanged" VerticalAlignment="Center"/>
+                        </DockPanel>
+                    </Border>
+
+                    <ListView Margin="0" d:ItemsSource="{d:SampleData ItemCount=5}" Style="{StaticResource RoundListView}" BorderThickness="0" x:Name="Lv_Todos" MouseDoubleClick="Lv_Todos_MouseDoubleClick" Visibility="Collapsed">
 
                         <ListView.ItemTemplate >
                             <DataTemplate>
@@ -539,6 +553,7 @@
                                             <ColumnDefinition/>
                                             <ColumnDefinition/>
                                             <ColumnDefinition/>
+                                            <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <Grid.RowDefinitions>
                                             <RowDefinition/>
@@ -586,6 +601,13 @@
                                                 </Style>
                                             </Label.Resources>
                                         </Label>
+                                        <Button Content="✕" Grid.Column="5" Grid.Row="0" Grid.RowSpan="2" Width="24" Height="24" Margin="4,0,0,0" VerticalAlignment="Center" Background="#e35d48" Foreground="White" BorderThickness="0" Click="DeleteTodo_Click" Tag="{Binding}" FontSize="12">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="12"/>
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
@@ -593,6 +615,7 @@
 
 
                     </ListView>
+                </StackPanel>
                 <TextBlock x:Name="Tb_TodoEmpty" Grid.Column="1" Margin="10" Text="No tasks yet. Create your first one above or press Ctrl+Shift+N." FontSize="14" Foreground="Gray" TextWrapping="Wrap" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" Visibility="Visible"/>
 
             </Grid>
@@ -619,7 +642,7 @@
                     <DockPanel LastChildFill="False">
                         <Label Style="{StaticResource Label}" DockPanel.Dock="Left" Content="Type:" VerticalAlignment="Center" Margin="0,0,8,0" BorderThickness="0"/>
                         <Border Style="{StaticResource RoundInputBorder}" DockPanel.Dock="Left" Padding="1">
-                            <ComboBox x:Name="Cb_eventType" Width="180" SelectedIndex="0" VerticalAlignment="Center" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" SelectionChanged="Cb_eventType_SelectionChanged">
+                            <ComboBox x:Name="Cb_eventType" Width="180" SelectedIndex="0" VerticalAlignment="Center" Background="White" BorderBrush="#969696" BorderThickness="1" SelectionChanged="Cb_eventType_SelectionChanged">
                                 <ComboBoxItem Content="Fixed appointment"/>
                                 <ComboBoxItem Content="Work hours (for tasks)"/>
                                 <ComboBoxItem Content="Free time (no tasks)"/>
@@ -632,16 +655,16 @@
 
                         <Label Style="{StaticResource Label}" DockPanel.Dock="Left" Content="Day:" VerticalAlignment="Center" Margin="16,0,8,0" BorderThickness="0"/>
                         <Border Style="{StaticResource RoundInputBorder}" DockPanel.Dock="Left" Padding="1">
-                            <DatePicker x:Name="Dp_eventDay" VerticalAlignment="Center" Width="140" Background="Transparent" BorderBrush="Transparent" BorderThickness="0"/>
+                            <DatePicker x:Name="Dp_eventDay" VerticalAlignment="Center" Width="140" Background="White" BorderBrush="#969696" BorderThickness="1"/>
                         </Border>
 
                         <Label Style="{StaticResource Label}" DockPanel.Dock="Left" Content="From:" VerticalAlignment="Center" Margin="16,0,8,0" BorderThickness="0"/>
                         <Border Style="{StaticResource RoundInputBorder}" DockPanel.Dock="Left" Padding="1">
-                            <ComboBox x:Name="Cb_eventStart" Width="80" VerticalAlignment="Center" Background="Transparent" BorderBrush="Transparent" BorderThickness="0"/>
+                            <ComboBox x:Name="Cb_eventStart" Width="80" VerticalAlignment="Center" Background="White" BorderBrush="#969696" BorderThickness="1"/>
                         </Border>
                         <Label Style="{StaticResource Label}" DockPanel.Dock="Left" Content="To:" VerticalAlignment="Center" Margin="8,0,8,0" BorderThickness="0"/>
                         <Border Style="{StaticResource RoundInputBorder}" DockPanel.Dock="Left" Padding="1">
-                            <ComboBox x:Name="Cb_eventEnd" Width="80" VerticalAlignment="Center" Background="Transparent" BorderBrush="Transparent" BorderThickness="0"/>
+                            <ComboBox x:Name="Cb_eventEnd" Width="80" VerticalAlignment="Center" Background="White" BorderBrush="#969696" BorderThickness="1"/>
                         </Border>
 
                         <Button Style="{StaticResource RoundButton}" DockPanel.Dock="Right" Content="Add event" Padding="14,4" Margin="10,0,0,0" Click="AddCalendarEvent"/>
@@ -650,7 +673,7 @@
 
                 <!-- Week overview: 7 columns, one per day -->
                 <Border Style="{StaticResource CardBorder}" Grid.Row="2" Margin="10" Padding="10">
-                    <Grid>
+                    <Grid x:Name="PlanCalendarGrid">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
@@ -661,9 +684,8 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Day headers + content generated in code-behind for now.
-                             Reason: dynamic time-grid with hour rows is easier to build
-                             programmatically than to template. See RefreshPlanView(). -->
+                        <!-- Day headers + content generated in code-behind.
+                             See RefreshPlanView(). -->
                     </Grid>
                 </Border>
             </Grid>
