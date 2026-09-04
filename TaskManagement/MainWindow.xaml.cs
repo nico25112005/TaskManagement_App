@@ -54,6 +54,8 @@ namespace TaskManagement
             {
                 Tasks.ReadDataFromJson<Dictionary<string, Task>>("todos", out Tasks.tasks);
                 Tasks.ReadDataFromJson<Dictionary<string, Task>>("done", out Tasks.done);
+                Tasks.tasks ??= new Dictionary<string, Task>();
+                Tasks.done ??= new Dictionary<string, Task>();
                 CalendarEvents.ReadDataFromJson();
 
                 //Tasks.GenerateTasks(6, 1, 5, 1, 3, false);
