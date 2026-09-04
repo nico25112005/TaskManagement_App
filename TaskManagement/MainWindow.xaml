@@ -489,7 +489,7 @@
             </Grid>
 
             <!--Settings-->
-            <Grid Grid.Column="1" x:Name="Settings" Visibility="Collapsed">
+            <Grid Grid.Column="1" x:Name="SettingsPage" Visibility="Collapsed">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
                     <StackPanel MaxWidth="700" HorizontalAlignment="Left">
 

@@ -500,7 +500,7 @@ namespace TaskManagement
                 { Pages.Home, Home },
                 { Pages.Todo, Todo },
                 { Pages.Plan, Plan },
-                { Pages.Settings, Settings }
+                { Pages.Settings, SettingsPage }
             };
 
             foreach (var page in pageMap)
