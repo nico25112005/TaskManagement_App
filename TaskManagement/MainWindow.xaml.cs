@@ -457,6 +457,29 @@ namespace TaskManagement
             RefreshTodoList();
         }
 
+        private void Lv_Todos_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (Lv_Todos.SelectedItem is not Task task) return;
+
+            var dlg = new EditTaskWindow(task) { Owner = this };
+            var ok = dlg.ShowDialog();
+            if (ok == true)
+            {
+                Tasks.WriteDataToJson<Dictionary<string, Task>>("todos", Tasks.tasks);
+                Calculate();
+                Trace.WriteLine($"Edited task '{task.Description}'.");
+            }
+        }
+
+        private void UndoDoneTodo_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement fe || fe.Tag is not DoneTaskViewModel doneVm) return;
+            if (string.IsNullOrEmpty(doneVm.Id)) return;
+            Tasks.MarkUndone(doneVm.Id);
+            Calculate();
+            Trace.WriteLine($"Restored '{doneVm.Description}' from done.");
+        }
+
         private void SetColors()
         {
             Timer_Label.Background = Colorpalet(0);
