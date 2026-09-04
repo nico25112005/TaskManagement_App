@@ -253,10 +253,10 @@ namespace TaskManagement
         /// </summary>
         private void RefreshStatusBar()
         {
-            int openTasks = Tasks.tasks.Count;
-            float todayHours = Tasks.nWeek.Values
-                .Where(w => w.Date.Date == DateTime.Today)
-                .Sum(w => w.PlanedHours);
+            int openTasks = Tasks.tasks?.Count ?? 0;
+            float todayHours = 0;
+            try { todayHours = Tasks.nWeek?.Values.Where(w => w.Date.Date == DateTime.Today).Sum(w => w.PlanedHours) ?? 0; }
+            catch { }
 
             int todayFocusBlocks = 0;
             try
@@ -274,17 +274,22 @@ namespace TaskManagement
                 Trace.WriteLine($"StatusBar focus stats read failed: {ex.Message}");
             }
 
-            Status_OpenTasks.Text = $"Open tasks: {openTasks}";
-            Status_TodayHours.Text = $"Today: {todayHours:F1}h";
-            Status_FocusBlocks.Text = $"Focus blocks today: {todayFocusBlocks}";
+            if (Status_OpenTasks != null) Status_OpenTasks.Text = $"Open tasks: {openTasks}";
+            if (Status_TodayHours != null) Status_TodayHours.Text = $"Today: {todayHours:F1}h";
+            if (Status_FocusBlocks != null) Status_FocusBlocks.Text = $"Focus blocks today: {todayFocusBlocks}";
 
-            // Quick health message
-            if (_homeTodo.IsOverloaded)
-                Status_Message.Text = "Overloaded today — consider moving work to tomorrow.";
+            if (_homeTodo != null && _homeTodo.IsOverloaded)
+            {
+                if (Status_Message != null) Status_Message.Text = "Overloaded today — consider moving work to tomorrow.";
+            }
             else if (openTasks == 0)
-                Status_Message.Text = "All caught up — great job!";
+            {
+                if (Status_Message != null) Status_Message.Text = "All caught up — great job!";
+            }
             else
-                Status_Message.Text = "Ctrl+Shift+N to capture a new task quickly.";
+            {
+                if (Status_Message != null) Status_Message.Text = "Ctrl+Shift+N to capture a new task quickly.";
+            }
         }
 
         private void RefreshWeekPlan()
