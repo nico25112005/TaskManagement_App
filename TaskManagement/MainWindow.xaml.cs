@@ -35,15 +35,24 @@ namespace TaskManagement
 
         public MainWindow()
         {
-            InitializeComponent();
+            try
+            {
+                InitializeComponent();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"InitializeComponent failed: {ex.Message}\n\n{ex.StackTrace}", "Init Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                throw;
+            }
+
             _timer.PropertyChanged += (s, e) =>
             {
-                TimerDisplay.Content = _timer.Display;
-                TimerState.Content = _timer.StateLabel;
-                BtnTimerStart.IsEnabled = !_timer.IsRunning;
-                BtnTimerPause.IsEnabled = _timer.IsRunning;
-                BtnTimerStop.IsEnabled = _timer.IsRunning;
-                BtnTimerSkip.IsEnabled = _timer.Session.IsOnBreak;
+                if (TimerDisplay != null) TimerDisplay.Content = _timer.Display;
+                if (TimerState != null) TimerState.Content = _timer.StateLabel;
+                if (BtnTimerStart != null) BtnTimerStart.IsEnabled = !_timer.IsRunning;
+                if (BtnTimerPause != null) BtnTimerPause.IsEnabled = _timer.IsRunning;
+                if (BtnTimerStop != null) BtnTimerStop.IsEnabled = _timer.IsRunning;
+                if (BtnTimerSkip != null) BtnTimerSkip.IsEnabled = _timer.Session.IsOnBreak;
             };
             Settings.Load();
             StartUp();
@@ -499,17 +508,15 @@ namespace TaskManagement
 
         private void SetColors()
         {
-            Timer_Label.Background = Colorpalet(0);
-            Todo_Label.Background = Colorpalet(2);
-            Termine_Label.Background = Colorpalet(1);
-            Fertig_Label.Background = Colorpalet(3);
+            if (Timer_Label != null) Timer_Label.Background = Colorpalet(0);
+            if (Todo_Label != null) Todo_Label.Background = Colorpalet(2);
+            if (Termine_Label != null) Termine_Label.Background = Colorpalet(1);
+            if (Fertig_Label != null) Fertig_Label.Background = Colorpalet(3);
 
-            Description_Label.Background = Colorpalet(0);
-            Hours_Label.Background = Colorpalet(1);
-            DeliveryDate_Label.Background = Colorpalet(2);
-            Importancy_Label.Background = Colorpalet(3);
-
-
+            if (Description_Label != null) Description_Label.Background = Colorpalet(0);
+            if (Hours_Label != null) Hours_Label.Background = Colorpalet(1);
+            if (DeliveryDate_Label != null) DeliveryDate_Label.Background = Colorpalet(2);
+            if (Importancy_Label != null) Importancy_Label.Background = Colorpalet(3);
         }
 
         enum Pages
@@ -639,37 +646,37 @@ namespace TaskManagement
 
         private void RefreshSettingsUi()
         {
-            Sl_maxHours.Value = Settings.maxHoursPerDay;
-            Lbl_maxHours.Text = $"{Settings.maxHoursPerDay:F1}h";
+if (Sl_maxHours != null) Sl_maxHours.Value = Settings.maxHoursPerDay;
+            if (Lbl_maxHours != null) Lbl_maxHours.Text = $"{Settings.maxHoursPerDay:F1}h";
 
-            Sl_planableDays.Value = Settings.maxPlanableDays;
-            Lbl_planableDays.Text = $"{Settings.maxPlanableDays}d";
+            if (Sl_planableDays != null) Sl_planableDays.Value = Settings.maxPlanableDays;
+            if (Lbl_planableDays != null) Lbl_planableDays.Text = $"{Settings.maxPlanableDays}d";
 
-            Sl_focusMin.Value = Settings.focusBlockMinutes;
-            Lbl_focusMin.Text = $"{Settings.focusBlockMinutes}min";
+            if (Sl_focusMin != null) Sl_focusMin.Value = Settings.focusBlockMinutes;
+            if (Lbl_focusMin != null) Lbl_focusMin.Text = $"{Settings.focusBlockMinutes}min";
 
-            Sl_shortBreak.Value = Settings.shortBreakMinutes;
-            Lbl_shortBreak.Text = $"{Settings.shortBreakMinutes}min";
+            if (Sl_shortBreak != null) Sl_shortBreak.Value = Settings.shortBreakMinutes;
+            if (Lbl_shortBreak != null) Lbl_shortBreak.Text = $"{Settings.shortBreakMinutes}min";
 
-            Sl_longBreak.Value = Settings.longBreakMinutes;
-            Lbl_longBreak.Text = $"{Settings.longBreakMinutes}min";
+            if (Sl_longBreak != null) Sl_longBreak.Value = Settings.longBreakMinutes;
+            if (Lbl_longBreak != null) Lbl_longBreak.Text = $"{Settings.longBreakMinutes}min";
 
-            Sl_blocksBeforeLong.Value = Settings.blocksBeforeLongBreak;
-            Lbl_blocksBeforeLong.Text = $"{Settings.blocksBeforeLongBreak}";
+            if (Sl_blocksBeforeLong != null) Sl_blocksBeforeLong.Value = Settings.blocksBeforeLongBreak;
+            if (Lbl_blocksBeforeLong != null) Lbl_blocksBeforeLong.Text = $"{Settings.blocksBeforeLongBreak}";
 
-            Cb_workStart.SelectedIndex = Settings.workStartHour;
-            Cb_workEnd.SelectedIndex = Settings.workEndHour;
+            if (Cb_workStart != null) Cb_workStart.SelectedIndex = Settings.workStartHour;
+            if (Cb_workEnd != null) Cb_workEnd.SelectedIndex = Settings.workEndHour;
 
-            Tg_darkMode.IsChecked = Settings.darkMode;
-            Tg_darkMode.Content = Settings.darkMode ? "On" : "Off";
+            if (Tg_darkMode != null) Tg_darkMode.IsChecked = Settings.darkMode;
+            if (Tg_darkMode != null) Tg_darkMode.Content = Settings.darkMode ? "On" : "Off";
 
-            Lbl_dataPath.Text = System.AppContext.BaseDirectory;
-            Lbl_version.Text = "Version 0.1 \u2014 in active development";
+            if (Lbl_dataPath != null) Lbl_dataPath.Text = System.AppContext.BaseDirectory;
+            if (Lbl_version != null) Lbl_version.Text = "Version 0.1 \u2014 in active development";
         }
 
         private void InitSettingsUi()
         {
-            // Populate 0..24 hour pickers for work-day boundaries
+            if (Cb_workStart == null || Cb_workEnd == null) return;
             for (int h = 0; h <= 24; h++)
             {
                 Cb_workStart.Items.Add($"{h:D2}:00");
@@ -790,19 +797,17 @@ namespace TaskManagement
 
         private void InitPlanView()
         {
-            // Populate time pickers 0:00 .. 23:00 (start), 1:00 .. 24:00 (end).
-            // Hour-only granularity for v1 – minute-precision is a nice-to-have.
+            if (Cb_eventStart == null || Cb_eventEnd == null) return;
+
             for (int h = 0; h < 24; h++)
             {
                 Cb_eventStart.Items.Add($"{h:D2}:00");
                 Cb_eventEnd.Items.Add($"{h + 1:D2}:00");
             }
-            Cb_eventStart.SelectedIndex = 9;   // 09:00
-            Cb_eventEnd.SelectedIndex = 17;    // 18:00
-            Dp_eventDay.SelectedDate = DateTime.Today;
+            Cb_eventStart.SelectedIndex = 9;
+            Cb_eventEnd.SelectedIndex = 17;
+            if (Dp_eventDay != null) Dp_eventDay.SelectedDate = DateTime.Today;
 
-            // Reference the calendar grid directly by name. The grid is now wrapped
-            // in a Border for styling, so searching Plan.Children would miss it.
             _planGrid = PlanCalendarGrid;
         }
 
