@@ -32,7 +32,7 @@
   <ItemGroup>
     <Resource Include="Icons\Home.png" />
     <Resource Include="Icons\Home_mine.png" />
-    <Resource Include="Icons\AppIcon.png" />
+    <Resource Include="Icons\appicon.png" />
     <Resource Include="Icons\Settings.jpg" />
     <Resource Include="Icons\Settings.png" />
     <Resource Include="Icons\Tasks.png" />
