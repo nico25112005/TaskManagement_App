@@ -198,25 +198,42 @@ namespace TaskManagement
             };
 
             // Refresh the Todo (create-new-task) page's full list.
-            bool hasTasks = Tasks.tasks.Count > 0;
-            Lv_Todos.Visibility = hasTasks ? Visibility.Visible : Visibility.Collapsed;
-            Tb_TodoEmpty.Visibility = hasTasks ? Visibility.Collapsed : Visibility.Visible;
-            Lv_Todos.ItemsSource = null;
-            Lv_Todos.ItemsSource = source.ToList();
+            // Guard against null controls during partial initialization.
+            if (Lv_Todos != null)
+            {
+                bool hasTasks = Tasks.tasks.Count > 0;
+                Lv_Todos.Visibility = hasTasks ? Visibility.Visible : Visibility.Collapsed;
+                if (Tb_TodoEmpty != null)
+                    Tb_TodoEmpty.Visibility = hasTasks ? Visibility.Collapsed : Visibility.Visible;
+                Lv_Todos.ItemsSource = null;
+                Lv_Todos.ItemsSource = source.ToList();
+            }
 
             // Refresh the Home page's Today/Upcoming buckets via the view-model.
             _homeTodo.Refresh();
-            bool hasToday = _homeTodo.Today.Count > 0;
-            bool hasUpcoming = _homeTodo.Upcoming.Count > 0;
-            Lv_TodayTodos.Visibility = hasToday ? Visibility.Visible : Visibility.Collapsed;
-            Tb_TodayEmpty.Visibility = hasToday ? Visibility.Collapsed : Visibility.Visible;
-            Lv_UpcomingTodos.Visibility = hasUpcoming ? Visibility.Visible : Visibility.Collapsed;
-            Tb_UpcomingEmpty.Visibility = hasUpcoming ? Visibility.Collapsed : Visibility.Visible;
-            Lv_TodayTodos.ItemsSource = _homeTodo.Today;
-            Lv_UpcomingTodos.ItemsSource = _homeTodo.Upcoming;
-            Lv_DoneTodos.ItemsSource = _homeTodo.Done;
-            TodoLoadLabel.Content = _homeTodo.TodayLoadLabel;
-            TodoLoadLabel.Foreground = _homeTodo.IsOverloaded ? Brushes.IndianRed : Brushes.Gray;
+            if (Lv_TodayTodos != null)
+            {
+                bool hasToday = _homeTodo.Today.Count > 0;
+                Lv_TodayTodos.Visibility = hasToday ? Visibility.Visible : Visibility.Collapsed;
+                if (Tb_TodayEmpty != null)
+                    Tb_TodayEmpty.Visibility = hasToday ? Visibility.Collapsed : Visibility.Visible;
+                Lv_TodayTodos.ItemsSource = _homeTodo.Today;
+            }
+            if (Lv_UpcomingTodos != null)
+            {
+                bool hasUpcoming = _homeTodo.Upcoming.Count > 0;
+                Lv_UpcomingTodos.Visibility = hasUpcoming ? Visibility.Visible : Visibility.Collapsed;
+                if (Tb_UpcomingEmpty != null)
+                    Tb_UpcomingEmpty.Visibility = hasUpcoming ? Visibility.Collapsed : Visibility.Visible;
+                Lv_UpcomingTodos.ItemsSource = _homeTodo.Upcoming;
+            }
+            if (Lv_DoneTodos != null)
+                Lv_DoneTodos.ItemsSource = _homeTodo.Done;
+            if (TodoLoadLabel != null)
+            {
+                TodoLoadLabel.Content = _homeTodo.TodayLoadLabel;
+                TodoLoadLabel.Foreground = _homeTodo.IsOverloaded ? Brushes.IndianRed : Brushes.Gray;
+            }
 
             RefreshStatusBar();
         }
