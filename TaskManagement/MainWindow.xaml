@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:TaskManagement"
         mc:Ignorable="d"
         Title="Task Management" Margin="0,0,0,0" d:DesignWidth="1324" d:DesignHeight="786.96"
-        Icon="/Icons/Home_mine.png"
+        Icon="/Icons/AppIcon.png"
         KeyDown="Window_KeyDown">
 
     <Window.Resources>
@@ -385,28 +385,28 @@
 
                     <Button Style="{StaticResource NavButtonActive}" Click="Home_page" Margin="0,0,0,2">
                         <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="🏠" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                            <TextBlock Text="🏠" FontSize="26" HorizontalAlignment="Center" Margin="0,0,0,2"/>
                             <TextBlock Text="Home" FontSize="11" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
                     <Button Style="{StaticResource NavButton}" Click="Todo_page">
                         <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="✅" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                            <TextBlock Text="✅" FontSize="26" HorizontalAlignment="Center" Margin="0,0,0,2"/>
                             <TextBlock Text="Todo" FontSize="11" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
                     <Button Style="{StaticResource NavButton}" Click="Plan_page">
                         <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="📅" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                            <TextBlock Text="📅" FontSize="26" HorizontalAlignment="Center" Margin="0,0,0,2"/>
                             <TextBlock Text="Plan" FontSize="11" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
                     <Button Style="{StaticResource NavButton}" Click="Settings_page">
                         <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="⚙️" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                            <TextBlock Text="⚙️" FontSize="26" HorizontalAlignment="Center" Margin="0,0,0,2"/>
                             <TextBlock Text="Settings" FontSize="11" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Button>
@@ -450,7 +450,7 @@
                             <Label x:Name="TodoLoadLabel" Style="{StaticResource FieldLabel}" Content="" DockPanel.Dock="Top" Padding="0" Margin="0,0,0,4" Foreground="Gray" FontSize="11"/>
 
                             <!-- Today -->
-                            <Label Style="{StaticResource FieldLabel}" x:Name="TodayHeader" Content="Today" DockPanel.Dock="Top" FontWeight="SemiBold" FontSize="12" Padding="0,2" Margin="0,6,0,2"/>
+                            <Label Style="{StaticResource FieldLabel}" x:Name="TodayHeader" Content="Today" DockPanel.Dock="Top" FontWeight="SemiBold" FontSize="16" Padding="0,2" Margin="0,6,0,2"/>
                             <ListView Style="{StaticResource CardListView}" x:Name="Lv_TodayTodos" DockPanel.Dock="Top" MaxHeight="240" Visibility="Collapsed">
                                 <ListView.ItemTemplate>
                                     <DataTemplate>
@@ -467,7 +467,7 @@
                             <TextBlock x:Name="Tb_TodayEmpty" DockPanel.Dock="Top" Text="Nothing on your plate for today." FontSize="12" Foreground="Gray" Margin="8,6,8,6" TextWrapping="Wrap" Visibility="Collapsed"/>
 
                             <!-- Upcoming -->
-                            <Label Style="{StaticResource FieldLabel}" Content="Upcoming" DockPanel.Dock="Top" FontWeight="SemiBold" FontSize="12" Padding="0,2" Margin="0,8,0,2"/>
+                            <Label Style="{StaticResource FieldLabel}" Content="Upcoming" DockPanel.Dock="Top" FontWeight="SemiBold" FontSize="16" Padding="0,2" Margin="0,8,0,2"/>
                             <ListView Style="{StaticResource CardListView}" x:Name="Lv_UpcomingTodos" DockPanel.Dock="Top" Visibility="Collapsed">
                                 <ListView.ItemTemplate>
                                     <DataTemplate>
@@ -484,7 +484,7 @@
                             <TextBlock x:Name="Tb_UpcomingEmpty" DockPanel.Dock="Top" Text="No upcoming tasks. You're either all caught up or no delivery dates are set." FontSize="12" Foreground="Gray" Margin="8,6,8,6" TextWrapping="Wrap" Visibility="Collapsed"/>
 
                             <!-- Recently done -->
-                            <Label Style="{StaticResource FieldLabel}" Content="Recently done" DockPanel.Dock="Top" FontWeight="SemiBold" FontSize="12" Padding="0,2" Margin="0,8,0,2" Foreground="{StaticResource SuccessBrush}"/>
+                            <Label Style="{StaticResource FieldLabel}" Content="Recently done" DockPanel.Dock="Top" FontWeight="SemiBold" FontSize="16" Padding="0,2" Margin="0,8,0,2" Foreground="{StaticResource SuccessBrush}"/>
                             <ListView Style="{StaticResource CardListView}" x:Name="Lv_DoneTodos" DockPanel.Dock="Top" MaxHeight="160">
                                 <ListView.ItemTemplate>
                                     <DataTemplate>
@@ -592,7 +592,7 @@
                 <!-- Create form -->
                 <Border Style="{StaticResource CardBorder}" Margin="12,12,6,12" Padding="20" Background="White">
                     <StackPanel KeyDown="CreateForm_KeyDown">
-                        <TextBlock Text="New Task" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16" Foreground="#333"/>
+                        <TextBlock Text="New Task" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,16" Foreground="#333"/>
 
                         <Label Style="{StaticResource FieldLabel}" x:Name="Description_Label" Content="Description" Margin="0,0,0,2"/>
                         <TextBox Style="{StaticResource RoundTextBox}" Text="" x:Name="Tb_description" Margin="0,0,0,0"/>
@@ -645,11 +645,11 @@
                                             <RowDefinition/>
                                         </Grid.RowDefinitions>
 
-                                        <Label Content="Description:" Margin="8,0" Grid.Column="0" Grid.Row="0" FontWeight="SemiBold" FontSize="10" Foreground="Gray" Padding="0"/>
-                                        <Label Content="Delivery:" Margin="8,0" Grid.Column="1" Grid.Row="0" FontWeight="SemiBold" FontSize="10" Foreground="Gray" Padding="0"/>
-                                        <Label Content="Importance:" Margin="8,0" Grid.Column="2" Grid.Row="0" FontWeight="SemiBold" FontSize="10" Foreground="Gray" Padding="0"/>
-                                        <Label Content="Hours:" Margin="8,0" Grid.Column="3" Grid.Row="0" FontWeight="SemiBold" FontSize="10" Foreground="Gray" Padding="0"/>
-                                        <Label Content="Weight:" Margin="8,0" Grid.Column="4" Grid.Row="0" FontWeight="SemiBold" FontSize="10" Foreground="Gray" Padding="0"/>
+                                        <Label Content="Description:" Margin="8,0" Grid.Column="0" Grid.Row="0" FontWeight="SemiBold" FontSize="12" Foreground="Gray" Padding="0"/>
+                                        <Label Content="Delivery:" Margin="8,0" Grid.Column="1" Grid.Row="0" FontWeight="SemiBold" FontSize="12" Foreground="Gray" Padding="0"/>
+                                        <Label Content="Importance:" Margin="8,0" Grid.Column="2" Grid.Row="0" FontWeight="SemiBold" FontSize="12" Foreground="Gray" Padding="0"/>
+                                        <Label Content="Hours:" Margin="8,0" Grid.Column="3" Grid.Row="0" FontWeight="SemiBold" FontSize="12" Foreground="Gray" Padding="0"/>
+                                        <Label Content="Weight:" Margin="8,0" Grid.Column="4" Grid.Row="0" FontWeight="SemiBold" FontSize="12" Foreground="Gray" Padding="0"/>
 
                                         <Label Content="{Binding Description}" Style="{StaticResource Lv_item}" Grid.Column="0" Grid.Row="1" FontSize="12" Background="Transparent" Padding="0" Margin="8,0"/>
                                         <Label Content="{Binding Delivery, StringFormat='{}{0:dd.MM.yyyy}'}" Style="{StaticResource Lv_item}" Grid.Column="1" Grid.Row="1" FontSize="12" Background="Transparent" Padding="0" Margin="8,0"/>
@@ -678,7 +678,7 @@
                 <Border Style="{StaticResource CardBorder}" Grid.Row="0" Margin="12,12,12,0" Padding="12,8">
                     <DockPanel LastChildFill="True">
                         <Button DockPanel.Dock="Left" Style="{StaticResource SecondaryBtn}" Content="◀" Padding="10,4" Margin="0,0,8,0" Click="PlanPrevWeek_Click"/>
-                        <TextBlock x:Name="Tb_PlanWeekLabel" DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Margin="0,0,8,0" Text="Week of 03.09.2026 – 09.09.2026"/>
+                        <TextBlock x:Name="Tb_PlanWeekLabel" DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="18" FontWeight="SemiBold" Margin="0,0,8,0" Text="Week of 03.09.2026 – 09.09.2026"/>
                         <Button DockPanel.Dock="Left" Style="{StaticResource SecondaryBtn}" Content="▶" Padding="10,4" Margin="0,0,8,0" Click="PlanNextWeek_Click"/>
                         <Button DockPanel.Dock="Left" Style="{StaticResource SecondaryBtn}" Content="Today" Padding="10,4" Margin="0,0,0,0" Click="PlanToday_Click"/>
                     </DockPanel>
@@ -731,13 +731,13 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0">
                     <StackPanel MaxWidth="680" HorizontalAlignment="Left" Margin="20,16,20,16">
 
-                        <TextBlock Text="Settings" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBlock Text="Settings" FontSize="28" FontWeight="SemiBold" Margin="0,0,0,4"/>
                         <TextBlock Text="Personalize the planner and timer to match how you actually work." Foreground="Gray" FontSize="12" Margin="0,0,0,20"/>
 
                         <!-- Planner -->
                         <Border Style="{StaticResource CardBorder}" Padding="20" Margin="0,0,0,12">
                             <StackPanel>
-                                <TextBlock Text="Planner" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,4"/>
+                                <TextBlock Text="Planner" FontWeight="SemiBold" FontSize="18" Margin="0,0,0,4"/>
                                 <TextBlock Text="How many hours per day are realistic, and how far ahead should the planner look?" Foreground="Gray" FontSize="11" Margin="0,0,0,16"/>
 
                                 <TextBlock Text="Max hours per day" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
@@ -778,7 +778,7 @@
                         <!-- Focus timer -->
                         <Border Style="{StaticResource CardBorder}" Padding="20" Margin="0,0,0,12">
                             <StackPanel>
-                                <TextBlock Text="Focus timer" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,4"/>
+                                <TextBlock Text="Focus timer" FontWeight="SemiBold" FontSize="18" Margin="0,0,0,4"/>
                                 <TextBlock Text="Length of one focus block, breaks, and when to take a long one." Foreground="Gray" FontSize="11" Margin="0,0,0,16"/>
 
                                 <TextBlock Text="Focus block length" FontSize="12" Foreground="#555" Margin="0,0,0,4"/>
@@ -810,7 +810,7 @@
                         <!-- Appearance -->
                         <Border Style="{StaticResource CardBorder}" Padding="20" Margin="0,0,0,12">
                             <StackPanel>
-                                <TextBlock Text="Appearance" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,12"/>
+                                <TextBlock Text="Appearance" FontWeight="SemiBold" FontSize="18" Margin="0,0,0,12"/>
                                 <DockPanel Margin="0,0,0,4" LastChildFill="True">
                                     <TextBlock Text="Dark mode" VerticalAlignment="Center" FontSize="13"/>
                                     <ToggleButton x:Name="Tg_darkMode" DockPanel.Dock="Right" Content="Off" Width="60" Checked="Tg_darkMode_Changed" Unchecked="Tg_darkMode_Changed"/>
@@ -822,7 +822,7 @@
                         <!-- Data -->
                         <Border Style="{StaticResource CardBorder}" Padding="20" Margin="0,0,0,12">
                             <StackPanel>
-                                <TextBlock Text="Data" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,12"/>
+                                <TextBlock Text="Data" FontWeight="SemiBold" FontSize="18" Margin="0,0,0,12"/>
                                 <DockPanel Margin="0,0,0,8" LastChildFill="True">
                                     <TextBlock Text="Save location" VerticalAlignment="Center" FontSize="13"/>
                                     <Button DockPanel.Dock="Right" Style="{StaticResource SecondaryBtn}" Content="Open folder" Padding="12,4" Click="OpenDataFolder_Click"/>
@@ -839,7 +839,7 @@
                         <!-- About -->
                         <Border Style="{StaticResource CardBorder}" Padding="20">
                             <StackPanel>
-                                <TextBlock Text="About" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,8"/>
+                                <TextBlock Text="About" FontWeight="SemiBold" FontSize="18" Margin="0,0,0,8"/>
                                 <TextBlock Text="Task Management — A planner that respects your calendar and your time." Margin="0,0,0,4" FontSize="13"/>
                                 <TextBlock x:Name="Lbl_version" Foreground="Gray" FontSize="11" Margin="0,0,0,8"/>
                                 <TextBlock>
