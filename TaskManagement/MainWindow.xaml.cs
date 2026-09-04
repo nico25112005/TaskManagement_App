@@ -298,29 +298,24 @@ namespace TaskManagement
 
         private void RefreshWeekPlan()
         {
-            // Home panel: show today's distributed tasks AND calendar events
+            // Home panel: ONLY calendar events (appointments) for today
             var today = DateTime.Today;
             var result = new List<WeekPlanViewModel>();
 
-            // Today's distributed tasks
-            var todayWeek = Tasks.nWeek.Values.FirstOrDefault(w => w.Date.Date == today);
-            var todayTasks = todayWeek?.Tasks ?? new List<Task>();
-            var todayHours = todayWeek?.PlanedHours ?? 0;
-
-            // Today's calendar events
             var todayEvents = CalendarEvents.events.Where(ev => ev.IsOnDay(today)).ToList();
 
-            // Combine: show tasks first, then events
-            var allItems = new List<TaskViewModel>();
-            allItems.AddRange(todayTasks.Select(t => new TaskViewModel { Description = "📋 " + t.Description, Hours = t.Hours }));
-            allItems.AddRange(todayEvents.Select(ev => new TaskViewModel { Description = $"📅 {ev.Title} ({ev.Start:HH:mm}–{ev.End:HH:mm})", Hours = (float)(ev.End - ev.Start).TotalHours }));
+            var eventItems = todayEvents.Select(ev => new TaskViewModel
+            {
+                Description = $"{ev.Title} ({ev.Start:HH:mm}–{ev.End:HH:mm})",
+                Hours = (float)(ev.End - ev.Start).TotalHours
+            }).ToList();
 
             result.Add(new WeekPlanViewModel
             {
                 Day = $"{today:ddd dd.MM.}",
                 DayDate = today,
-                PlanedHours = todayHours,
-                Tasks = allItems
+                PlanedHours = (float)todayEvents.Sum(ev => (ev.End - ev.Start).TotalHours),
+                Tasks = eventItems
             });
 
             if (Lv_WeekPlan != null) Lv_WeekPlan.ItemsSource = result;
@@ -1543,20 +1538,17 @@ if (Sl_maxHours != null) Sl_maxHours.Value = Settings.maxHoursPerDay;
                     slotsPanel.Children.Add(empty);
                 }
 
-                // Add time labels for each slot boundary
-                for (int s = 0; s < totalSlots; s++)
+                // Add time labels for each hour boundary
+                for (int s = 0; s < totalSlots; s += 2)
                 {
-                    if (s % 2 == 0)
+                    var timeLabel = new TextBlock
                     {
-                        var timeLabel = new TextBlock
-                        {
-                            Text = $"{startH + s / 2:D2}:00",
-                            FontSize = 9,
-                            Foreground = new SolidColorBrush(Color.FromRgb(0xBB, 0xBB, 0xBB)),
-                            Margin = new Thickness(2, 4, 2, 0)
-                        };
-                        slotsPanel.Children.Insert(s, timeLabel);
-                    }
+                        Text = $"{startH + s / 2:D2}:00",
+                        FontSize = 9,
+                        Foreground = new SolidColorBrush(Color.FromRgb(0xBB, 0xBB, 0xBB)),
+                        Margin = new Thickness(2, 4, 2, 0)
+                    };
+                    slotsPanel.Children.Add(timeLabel);
                 }
 
                 scrollViewer.Content = slotsPanel;
