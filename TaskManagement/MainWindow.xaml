@@ -230,7 +230,7 @@
                                         <DockPanel>
                                             <Button DockPanel.Dock="Right" Content="↶ Undo" Padding="6,2" Margin="8,0,0,0" FontSize="10" Click="UndoDoneTodo_Click" Tag="{Binding}" Background="Transparent" BorderBrush="#abadb3"/>
                                             <Label DockPanel.Dock="Right" Content="{Binding DoneAtLabel}" FontSize="10" Foreground="Gray" Padding="4,0,0,0" VerticalContentAlignment="Center"/>
-                                            <Label Content="{Binding Description}" FontSize="12" Padding="0" TextDecorations="Strikethrough" Foreground="Gray"/>
+                                            <TextBlock Text="{Binding Description}" FontSize="12" Padding="0" TextDecorations="Strikethrough" Foreground="Gray" VerticalAlignment="Center"/>
                                         </DockPanel>
                                     </Border>
                                 </DataTemplate>
