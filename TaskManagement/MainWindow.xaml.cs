@@ -270,7 +270,7 @@ namespace TaskManagement
         {
             e.Effects = e.Data.GetDataPresent(typeof(TaskViewModel)) ? DragDropEffects.Move : DragDropEffects.None;
 
-            if (sender is not FrameworkElement container) return;
+            if (sender is not Panel container) return;
 
             // Remember the original background on first enter so DragLeave can restore it.
             if (_dragHoverOriginalBackground == null)
@@ -281,7 +281,7 @@ namespace TaskManagement
 
         private void DayTaskContainer_DragLeave(object sender, DragEventArgs e)
         {
-            if (sender is not FrameworkElement container) return;
+            if (sender is not Panel container) return;
 
             container.Background = _dragHoverOriginalBackground ?? Brushes.Transparent;
             _dragHoverOriginalBackground = null;
@@ -297,7 +297,7 @@ namespace TaskManagement
         /// Flashes the target day container's background from the accent yellow
         /// back to its original color over ~600ms to give the user clear drop feedback.
         /// </summary>
-        private void FlashDropTarget(FrameworkElement container)
+        private void FlashDropTarget(Panel container)
         {
             // Stop any previous flash so we don't stack timers on rapid drops.
             _dropFlashTimer?.Stop();
@@ -316,13 +316,12 @@ namespace TaskManagement
                 var timer = (DispatcherTimer)s;
                 timer.Stop();
 
-                if (timer.Tag is ValueTuple<FrameworkElement, Brush> flashInfo)
+                if (timer.Tag is ValueTuple<Panel, Brush> flashInfo)
                 {
                     var (element, restoreBrush) = flashInfo;
                     element.Background = restoreBrush;
                 }
 
-                timer.Tick -= (s, e) => { }; // Detach via no-op; the closure holds the only reference.
                 _dropFlashTimer = null;
             };
 
@@ -728,7 +727,7 @@ namespace TaskManagement
                     calendarEvents = CalendarEvents.events,
                     settings = Settings.ToData()
                 };
-                System.IO.File.WriteAllText(file, Newtonsoft.Json.JsonConvert.SerializeObject(payload, Formatting.Indented));
+                System.IO.File.WriteAllText(file, Newtonsoft.Json.JsonConvert.SerializeObject(payload, Newtonsoft.Json.Formatting.Indented));
                 Lbl_exportStatus.Text = $"Exported to {file}";
                 Lbl_exportStatus.Foreground = Brushes.DarkGreen;
             }
@@ -882,7 +881,7 @@ namespace TaskManagement
             }
 
             // Spacer row below the hour grid (for tasks footer)
-            _planGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(GridLength.Auto) });
+            _planGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
             var now = DateTime.Now;
 

@@ -412,7 +412,7 @@
 
 
                 <ListView Grid.Column="1" Margin="10" d:ItemsSource="{d:SampleData ItemCount=5}" Style="{StaticResource Color}" BorderThickness="0" x:Name="Lv_Todos" MouseDoubleClick="Lv_Todos_MouseDoubleClick" Visibility="Collapsed"/>
-                <TextBlock x:Name="Tb_TodoEmpty" Grid.Column="1" Margin="10" Text="No tasks yet. Create your first one above or press Ctrl+Shift+N." FontSize="14" Foreground="Gray" TextWrapping="Wrap" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" Visibility="Visible"/>>
+                <TextBlock x:Name="Tb_TodoEmpty" Grid.Column="1" Margin="10" Text="No tasks yet. Create your first one above or press Ctrl+Shift+N." FontSize="14" Foreground="Gray" TextWrapping="Wrap" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" Visibility="Visible"/>
 
                         <ListView.ItemTemplate >
                             <DataTemplate>
