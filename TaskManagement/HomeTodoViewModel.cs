@@ -108,17 +108,17 @@ namespace TaskManagement
 
             // "Recently done" = the most recently completed tasks. Capped at 10
             // to avoid flooding the Home tab if the user has a long history.
-            Done = Tasks.done.Values
+            Done = Tasks.done?.Values
                 .Where(t => t.DoneAt.HasValue)
                 .OrderByDescending(t => t.DoneAt)
                 .Take(10)
                 .Select(t => new DoneTaskViewModel
                 {
-                    Id = t.DoneAt.HasValue ? (Tasks.done.FirstOrDefault(kv => kv.Value == t).Key ?? "") : "",
+                    Id = t.DoneAt.HasValue ? (Tasks.done?.FirstOrDefault(kv => kv.Value == t).Key ?? "") : "",
                     Description = t.Description,
                     DoneAtLabel = t.DoneAt.HasValue ? t.DoneAt.Value.ToString("dd.MM. HH:mm") : ""
                 })
-                .ToList();
+                .ToList() ?? new();
         }
 
         /// <summary>

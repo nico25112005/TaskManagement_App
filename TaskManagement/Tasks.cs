@@ -74,6 +74,20 @@ namespace TaskManagement
 
             string json = File.ReadAllText(path);
             output = JsonConvert.DeserializeObject<T>(json);
+
+            // Guard against empty files: if the deserializer returns null but the
+            // caller expects a collection, replace it with an empty instance.
+            if (output == null)
+            {
+                try
+                {
+                    output = Activator.CreateInstance<T>();
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine($"Could not create empty instance of {typeof(T).Name}: {ex.Message}");
+                }
+            }
         }
 
         public static void GenerateTasks(byte amountOfTasks, sbyte lowerDaysTillDelivery, sbyte upperDaysTillDelivery, byte lowerHours, byte upperHours, bool hoursInMinutes)
