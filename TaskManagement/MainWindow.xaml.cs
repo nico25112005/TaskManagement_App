@@ -358,7 +358,7 @@ namespace TaskManagement
             _draggedTask = null;
 
             // Visual drop feedback: flash the target container before the view refreshes.
-            if (sender is FrameworkElement dropContainer)
+            if (sender is Panel dropContainer)
                 FlashDropTarget(dropContainer);
 
             RefreshWeekPlan();
