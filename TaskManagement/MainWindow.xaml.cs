@@ -1402,99 +1402,135 @@ if (Sl_maxHours != null) Sl_maxHours.Value = Settings.maxHoursPerDay;
             WeekDndGrid.ColumnDefinitions.Clear();
             WeekDndGrid.Children.Clear();
 
+            // Row 0: day headers, Row 1: scrollable time grid
+            // We use a Grid with 2 rows per column layout
+            // Actually simpler: each column is a day with header + ScrollViewer of time slots
+
             for (int i = 0; i < 7; i++)
             {
                 var dayDate = monday.AddDays(i);
                 var weekEntry = Tasks.nWeek.Values.FirstOrDefault(w => w.Date.Date == dayDate.Date);
                 var tasks = weekEntry?.Tasks ?? new List<Task>();
+                var dayEvents = CalendarEvents.events.Where(ev => ev.IsOnDay(dayDate)).ToList();
 
                 WeekDndGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
-                var card = new Border
-                {
-                    Style = (Style)FindResource("CardBorder"),
-                    Margin = new Thickness(3),
-                    Padding = new Thickness(8),
-                    MinHeight = 200
-                };
-                Grid.SetColumn(card, i);
+                // Outer column: header + scrollable time slots
+                var columnPanel = new StackPanel { Margin = new Thickness(2) };
 
-                var sp = new StackPanel();
-
-                var header = new TextBlock
+                // Day header
+                var headerPanel = new DockPanel { Margin = new Thickness(0, 0, 0, 4), LastChildFill = true };
+                var headerText = new TextBlock
                 {
                     Text = $"{dayDate:ddd dd.MM.}",
-                    FontSize = 14,
+                    FontSize = 13,
                     FontWeight = FontWeights.SemiBold,
-                    Margin = new Thickness(0, 0, 0, 8)
+                    VerticalAlignment = VerticalAlignment.Center
                 };
                 if (dayDate.Date == DateTime.Today)
-                    header.Foreground = (Brush)FindResource("PrimaryBrush");
-                sp.Children.Add(header);
+                    headerText.Foreground = (Brush)FindResource("PrimaryBrush");
+                headerPanel.Children.Add(headerText);
 
-                var hoursLabel = new TextBlock
+                var hoursText = new TextBlock
                 {
                     Text = $"{tasks.Sum(t => t.Hours):F1}h",
                     FontSize = 11,
                     Foreground = Brushes.Gray,
-                    Margin = new Thickness(0, 0, 0, 8)
+                    VerticalAlignment = VerticalAlignment.Center,
+                    DockPanel.Dock = Dock.Right
                 };
-                sp.Children.Add(hoursLabel);
+                headerPanel.Children.Add(hoursText);
+                columnPanel.Children.Add(headerPanel);
 
-                var dropPanel = new StackPanel
+                // Scrollable time slot list (work hours only: Settings.workStartHour..workEndHour)
+                int startH = Settings.workStartHour;
+                int endH = Settings.workEndHour;
+                int totalSlots = (endH - startH) * 2; // 30-min slots
+
+                var scrollViewer = new ScrollViewer
                 {
-                    AllowDrop = true,
-                    Background = Brushes.Transparent,
-                    Tag = dayDate.Date
+                    VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                    MaxHeight = 500,
+                    Padding = new Thickness(0)
                 };
-                dropPanel.Drop += WeekDnd_Drop;
-                dropPanel.DragEnter += WeekDnd_DragEnter;
-                dropPanel.DragLeave += WeekDnd_DragLeave;
-                dropPanel.DragOver += WeekDnd_DragOver;
 
+                var slotsPanel = new StackPanel { Tag = dayDate.Date, AllowDrop = true, Background = Brushes.Transparent };
+                slotsPanel.Drop += WeekDnd_Drop;
+                slotsPanel.DragEnter += WeekDnd_DragEnter;
+                slotsPanel.DragLeave += WeekDnd_DragLeave;
+                slotsPanel.DragOver += WeekDnd_DragOver;
+
+                // Distribute tasks into time slots (simple: stack them from start)
+                int slotIndex = 0;
                 foreach (var task in tasks)
                 {
+                    int taskSlots = Math.Max(1, (int)Math.Ceiling(task.Hours * 2)); // hours to 30-min slots
+                    string slotLabel = $"{startH + slotIndex / 2:D2}:{(slotIndex % 2) * 30:D2}";
+
                     var chip = new Border
                     {
-                        Background = Brushes.White,
-                        BorderBrush = (Brush)FindResource("BorderBrush"),
-                        BorderThickness = new Thickness(1),
+                        Background = (Brush)FindResource("PrimaryBrush"),
+                        BorderBrush = Brushes.Transparent,
+                        BorderThickness = new Thickness(0),
                         CornerRadius = new CornerRadius(6),
-                        Padding = new Thickness(8, 4, 8, 4),
-                        Margin = new Thickness(0, 2, 0, 2),
-                        Tag = task
+                        Padding = new Thickness(8, 6, 8, 6),
+                        Margin = new Thickness(2, 1, 2, 1),
+                        Tag = task,
+                        Height = Math.Max(28, taskSlots * 28) // each slot = 28px
                     };
                     chip.MouseLeftButtonDown += WeekDnd_ChipMouseLeftButtonDown;
 
-                    var grid = new Grid();
-                    grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-                    grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                    var chipContent = new Grid();
+                    chipContent.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                    chipContent.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
                     var desc = new TextBlock
                     {
                         Text = task.Description,
                         FontSize = 12,
                         FontWeight = FontWeights.SemiBold,
+                        Foreground = Brushes.White,
                         VerticalAlignment = VerticalAlignment.Center
                     };
                     Grid.SetColumn(desc, 0);
-                    grid.Children.Add(desc);
+                    chipContent.Children.Add(desc);
 
                     var hrs = new TextBlock
                     {
                         Text = $"{task.Hours:F1}h",
                         FontSize = 11,
-                        Foreground = Brushes.Gray,
+                        Foreground = new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xCC)),
                         VerticalAlignment = VerticalAlignment.Center
                     };
                     Grid.SetColumn(hrs, 1);
-                    grid.Children.Add(hrs);
+                    chipContent.Children.Add(hrs);
 
-                    chip.Child = grid;
-                    dropPanel.Children.Add(chip);
+                    chip.Child = chipContent;
+                    slotsPanel.Children.Add(chip);
+                    slotIndex += taskSlots;
                 }
 
-                if (tasks.Count == 0)
+                // Show calendar events as gray blocks
+                foreach (var ev in dayEvents)
+                {
+                    int evStartSlot = (int)((ev.Start.Hour - startH) * 2 + ev.Start.Minute / 30);
+                    int evEndSlot = (int)((ev.End.Hour - startH) * 2 + ev.End.Minute / 30);
+                    if (evStartSlot < 0) evStartSlot = 0;
+                    if (evEndSlot > totalSlots) evEndSlot = totalSlots;
+
+                    var evLabel = new TextBlock
+                    {
+                        Text = $"📅 {ev.Title} ({ev.Start:HH:mm}–{ev.End:HH:mm})",
+                        FontSize = 10,
+                        Foreground = Brushes.Gray,
+                        Margin = new Thickness(2, 1, 2, 1),
+                        Padding = new Thickness(6, 4, 6, 4)
+                    };
+                    slotsPanel.Children.Add(evLabel);
+                }
+
+                // Add empty time slot markers for remaining slots
+                if (tasks.Count == 0 && dayEvents.Count == 0)
                 {
                     var empty = new TextBlock
                     {
@@ -1504,11 +1540,36 @@ if (Sl_maxHours != null) Sl_maxHours.Value = Settings.maxHoursPerDay;
                         Margin = new Thickness(0, 8, 0, 0),
                         HorizontalAlignment = HorizontalAlignment.Center
                     };
-                    dropPanel.Children.Add(empty);
+                    slotsPanel.Children.Add(empty);
                 }
 
-                sp.Children.Add(dropPanel);
-                card.Child = sp;
+                // Add time labels for each slot boundary
+                for (int s = 0; s < totalSlots; s++)
+                {
+                    if (s % 2 == 0)
+                    {
+                        var timeLabel = new TextBlock
+                        {
+                            Text = $"{startH + s / 2:D2}:00",
+                            FontSize = 9,
+                            Foreground = new SolidColorBrush(Color.FromRgb(0xBB, 0xBB, 0xBB)),
+                            Margin = new Thickness(2, 4, 2, 0)
+                        };
+                        slotsPanel.Children.Insert(s, timeLabel);
+                    }
+                }
+
+                scrollViewer.Content = slotsPanel;
+                columnPanel.Children.Add(scrollViewer);
+
+                var card = new Border
+                {
+                    Style = (Style)FindResource("CardBorder"),
+                    Margin = new Thickness(2),
+                    Padding = new Thickness(8, 8, 8, 8)
+                };
+                card.Child = columnPanel;
+                Grid.SetColumn(card, i);
                 WeekDndGrid.Children.Add(card);
             }
         }
