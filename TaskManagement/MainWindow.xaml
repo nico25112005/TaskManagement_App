@@ -186,11 +186,6 @@
                         <Image Source="/Icons/Home_mine.png" Height="35" Width="35" Stretch="Uniform"/>
                         <Label Style="{StaticResource Label}" Background="Transparent" Content="Home" HorizontalAlignment="Center"/>
                     </StackPanel>
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="10"/>
-                        </Style>
-                    </Button.Resources>
 
                 </Button>
 
@@ -199,11 +194,6 @@
                         <Image Source="/icons/Tasks.png" Height="35" Width="35" Stretch="Uniform"/>
                         <Label Style="{StaticResource Label}" Background="Transparent" Content="To-do" HorizontalAlignment="Center"/>
                     </StackPanel>
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="10"/>
-                        </Style>
-                    </Button.Resources>
 
                 </Button>
 
@@ -212,11 +202,6 @@
                         <Image Source="/icons/Todo.png" Height="35" Width="35" Stretch="Uniform"/>
                         <Label Style="{StaticResource Label}" Background="Transparent" Content="Plan" HorizontalAlignment="Center"/>
                     </StackPanel>
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="10"/>
-                        </Style>
-                    </Button.Resources>
 
                 </Button>
 
@@ -225,11 +210,6 @@
                         <Image Source="/icons/Settings.png" Height="35" Width="35" Stretch="Uniform"/>
                         <Label Style="{StaticResource Label}" Background="Transparent" Content="Settings" HorizontalAlignment="Center"/>
                     </StackPanel>
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="10"/>
-                        </Style>
-                    </Button.Resources>
 
                 </Button>
             </StackPanel>
@@ -253,25 +233,10 @@
                     <Border Style="{StaticResource CardBorder}" Margin="0,0,0,10" Grid.Row="0" Padding="10">
                         <StackPanel>
                             <Label Style="{StaticResource Label}" x:Name="Timer_Label" DockPanel.Dock="Top" BorderBrush="#969696" BorderThickness="1,1,1,0" VerticalAlignment="Center" HorizontalContentAlignment="Center" Content="Timer">
-                                <Label.Resources>
-                                    <Style TargetType="Border">
-                                        <Setter Property="CornerRadius" Value="10,10,0,0"/>
-                                    </Style>
-                                </Label.Resources>
                             </Label>
                             <Label x:Name="TimerDisplay" Style="{StaticResource RoundValueLabel}" DockPanel.Dock="Top" BorderBrush="#969696" BorderThickness="1,0,1,0" Height="60" Content="00:00" FontSize="30">
-                                <Label.Resources>
-                                    <Style TargetType="Border">
-                                        <Setter Property="CornerRadius" Value="0"/>
-                                    </Style>
-                                </Label.Resources>
                             </Label>
                             <Label x:Name="TimerState" Style="{StaticResource RoundValueLabel}" DockPanel.Dock="Top" BorderBrush="#969696" BorderThickness="1,0,1,1" Height="22" Content="Ready" FontSize="11" Foreground="Gray">
-                                <Label.Resources>
-                                    <Style TargetType="Border">
-                                        <Setter Property="CornerRadius" Value="0,0,10,10"/>
-                                    </Style>
-                                </Label.Resources>
                             </Label>
                             <DockPanel DockPanel.Dock="Top" LastChildFill="False" Margin="0,8,0,0">
                                 <Button x:Name="BtnTimerStart" Style="{StaticResource RoundButton}" Content="Start" Height="40" Width="80" Margin="20,4,4,4" DockPanel.Dock="Left" Click="Timer_Start"/>
@@ -287,21 +252,11 @@
                     <Border Style="{StaticResource CardBorder}" Grid.Row="1" Margin="0,10,0,0" Padding="10">
                         <DockPanel>
                             <Label Style="{StaticResource Label}" x:Name="Todo_Label" Content="To-do" BorderBrush="#969696" BorderThickness="1,1,1,0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" >
-                                <Label.Resources>
-                                    <Style TargetType="Border">
-                                        <Setter Property="CornerRadius" Value="10,10,0,0"/>
-                                    </Style>
-                                </Label.Resources>
                             </Label>
                             <Label x:Name="TodoLoadLabel" Style="{StaticResource Label}" BorderBrush="#969696" BorderThickness="0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" FontSize="11" Padding="0,0,0,4" Content=""/>
 
                             <!-- Today section -->
                             <Label Style="{StaticResource Label}" x:Name="TodayHeader" Content="Today" DockPanel.Dock="Top" BorderBrush="#969696" BorderThickness="1,0,1,0" Padding="6,4" FontWeight="SemiBold" FontSize="12">
-                                <Label.Resources>
-                                    <Style TargetType="Border">
-                                        <Setter Property="CornerRadius" Value="0"/>
-                                    </Style>
-                                </Label.Resources>
                             </Label>
                             <ListView Style="{StaticResource RoundListView}" BorderThickness="1,0,1,1" x:Name="Lv_TodayTodos" DockPanel.Dock="Top" MaxHeight="240" Visibility="Collapsed">
 
@@ -321,11 +276,6 @@
 
                             <!-- Upcoming section -->
                             <Label Style="{StaticResource Label}" Content="Upcoming" DockPanel.Dock="Top" BorderBrush="#969696" BorderThickness="1,0,1,0" Padding="6,4" FontWeight="SemiBold" FontSize="12" Margin="0,8,0,0">
-                                <Label.Resources>
-                                    <Style TargetType="Border">
-                                        <Setter Property="CornerRadius" Value="0"/>
-                                    </Style>
-                                </Label.Resources>
                             </Label>
                             <ListView Style="{StaticResource RoundListView}" BorderThickness="1,0,1,1" x:Name="Lv_UpcomingTodos" DockPanel.Dock="Top" Visibility="Collapsed">
 
@@ -345,11 +295,6 @@
 
                             <!-- Recently done section -->
                             <Label Style="{StaticResource Label}" Content="Recently done" DockPanel.Dock="Top" BorderBrush="#969696" BorderThickness="1,0,1,0" Padding="6,4" FontWeight="SemiBold" FontSize="12" Margin="0,8,0,0" Foreground="#509C6E">
-                                <Label.Resources>
-                                    <Style TargetType="Border">
-                                        <Setter Property="CornerRadius" Value="0"/>
-                                    </Style>
-                                </Label.Resources>
                             </Label>
                             <ListView Style="{StaticResource RoundListView}" BorderThickness="1,0,1,1" x:Name="Lv_DoneTodos" DockPanel.Dock="Top" MaxHeight="160">
 
@@ -384,11 +329,6 @@
                             <DockPanel DockPanel.Dock="Top" LastChildFill="True">
                                 <Button Style="{StaticResource RoundButton}" Content="Redistribute" Padding="10,2" Margin="4,2" DockPanel.Dock="Right" Click="Redistribute_Click" ToolTip="Re-run task distribution (respects current CalendarEvents)"/>
                                 <Label Style="{StaticResource Label}" x:Name="Termine_Label" Content="Termine" BorderBrush="#969696" BorderThickness="1,1,1,0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" >
-                                    <Label.Resources>
-                                        <Style TargetType="Border">
-                                            <Setter Property="CornerRadius" Value="10,10,0,0"/>
-                                        </Style>
-                                    </Label.Resources>
                                 </Label>
                             </DockPanel>
                             <ListView x:Name="Lv_WeekPlan" Style="{StaticResource RoundListView}" BorderThickness="1,0,1,1">
@@ -452,11 +392,6 @@
                     <Border Style="{StaticResource CardBorder}" Grid.Row="1" Margin="0,10,0,0" Padding="10">
                         <DockPanel>
                             <Label Style="{StaticResource Label}" x:Name="Fertig_Label" Content="Fertig" BorderBrush="#969696" BorderThickness="1,1,1,0" HorizontalContentAlignment="Center" DockPanel.Dock="Top" >
-                                <Label.Resources>
-                                    <Style TargetType="Border">
-                                        <Setter Property="CornerRadius" Value="10,10,0,0"/>
-                                    </Style>
-                                </Label.Resources>
                             </Label>
 
                             <Grid >
@@ -567,46 +502,16 @@
                                         <Label Content="Weighting:" Margin="15,0" Grid.Column="4" Grid.Row="0" FontWeight="SemiBold" FontSize="11" Foreground="Gray"/>
 
                                         <Label Content="{Binding Description}" Style="{StaticResource Lv_item}" Grid.Column="0" Grid.Row="1" FontSize="12" Background="White">
-                                            <Label.Resources>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="CornerRadius" Value="8"/>
-                                                </Style>
-                                            </Label.Resources>
                                         </Label>
                                         <Label Content="{Binding Delivery, StringFormat='{}{0:dd.MM.yyyy}'}" Style="{StaticResource Lv_item}" Grid.Column="1" Grid.Row="1" FontSize="12" Background="White">
-                                            <Label.Resources>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="CornerRadius" Value="8"/>
-                                                </Style>
-                                            </Label.Resources>
                                         </Label>
                                         <Label Content="{Binding Importance}" Style="{StaticResource Lv_item}" Grid.Column="2" Grid.Row="1" FontSize="12" Background="White">
-                                            <Label.Resources>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="CornerRadius" Value="8"/>
-                                                </Style>
-                                            </Label.Resources>
                                         </Label>
                                         <Label Content="{Binding Hours}" Style="{StaticResource Lv_item}" Grid.Column="3" Grid.Row="1" FontSize="12" Background="White">
-                                            <Label.Resources>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="CornerRadius" Value="8"/>
-                                                </Style>
-                                            </Label.Resources>
                                         </Label>
                                         <Label Content="{Binding AllocationWeighting, StringFormat='{}{0:F0}'}" Style="{StaticResource Lv_item}" Grid.Column="4" Grid.Row="1" FontSize="12" Background="White">
-                                            <Label.Resources>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="CornerRadius" Value="8"/>
-                                                </Style>
-                                            </Label.Resources>
                                         </Label>
                                         <Button Content="✕" Grid.Column="5" Grid.Row="0" Grid.RowSpan="2" Width="24" Height="24" Margin="4,0,0,0" VerticalAlignment="Center" Background="#e35d48" Foreground="White" BorderThickness="0" Click="DeleteTodo_Click" Tag="{Binding}" FontSize="12">
-                                            <Button.Resources>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="CornerRadius" Value="12"/>
-                                                </Style>
-                                            </Button.Resources>
                                         </Button>
                                     </Grid>
                                 </Border>
