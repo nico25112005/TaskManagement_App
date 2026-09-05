@@ -8,7 +8,7 @@ import {
   useDraggable,
   useDroppable,
 } from '@dnd-kit/core';
-import { Undo2 } from 'lucide-react';
+import { Undo2, Clock } from 'lucide-react';
 import { useTaskStore } from '../stores/taskStore';
 import { useCalendarStore } from '../stores/calendarStore';
 import { useSettingsStore } from '../stores/settingsStore';
@@ -35,8 +35,6 @@ function DraggableTask({ task, dayIndex }: { task: Task; dayIndex: number }) {
     data: { taskId: task.id, fromDay: dayIndex },
   });
 
-  const heightPx = Math.max(28, (task.hours * 60) / 30 * 28);
-
   const style = transform
     ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`, zIndex: 50 }
     : undefined;
@@ -44,15 +42,18 @@ function DraggableTask({ task, dayIndex }: { task: Task; dayIndex: number }) {
   return (
     <div
       ref={setNodeRef}
-      style={{ ...style, height: `${heightPx}px` }}
-      className={`bg-primary/20 border border-primary/40 rounded-md px-2 py-1 text-xs text-primary cursor-grab hover:bg-primary/30 transition-colors ${
+      style={style}
+      className={`bg-primary text-white rounded-lg px-3 py-2 text-sm cursor-grab hover:bg-primary/90 transition-colors shadow-sm ${
         isDragging ? 'opacity-50' : ''
       }`}
       {...listeners}
       {...attributes}
     >
       <div className="font-medium truncate">{task.description}</div>
-      <div className="text-[10px] opacity-70">{task.hours}h</div>
+      <div className="text-xs opacity-80 flex items-center gap-1">
+        <Clock size={11} />
+        {task.hours.toFixed(1)}h
+      </div>
     </div>
   );
 }
@@ -60,10 +61,12 @@ function DraggableTask({ task, dayIndex }: { task: Task; dayIndex: number }) {
 function DroppableDay({
   day,
   dayIndex,
+  maxHours,
   children,
 }: {
   day: WeekDayType;
   dayIndex: number;
+  maxHours: number;
   children: React.ReactNode;
 }) {
   const { setNodeRef, isOver } = useDroppable({
@@ -71,29 +74,29 @@ function DroppableDay({
     data: { dayIndex, date: day.date },
   });
 
-  const hoursColor = day.plannedHours > 5 ? 'text-danger' : day.plannedHours > 3 ? 'text-highlight' : 'text-success';
+  const isOverloaded = day.plannedHours > maxHours;
+  const hoursColor = isOverloaded ? 'text-danger' : day.plannedHours > 0 ? 'text-success' : 'text-gray-400';
+  const hoursBg = isOverloaded ? 'bg-danger/10' : isOver ? 'bg-success/10' : '';
 
   return (
     <div
       ref={setNodeRef}
-      className={`flex-1 min-w-[120px] border-r border-gray-200 dark:border-dark-border last:border-r-0 ${
-        isOver ? 'bg-success/10 border-2 border-success/40 rounded' : ''
-      }`}
+      className={`flex-1 min-w-[130px] border-r border-gray-200 dark:border-gray-700 last:border-r-0 transition-colors ${hoursBg}`}
     >
       {/* Day header */}
-      <div className="h-14 border-b border-gray-200 dark:border-dark-border flex flex-col items-center justify-center">
-        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+      <div className="h-16 border-b border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center gap-0.5">
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
           {dayNames[dayIndex]}
         </span>
-        <span className="text-[10px] text-gray-400">
+        <span className="text-xs text-gray-400">
           {new Date(day.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })}
         </span>
-        <span className={`text-[10px] font-medium ${hoursColor}`}>
-          {day.plannedHours.toFixed(1)}h
+        <span className={`text-xs font-bold ${hoursColor}`}>
+          {day.plannedHours.toFixed(1)}h / {maxHours.toFixed(1)}h
         </span>
       </div>
-      {/* Task area */}
-      <div className="p-1 space-y-1" style={{ minHeight: '300px' }}>
+      {/* Task area — no hour grid, just a simple list */}
+      <div className="p-2 space-y-2" style={{ minHeight: '400px' }}>
         {children}
       </div>
     </div>
@@ -114,7 +117,6 @@ export function Week({ onToast }: WeekProps) {
 
   const computedDays = useMemo(() => {
     const days = distributeTasks(Object.values(tasks), events, settings);
-    // Filter to current week
     const weekDays: WeekDayType[] = [];
     for (let i = 0; i < 7; i++) {
       const date = new Date(weekStart);
@@ -142,10 +144,8 @@ export function Week({ onToast }: WeekProps) {
 
     if (fromDay === toDay) return;
 
-    // Save undo state
     setUndoData(displayDays.map((d) => ({ ...d, tasks: [...d.tasks] })));
 
-    // Move task
     setLocalDistribution((prev) => {
       const days = (prev ?? computedDays).map((d) => ({ ...d, tasks: [...d.tasks] }));
       const task = days[fromDay].tasks.find((t) => t.id === taskId);
@@ -173,19 +173,33 @@ export function Week({ onToast }: WeekProps) {
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekEnd.getDate() + 6);
 
-  // Hour labels
-  const hourLabels = useMemo(() => {
-    const labels: string[] = [];
-    for (let h = settings.workStartHour; h <= settings.workEndHour; h++) {
-      labels.push(`${h.toString().padStart(2, '0')}:00`);
-    }
-    return labels;
-  }, [settings.workStartHour, settings.workEndHour]);
+  const goToPrevWeek = () => {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() - 7);
+    setWeekStart(d);
+  };
+
+  const goToNextWeek = () => {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + 7);
+    setWeekStart(d);
+  };
+
+  const goToToday = () => setWeekStart(getWeekStart(new Date()));
+
+  // Calculate total week hours
+  const totalWeekHours = displayDays.reduce((sum, d) => sum + d.plannedHours, 0);
+  const maxWeekHours = settings.maxHoursPerDay * 7;
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-dark-text">Woche</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Woche</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+            Gesamt: {totalWeekHours.toFixed(1)}h / {maxWeekHours.toFixed(1)}h
+          </p>
+        </div>
         {undoData && (
           <button onClick={handleUndo} className="btn-secondary flex items-center gap-2 text-sm">
             <Undo2 size={16} />
@@ -195,51 +209,28 @@ export function Week({ onToast }: WeekProps) {
       </div>
 
       {/* Date Navigation */}
-      <div className="flex items-center justify-center gap-4 mb-4">
-        <button
-          onClick={() => setWeekStart(new Date(new Date(weekStart).setDate(weekStart.getDate() - 7)))}
-          className="btn-secondary p-2"
-        >
-          ◀
-        </button>
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+      <div className="flex items-center justify-center gap-3 mb-4">
+        <button onClick={goToPrevWeek} className="btn-secondary p-2">◀</button>
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[180px] text-center">
           {weekStart.toLocaleDateString('de-DE')} – {weekEnd.toLocaleDateString('de-DE')}
         </span>
-        <button
-          onClick={() => setWeekStart(new Date(new Date(weekStart).setDate(weekStart.getDate() + 7)))}
-          className="btn-secondary p-2"
-        >
-          ▶
-        </button>
-        <button onClick={() => setWeekStart(getWeekStart(new Date()))} className="btn-secondary text-xs">
-          Heute
-        </button>
+        <button onClick={goToNextWeek} className="btn-secondary p-2">▶</button>
+        <button onClick={goToToday} className="btn-secondary text-xs">Heute</button>
       </div>
 
-      {/* Week Grid with DnD */}
+      {/* Week Grid with DnD — no hour raster, just task cards per day */}
       <div className="card overflow-x-auto">
         <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
           <div className="flex min-w-[700px]">
-            {/* Hour labels */}
-            <div className="w-12 shrink-0 border-r border-gray-200 dark:border-dark-border">
-              <div className="h-14 border-b border-gray-200 dark:border-dark-border" />
-              {hourLabels.map((label) => (
-                <div key={label} className="text-[10px] text-gray-400 text-right pr-1" style={{ height: '56px' }}>
-                  {label}
-                </div>
-              ))}
-            </div>
-
-            {/* Day columns */}
             {displayDays.map((day, dayIdx) => (
-              <DroppableDay key={dayIdx} day={day} dayIndex={dayIdx}>
+              <DroppableDay key={dayIdx} day={day} dayIndex={dayIdx} maxHours={settings.maxHoursPerDay}>
                 {day.tasks.length === 0 ? (
-                  <div className="text-center text-[10px] text-gray-300 dark:text-gray-600 py-4">
-                    Frei
+                  <div className="text-center text-xs text-gray-300 dark:text-gray-600 py-8">
+                    Keine Tasks
                   </div>
                 ) : (
                   day.tasks.map((task) => (
-                    <DraggableTask key={task.id + dayIdx} task={task} dayIndex={dayIdx} />
+                    <DraggableTask key={task.id + '-' + dayIdx} task={task} dayIndex={dayIdx} />
                   ))
                 )}
               </DroppableDay>
@@ -247,6 +238,10 @@ export function Week({ onToast }: WeekProps) {
           </div>
         </DndContext>
       </div>
+
+      <p className="text-xs text-gray-400 mt-3 text-center">
+        Tasks per Drag & Drop zwischen Tagen verschieben
+      </p>
     </div>
   );
 }
