@@ -19,13 +19,6 @@ function formatDateHeader(date: Date): string {
   return `${days[date.getDay()]} ${date.getDate().toString().padStart(2, '0')}.${months[date.getMonth() - 1] ?? '01'}`;
 }
 
-const typeColors: Record<CalendarEventType, string> = {
-  FixedAppointment: 'border-danger/40',
-  WorkHours: 'border-primary/30',
-  FreeTime: 'border-success/30',
-  Sleep: 'border-gray-600/40',
-};
-
 export function Plan() {
   const { events, addEvent } = useCalendarStore();
   const settings = useSettingsStore((s) => s.settings);
@@ -190,9 +183,7 @@ export function Plan() {
                   {/* Events */}
                   {dayEvents.map((event) => {
                     const eventStart = new Date(event.start);
-                    const eventEnd = new Date(event.end);
                     const startHour = eventStart.getHours() + eventStart.getMinutes() / 60;
-                    const endHour = eventEnd.getHours() + eventEnd.getMinutes() / 60;
                     const top = (startHour - settings.workStartHour) * rowHeight;
                     return (
                       <div key={event.id} className="absolute left-1 right-1" style={{ top: `${top}px` }}>

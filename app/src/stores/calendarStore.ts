@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { CalendarEvent, CalendarEventType } from '../types';
+import type { CalendarEvent } from '../types';
 import { loadFromStorage, saveToStorage } from '../lib/storage';
 
 interface CalendarState {

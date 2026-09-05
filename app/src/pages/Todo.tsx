@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Plus, Edit } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useTaskStore } from '../stores/taskStore';
 import type { Task, SortOption } from '../types';
 import { FilterBar } from '../components/FilterBar';
