@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useCalendarStore } from '../stores/calendarStore';
 import { EventTile } from '../components/EventTile';
@@ -92,6 +92,7 @@ export function Plan() {
   }, []);
 
   const rowHeight = 48; // px per hour
+  const firstHour = 0;
   const totalGridHeight = 24 * rowHeight;
 
   const handleAddEvent = (e: React.FormEvent) => {
@@ -146,6 +147,65 @@ export function Plan() {
   };
 
   const goToToday = () => setWeekStart(getWeekStart(new Date()));
+
+  // --- Drag-to-Create ---
+  const [drag, setDrag] = useState<{ dayIdx: number; startHour: number; currentHour: number } | null>(null);
+  const gridRefs = useRef<HTMLDivElement[]>([]);
+
+  const pixelToHour = useCallback((clientY: number, dayIdx: number) => {
+    const gridEl = gridRefs.current[dayIdx];
+    if (!gridEl) return firstHour;
+    const rect = gridEl.getBoundingClientRect();
+    const y = clientY - rect.top;
+    const rawHour = firstHour + y / rowHeight;
+    // Snap to 30-minute increments
+    return Math.round(rawHour * 2) / 2;
+  }, []);
+
+  const handleGridMouseDown = (e: React.MouseEvent, dayIdx: number) => {
+    // Only start drag on left button
+    if (e.button !== 0) return;
+    const hour = pixelToHour(e.clientY, dayIdx);
+    if (hour < firstHour || hour > 24) return;
+    setDrag({ dayIdx, startHour: hour, currentHour: hour });
+    e.preventDefault();
+  };
+
+  const handleGridMouseMove = (e: React.MouseEvent, dayIdx: number) => {
+    if (!drag || drag.dayIdx !== dayIdx) return;
+    const hour = pixelToHour(e.clientY, dayIdx);
+    const clamped = Math.max(firstHour, Math.min(24, hour));
+    setDrag({ ...drag, currentHour: clamped });
+  };
+
+  const handleGridMouseUp = () => {
+    if (!drag) return;
+    const start = Math.min(drag.startHour, drag.currentHour);
+    const end = Math.max(drag.startHour, drag.currentHour);
+    if (end - start >= 0.5) {
+      // Open add-event form with pre-filled times
+      const startH = Math.floor(start);
+      const startM = start % 1 === 0.5 ? 30 : 0;
+      const endH = Math.floor(end);
+      const endM = end % 1 === 0.5 ? 30 : 0;
+      setEvtDay(drag.dayIdx);
+      setEvtType('FixedAppointment');
+      setEvtTitle('');
+      setEvtStart(`${startH.toString().padStart(2, '0')}:${startM.toString().padStart(2, '0')}`);
+      setEvtEnd(`${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`);
+      setShowAdd(true);
+    }
+    setDrag(null);
+  };
+
+  const formatDragTime = (h: number) => {
+    const hh = Math.floor(h);
+    const mm = h % 1 === 0.5 ? '30' : '00';
+    return `${hh.toString().padStart(2, '0')}:${mm}`;
+  };
+
+  // Helper to convert an event's local hour into grid coordinates (1..24 => 0..23 rows)
+  const eventTop = (date: Date) => (date.getHours() + date.getMinutes() / 60 - firstHour) * rowHeight;
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto">
@@ -238,6 +298,12 @@ export function Plan() {
             // Compute overlap layout for this day's events
             const eventLayout = layoutEvents(dayEvents);
 
+            // Drag overlay for this day
+            const dayDrag = drag && drag.dayIdx === dayIdx ? {
+              start: Math.min(drag.startHour, drag.currentHour),
+              end: Math.max(drag.startHour, drag.currentHour),
+            } : null;
+
             return (
               <div key={dayIdx} className="flex-1 border-r border-gray-200 dark:border-gray-700 last:border-r-0 relative">
                 {/* Header */}
@@ -246,23 +312,38 @@ export function Plan() {
                 }`}>
                   {dayNames[dayIdx]} {day.getDate().toString().padStart(2, '0')}.{(day.getMonth() + 1).toString().padStart(2, '0')}
                 </div>
-                {/* Hour grid 0-24 */}
-                <div className="relative" style={{ height: totalGridHeight }}>
+                {/* Hour grid 1-24 */}
+                <div
+                  className="relative overflow-hidden select-none"
+                  style={{ height: totalGridHeight }}
+                  ref={(el) => { if (el) gridRefs.current[dayIdx] = el; }}
+                  onMouseDown={(e) => handleGridMouseDown(e, dayIdx)}
+                  onMouseMove={(e) => handleGridMouseMove(e, dayIdx)}
+                  onMouseUp={handleGridMouseUp}
+                  onMouseLeave={() => { if (drag) setDrag(null); }}
+                >
                   {/* Hour slot lines */}
-                  {hours.slice(0, 24).map((h) => (
+                  {hours.map((h) => (
                     <div
                       key={h}
-                      className="border-b border-gray-100 dark:border-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer"
+                      className="border-b border-gray-100 dark:border-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors"
                       style={{ height: rowHeight }}
-                      onClick={() => {
-                        // Click on hour slot → pre-fill add form with correct times
-                        setEvtDay(dayIdx);
-                        setEvtStart(`${h.toString().padStart(2, '0')}:00`);
-                        setEvtEnd(`${(h + 1).toString().padStart(2, '0')}:00`);
-                        setShowAdd(true);
-                      }}
                     />
                   ))}
+                  {/* Drag selection overlay */}
+                  {dayDrag && (
+                    <div
+                      className="absolute left-0 right-0 bg-primary/20 border-2 border-primary rounded-md z-30 pointer-events-none flex items-start justify-center pt-1"
+                      style={{
+                        top: `${(dayDrag.start - firstHour) * rowHeight}px`,
+                        height: `${(dayDrag.end - dayDrag.start) * rowHeight}px`,
+                      }}
+                    >
+                      <span className="text-xs font-semibold text-primary bg-white/80 dark:bg-dark-panel/80 px-2 py-0.5 rounded">
+                        {formatDragTime(dayDrag.start)} – {formatDragTime(dayDrag.end)}
+                      </span>
+                    </div>
+                  )}
                   {/* Now indicator */}
                   {nowIndicator && nowIndicator.dayKey === dayKey && (
                     <div
@@ -276,10 +357,9 @@ export function Plan() {
                   {dayEvents.map((event) => {
                     const eventStart = new Date(event.start);
                     const eventEnd = new Date(event.end);
-                    const startHour = eventStart.getHours() + eventStart.getMinutes() / 60;
-                    const endHour = eventEnd.getHours() + eventEnd.getMinutes() / 60;
-                    const top = startHour * rowHeight;
-                    const heightPx = Math.max(24, (endHour - startHour) * rowHeight);
+                    const top = eventTop(eventStart);
+                    const durationHours = (eventEnd.getTime() - eventStart.getTime()) / (1000 * 60 * 60);
+                    const heightPx = Math.max(24, durationHours * rowHeight);
                     const layout = eventLayout.get(event.id) ?? { col: 0, cols: 1 };
                     const widthPct = 100 / layout.cols;
                     const leftPct = layout.col * widthPct;

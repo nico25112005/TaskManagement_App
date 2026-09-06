@@ -6,6 +6,7 @@ interface TaskCardProps {
   onDelete?: (id: string) => void;
   onDoubleClick?: (task: Task) => void;
   onToggleDone?: (id: string) => void;
+  onClick?: (task: Task) => void;
 }
 
 const importanceColors: Record<number, string> = {
@@ -37,10 +38,11 @@ function formatDate(dateStr: string): string {
   return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-export function TaskCard({ task, onDelete, onDoubleClick, onToggleDone }: TaskCardProps) {
+export function TaskCard({ task, onDelete, onDoubleClick, onToggleDone, onClick }: TaskCardProps) {
   return (
     <div
       className="card p-3 flex items-start gap-3 cursor-pointer hover:shadow-md transition-all"
+      onClick={() => onClick?.(task)}
       onDoubleClick={() => onDoubleClick?.(task)}
     >
       <button

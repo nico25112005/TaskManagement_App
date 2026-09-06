@@ -10,6 +10,7 @@ interface TaskState {
   deleteTask: (id: string) => void;
   markDone: (id: string) => void;
   markUndone: (id: string) => void;
+  deleteDoneTask: (id: string) => void;
   loadTasks: () => void;
 }
 
@@ -85,6 +86,15 @@ export const useTaskStore = create<TaskState>((set) => ({
       saveToStorage(STORAGE_KEY, tasks);
       saveToStorage(DONE_KEY, done);
       return { tasks, done };
+    });
+  },
+
+  deleteDoneTask: (id) => {
+    set((state) => {
+      const done = { ...state.done };
+      delete done[id];
+      saveToStorage(DONE_KEY, done);
+      return { done };
     });
   },
 

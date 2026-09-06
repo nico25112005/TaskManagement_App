@@ -35,6 +35,11 @@ function getAvailableHoursForDay(
   const defaultHours = settings.workEndHour - settings.workStartHour;
   const availableFromEvents = workHours > 0 ? workHours : defaultHours;
 
+  // If max hours cap is disabled, don't limit by maxHoursPerDay
+  if (settings.useMaxHoursCap === false) {
+    return availableFromEvents;
+  }
+
   return Math.min(availableFromEvents, settings.maxHoursPerDay);
 }
 
@@ -112,8 +117,11 @@ export function distributeTasks(
 
     // If task couldn't be fully placed, put remaining in the last day with space
     if (remainingHours > 0) {
+      const dayCap = settings.useMaxHoursCap === false
+        ? (settings.workEndHour - settings.workStartHour)
+        : settings.maxHoursPerDay;
       for (let i = days.length - 1; i >= 0; i--) {
-        const available = settings.maxHoursPerDay - days[i].plannedHours;
+        const available = dayCap - days[i].plannedHours;
         if (available > 0) {
           const hoursToPlace = Math.min(available, remainingHours);
           partNumber++;

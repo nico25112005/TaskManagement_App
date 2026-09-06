@@ -22,6 +22,7 @@ export interface CalendarEvent {
 
 export interface Settings {
   maxHoursPerDay: number;
+  useMaxHoursCap: boolean;
   maxPlanableDays: number;
   workStartHour: number;
   workEndHour: number;

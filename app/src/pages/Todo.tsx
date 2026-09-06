@@ -1,22 +1,25 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, ChevronDown, ChevronRight, Undo, Trash2 } from 'lucide-react';
 import { useTaskStore } from '../stores/taskStore';
 import type { Task, SortOption } from '../types';
 import { FilterBar } from '../components/FilterBar';
 import { TaskCard } from '../components/TaskCard';
 import { EmptyState } from '../components/EmptyState';
 import { EditTaskModal } from '../components/EditTaskModal';
+import { TaskDetail } from '../components/TaskDetail';
 
 interface TodoProps {
   onToast: (message: string, type?: 'success' | 'error' | 'info') => void;
 }
 
 export function Todo({ onToast }: TodoProps) {
-  const { tasks, addTask, deleteTask, markDone } = useTaskStore();
+  const { tasks, done, addTask, deleteTask, updateTask, markDone, deleteDoneTask } = useTaskStore();
   const [filter, setFilter] = useState('');
   const [sort, setSort] = useState<SortOption>('due');
   const [showCreate, setShowCreate] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [detailTask, setDetailTask] = useState<Task | null>(null);
+  const [showDone, setShowDone] = useState(false);
 
   // Create form state
   const [description, setDescription] = useState('');
@@ -70,11 +73,17 @@ export function Todo({ onToast }: TodoProps) {
     onToast('Task gelöscht', 'info');
   };
 
+  const handleDeleteDone = (id: string) => {
+    deleteDoneTask(id);
+    onToast('Task endgültig gelöscht', 'info');
+  };
+
+  const handleUndoDone = (id: string) => {
+    useTaskStore.getState().markUndone(id);
+    onToast('Task wieder geöffnet', 'info');
+  };
+
   const handleToggleDone = (id: string) => {
-    // If the task is in the active tasks store, mark it done.
-    // If it's in the done store, mark it undone.
-    // TaskCard is only rendered for active (not-done) tasks in the Todo list,
-    // so this always marks done. The done list is shown separately if needed.
     if (tasks[id]) {
       markDone(id);
       onToast('Task erledigt! 🎉', 'success');
@@ -83,6 +92,8 @@ export function Todo({ onToast }: TodoProps) {
       onToast('Task wieder geöffnet', 'info');
     }
   };
+
+  const doneList = useMemo(() => Object.values(done), [done]);
 
   return (
     <div className="p-4 md:p-6 max-w-4xl mx-auto">
@@ -168,12 +179,89 @@ export function Todo({ onToast }: TodoProps) {
               onDelete={handleDelete}
               onToggleDone={handleToggleDone}
               onDoubleClick={(t) => setEditingTask(t)}
+              onClick={(t) => setDetailTask(t)}
             />
           ))}
         </div>
       )}
 
+      {/* Done Tasks Section */}
+      {doneList.length > 0 && (
+        <div className="mt-6">
+          <button
+            onClick={() => setShowDone(!showDone)}
+            className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors mb-2"
+          >
+            {showDone ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            <span>Erledigte Tasks ({doneList.length})</span>
+            <span className="text-xs text-gray-400">
+              {showDone ? 'ausblenden' : 'anzeigen'}
+            </span>
+          </button>
+
+          {showDone && (
+            <div className="space-y-1.5 animate-fade-in">
+              {doneList.map((task) => (
+                <div
+                  key={task.id}
+                  className="card p-2.5 flex items-center gap-3 opacity-60 hover:opacity-90 transition-opacity"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-gray-500 dark:text-gray-500 line-through truncate">
+                      {task.description}
+                    </p>
+                    <div className="flex items-center gap-2 mt-0.5 text-[11px] text-gray-400">
+                      <span>{task.hours}h</span>
+                      <span>•</span>
+                      <span>{new Date(task.delivery).toLocaleDateString('de-DE')}</span>
+                      {task.doneAt && (
+                        <>
+                          <span>•</span>
+                          <span>Erledigt: {new Date(task.doneAt).toLocaleDateString('de-DE')}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleUndoDone(task.id)}
+                    className="text-gray-400 hover:text-primary p-1.5 rounded-lg transition-colors"
+                    aria-label="Wieder öffnen"
+                    title="Wieder öffnen"
+                  >
+                    <Undo size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteDone(task.id)}
+                    className="text-gray-400 hover:text-danger p-1.5 rounded-lg transition-colors"
+                    aria-label="Endgültig löschen"
+                    title="Endgültig löschen"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       <EditTaskModal task={editingTask} onClose={() => setEditingTask(null)} />
+
+      {detailTask && (
+        <TaskDetail
+          task={detailTask}
+          onClose={() => setDetailTask(null)}
+          onSave={(id, updates) => {
+            updateTask(id, updates);
+            onToast('Task aktualisiert', 'success');
+          }}
+          onDelete={handleDelete}
+          onMarkDone={(id) => {
+            markDone(id);
+            onToast('Task erledigt! 🎉', 'success');
+          }}
+        />
+      )}
     </div>
   );
 }

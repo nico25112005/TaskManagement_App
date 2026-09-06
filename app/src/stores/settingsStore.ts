@@ -6,6 +6,7 @@ const STORAGE_KEY = '***';
 
 const defaultSettings: Settings = {
   maxHoursPerDay: 4,
+  useMaxHoursCap: true,
   maxPlanableDays: 14,
   workStartHour: 8,
   workEndHour: 18,
