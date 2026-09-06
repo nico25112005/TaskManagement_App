@@ -28,12 +28,7 @@ function getWorkHoursForDay(date: Date, events: CalendarEvent[]): number {
 function getAvailableHoursForDay(date: Date, events: CalendarEvent[], settings: Settings): number {
   const workHours = getWorkHoursForDay(date, events);
   const defaultHours = settings.workEndHour - settings.workStartHour;
-  const availableFromEvents = workHours > 0 ? workHours : defaultHours;
-
-  if (!settings.useMaxHoursCap) {
-    return availableFromEvents;
-  }
-  return Math.min(availableFromEvents, settings.maxHoursPerDay);
+  return workHours > 0 ? workHours : defaultHours;
 }
 
 export interface DistributionResult {

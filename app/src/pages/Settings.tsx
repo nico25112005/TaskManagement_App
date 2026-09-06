@@ -66,49 +66,9 @@ export function Settings({ onToast }: SettingsProps) {
       <section className="card p-4">
         <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Planer</h2>
         <div className="space-y-4">
-          {/* Max Hours Cap Toggle */}
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-              Max. Stunden Limit verwenden
-            </label>
-            <button
-              role="switch"
-              aria-checked={settings.useMaxHoursCap}
-              onClick={() => updateSettings({ useMaxHoursCap: !settings.useMaxHoursCap })}
-              className={`relative w-12 h-6 rounded-full transition-colors duration-200 shrink-0 ${
-                settings.useMaxHoursCap ? 'bg-primary' : 'bg-gray-300'
-              }`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 ${
-                  settings.useMaxHoursCap ? 'translate-x-6' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-
-          {/* Max Hours Slider — disabled when cap is off */}
-          <div className={settings.useMaxHoursCap ? '' : 'opacity-40 pointer-events-none'}>
-            <label className="text-xs text-gray-500 dark:text-gray-400 flex justify-between">
-              <span>Max. Stunden pro Tag</span>
-              <span className="font-bold">{settings.maxHoursPerDay}h</span>
-            </label>
-            <input
-              type="range"
-              min="1"
-              max="12"
-              step="0.5"
-              value={settings.maxHoursPerDay}
-              onChange={(e) => updateSettings({ maxHoursPerDay: parseFloat(e.target.value) })}
-              className="w-full mt-1 accent-primary"
-              disabled={!settings.useMaxHoursCap}
-            />
-          </div>
-          {!settings.useMaxHoursCap && (
-            <p className="text-[11px] text-gray-400 dark:text-gray-500 italic">
-              Verfügbarkeit richtet sich nach Work-Hours-Events im Kalender. Ohne Events gilt Arbeitsbeginn bis Arbeitsende.
-            </p>
-          )}
+          <p className="text-[11px] text-gray-400 dark:text-gray-500 italic">
+            Verfügbarkeit richtet sich nach Work-Hours-Events im Kalender. Ohne Events gilt Arbeitsbeginn bis Arbeitsende.
+          </p>
           <div>
             <label className="text-xs text-gray-500 dark:text-gray-400 flex justify-between">
               <span>Planungs-Horizont (Tage)</span>

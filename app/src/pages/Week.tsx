@@ -61,13 +61,11 @@ function DraggableTask({ task, dayIndex }: { task: Task; dayIndex: number }) {
 function DroppableDay({
   day,
   dayIndex,
-  maxHours,
   dayEvents,
   children,
 }: {
   day: WeekDayType;
   dayIndex: number;
-  maxHours: number;
   dayEvents: { id: string; title: string; start: string; end: string; type: string }[];
   children: React.ReactNode;
 }) {
@@ -76,7 +74,7 @@ function DroppableDay({
     data: { dayIndex, date: day.date },
   });
 
-  const displayMax = day.availableHours > 0 ? day.availableHours : maxHours;
+  const displayMax = day.availableHours > 0 ? day.availableHours : 0;
   const isOverloaded = day.plannedHours > displayMax + 0.01;
   const hoursColor = isOverloaded ? 'text-danger' : day.plannedHours > 0 ? 'text-success' : 'text-gray-400';
   const hoursBg = isOverloaded ? 'bg-danger/10' : isOver ? 'bg-success/10' : '';
@@ -224,7 +222,7 @@ export function Week({ onToast }: WeekProps) {
   const goToToday = () => setWeekStart(getWeekStart(new Date()));
 
   const totalWeekHours = displayDays.reduce((sum, d) => sum + d.plannedHours, 0);
-  const totalAvailHours = displayDays.reduce((sum, d) => sum + (d.availableHours > 0 ? d.availableHours : settings.maxHoursPerDay), 0);
+  const totalAvailHours = displayDays.reduce((sum, d) => sum + d.availableHours, 0);
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto">
@@ -262,7 +260,7 @@ export function Week({ onToast }: WeekProps) {
                 key={dayIdx}
                 day={day}
                 dayIndex={dayIdx}
-                maxHours={settings.maxHoursPerDay}
+
                 dayEvents={getEventsForDay(day.date)}
               >
                 {day.tasks.length === 0 ? (

@@ -49,7 +49,7 @@ export function Home({ onNavigate }: HomeProps) {
       .slice(0, 3);
   }, [tasks]);
 
-  const progressPct = settings.maxHoursPerDay > 0 ? (todayHours / settings.maxHoursPerDay) * 100 : 0;
+  const progressPct = todayHours > 0 ? Math.min(100, (todayHours / Math.max(todayHours, 1)) * 100) : 0;
 
   return (
     <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-6">
@@ -71,7 +71,7 @@ export function Home({ onNavigate }: HomeProps) {
             <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Heute</h2>
             <p className="text-2xl font-bold text-primary">{todayHours.toFixed(1)}h</p>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              von {settings.maxHoursPerDay}h geplant
+              {todayHours.toFixed(1)}h geplant
             </p>
           </div>
         </div>
