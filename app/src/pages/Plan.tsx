@@ -48,7 +48,7 @@ function layoutEvents(events: CalendarEvent[]): Map<string, { col: number; cols:
     result.set(evt.id, { col, cols: 1 });
     group.push(evt);
 
-    // Update cols for all in current group
+    // Update cols for all in current overlap group
     const currentCols = activeColumns.length;
     for (const e of group) {
       const existing = result.get(e.id)!;
@@ -84,7 +84,7 @@ export function Plan() {
   const weekEnd = weekDays[6];
   const todayKey = new Date().toISOString().split('T')[0];
 
-  // 0-24h grid — full day, 25 labels (0 through 24)
+  // 0-24h grid — 25 labels (0 through 24)
   const hours = useMemo(() => {
     const result: number[] = [];
     for (let h = 0; h <= 24; h++) result.push(h);
@@ -101,14 +101,24 @@ export function Plan() {
     // Validate times
     const [sh, sm] = evtStart.split(':').map(Number);
     const [eh, em] = evtEnd.split(':').map(Number);
-    if (isNaN(sh) || isNaN(eh) || (eh * 60 + em) <= (sh * 60 + sm)) return;
+    if (isNaN(sh) || isNaN(eh)) return;
+
+    const startMin = sh * 60 + (isNaN(sm) ? 0 : sm);
+    let endMin = eh * 60 + (isNaN(em) ? 0 : em);
+    if (endMin <= startMin) return;
 
     const day = new Date(weekStart);
     day.setDate(day.getDate() + evtDay);
     const startDate = new Date(day);
-    startDate.setHours(sh, sm, 0, 0);
+    startDate.setHours(sh, isNaN(sm) ? 0 : sm, 0, 0);
     const endDate = new Date(day);
-    endDate.setHours(eh, em, 0, 0);
+    endDate.setHours(eh, isNaN(em) ? 0 : em, 0, 0);
+
+    // If end time is 24:00 push to next day 00:00
+    if (eh === 24 && em === 0) {
+      endDate.setDate(endDate.getDate() + 1);
+      endDate.setHours(0, 0, 0, 0);
+    }
 
     addEvent({
       title: evtTitle.trim(),
@@ -211,7 +221,7 @@ export function Plan() {
       <div className="card overflow-x-auto">
         <div className="flex min-w-[800px]">
           {/* Hour labels column (0-24) */}
-          <div className="w-12 shrink-0 border-r border-gray-200 dark:border-gray-700">
+          <div className="w-12 shrink-0 border-r border-gray-200 dark:border-gray-700 relative">
             <div className="h-10 border-b border-gray-200 dark:border-gray-700 flex items-center justify-center text-[10px] text-gray-400">
               Uhr
             </div>
@@ -222,7 +232,8 @@ export function Plan() {
               </div>
             ))}
             {/* 24:00 label at bottom */}
-            <div className="text-xs text-gray-400 text-right pr-1.5 leading-none flex items-end justify-end" style={{ height: 0 }}>
+            <div className="absolute bottom-0 left-0 right-0 text-xs text-gray-400 text-right pr-1.5 leading-none">
+              24:00
             </div>
           </div>
 
@@ -247,7 +258,7 @@ export function Plan() {
                   {dayNames[dayIdx]} {day.getDate().toString().padStart(2, '0')}.{(day.getMonth() + 1).toString().padStart(2, '0')}
                 </div>
                 {/* Hour grid 0-24 */}
-                <div className="relative" style={{ height: totalGridHeight }}>
+                <div className="relative overflow-hidden" style={{ height: totalGridHeight }}>
                   {/* Hour slot lines */}
                   {hours.slice(0, 24).map((h) => (
                     <div
@@ -258,7 +269,9 @@ export function Plan() {
                         // Click on hour slot → pre-fill add form with correct times
                         setEvtDay(dayIdx);
                         setEvtStart(`${h.toString().padStart(2, '0')}:00`);
-                        setEvtEnd(`${(h + 1).toString().padStart(2, '0')}:00`);
+                        // End at next hour, but cap at 23:59 to stay valid in time input
+                        const nextHour = h + 1;
+                        setEvtEnd(nextHour >= 24 ? '23:59' : `${nextHour.toString().padStart(2, '0')}:00`);
                         setShowAdd(true);
                       }}
                     />
@@ -277,7 +290,7 @@ export function Plan() {
                     const eventStart = new Date(event.start);
                     const eventEnd = new Date(event.end);
                     const startHour = eventStart.getHours() + eventStart.getMinutes() / 60;
-                    const endHour = eventEnd.getHours() + eventEnd.getMinutes() / 60;
+                    const endHour = Math.min(24, eventEnd.getHours() + eventEnd.getMinutes() / 60);
                     const top = startHour * rowHeight;
                     const heightPx = Math.max(24, (endHour - startHour) * rowHeight);
                     const layout = eventLayout.get(event.id) ?? { col: 0, cols: 1 };

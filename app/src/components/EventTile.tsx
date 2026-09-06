@@ -27,7 +27,7 @@ export function EventTile({ event }: EventTileProps) {
 
   return (
     <div
-      className={`absolute inset-0 ${colors.bg} ${colors.text} ${colors.border} border rounded-md px-2 py-1 overflow-hidden cursor-pointer hover:shadow-md transition-all`}
+      className={`absolute inset-0 ${colors.bg} ${colors.text} ${colors.border} border rounded-md px-2 py-1 overflow-hidden cursor-pointer hover:shadow-md transition-all h-full`}
     >
       <div className="text-xs font-medium truncate">{event.title}</div>
       <div className="text-[10px] opacity-75">
