@@ -4,6 +4,7 @@ import { useSettingsStore } from '../stores/settingsStore';
 import { useTaskStore } from '../stores/taskStore';
 import { useCalendarStore } from '../stores/calendarStore';
 import { exportAllData, importAllData, clearAllData } from '../lib/storage';
+import { todayLocal } from '../lib/dateUtils';
 
 interface SettingsProps {
   onToast: (message: string, type?: 'success' | 'error' | 'info') => void;
@@ -21,7 +22,7 @@ export function Settings({ onToast }: SettingsProps) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `taskmanager-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `taskmanager-backup-${todayLocal()}.json`;
     a.click();
     URL.revokeObjectURL(url);
     onToast('Daten exportiert', 'success');

@@ -1,8 +1,9 @@
 import type { Task, CalendarEvent, Settings, WeekDay, UndistributedTask } from '../types';
 import { calculateWeighting } from './weighting';
+import { toLocalISODate } from './dateUtils';
 
 function toISODate(date: Date): string {
-  return date.toISOString().split('T')[0];
+  return toLocalISODate(date);
 }
 
 function getWorkHoursForDay(date: Date, events: CalendarEvent[]): number {
@@ -25,10 +26,11 @@ function getWorkHoursForDay(date: Date, events: CalendarEvent[]): number {
   return workHours;
 }
 
-function getAvailableHoursForDay(date: Date, events: CalendarEvent[], settings: Settings): number {
+function getAvailableHoursForDay(date: Date, events: CalendarEvent[]): number {
   const workHours = getWorkHoursForDay(date, events);
-  const defaultHours = settings.workEndHour - settings.workStartHour;
-  return workHours > 0 ? workHours : defaultHours;
+  // Only use work-hours events. If none exist for this day, availability is 0.
+  // This means all tasks go to 'undistributed' until the user plans work hours in the Plan tab.
+  return workHours;
 }
 
 export interface DistributionResult {
@@ -57,14 +59,14 @@ export function distributeTasks(
     const date = new Date(today);
     date.setDate(date.getDate() + i);
     const isoDate = toISODate(date);
-    const available = getAvailableHoursForDay(date, events, settings);
+    const available = getAvailableHoursForDay(date, events);
     const workHours = getWorkHoursForDay(date, events);
 
     days.push({
       date: isoDate,
       tasks: [],
       plannedHours: 0,
-      availableHours: workHours > 0 ? workHours : (settings.workEndHour - settings.workStartHour),
+      availableHours: workHours,
     });
     dayAvailability.push(available);
   }

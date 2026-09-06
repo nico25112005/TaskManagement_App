@@ -1,4 +1,5 @@
 import type { Task } from '../types';
+import { toLocalISODate } from './dateUtils';
 
 /**
  * Creates 8 sample tasks for demo/debug purposes.
@@ -9,7 +10,7 @@ export function createSampleTasks(): Omit<Task, 'id' | 'done' | 'doneAt' | 'depe
   const iso = (daysFromNow: number) => {
     const d = new Date(today);
     d.setDate(d.getDate() + daysFromNow);
-    return d.toISOString().split('T')[0];
+    return toLocalISODate(d);
   };
 
   return [

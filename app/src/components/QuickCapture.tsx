@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Plus } from 'lucide-react';
 import { useTaskStore } from '../stores/taskStore';
+import { todayLocal } from '../lib/dateUtils';
 
 interface QuickCaptureProps {
   open: boolean;
@@ -18,7 +19,7 @@ export function QuickCapture({ open, onClose }: QuickCaptureProps) {
     if (open) {
       setDescription('');
       setHours('1');
-      setDelivery(new Date().toISOString().split('T')[0]);
+      setDelivery(todayLocal());
       setImportance(2);
     }
   }, [open]);

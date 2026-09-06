@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useCalendarStore } from '../stores/calendarStore';
 import { EventTile } from '../components/EventTile';
 import type { CalendarEvent, CalendarEventType } from '../types';
+import { toLocalISODate, todayLocal } from '../lib/dateUtils';
 
 function getWeekStart(date: Date): Date {
   const d = new Date(date);
@@ -82,7 +83,7 @@ export function Plan() {
   }, [weekStart]);
 
   const weekEnd = weekDays[6];
-  const todayKey = new Date().toISOString().split('T')[0];
+  const todayKey = todayLocal();
 
   // 0-24h grid — full day, 25 labels (0 through 24)
   const hours = useMemo(() => {
@@ -127,8 +128,8 @@ export function Plan() {
 
   const nowIndicator = useMemo(() => {
     const now = new Date();
-    const nowDay = now.toISOString().split('T')[0];
-    const isThisWeek = weekDays.some((d) => d.toISOString().split('T')[0] === nowDay);
+    const nowDay = toLocalISODate(now);
+    const isThisWeek = weekDays.some((d) => toLocalISODate(d) === nowDay);
     if (!isThisWeek) return null;
     const hour = now.getHours() + now.getMinutes() / 60;
     return { dayKey: nowDay, top: hour * rowHeight };
@@ -289,10 +290,10 @@ export function Plan() {
 
           {/* Day columns */}
           {weekDays.map((day, dayIdx) => {
-            const dayKey = day.toISOString().split('T')[0];
+            const dayKey = toLocalISODate(day);
             const isToday = dayKey === todayKey;
             const dayEvents = events.filter((e) => {
-              const eventDate = new Date(e.start).toISOString().split('T')[0];
+              const eventDate = toLocalISODate(new Date(e.start));
               return eventDate === dayKey;
             });
 

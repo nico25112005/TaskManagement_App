@@ -2,11 +2,14 @@ import { useState, useMemo, useEffect } from 'react';
 import { Plus, ChevronDown, ChevronRight, Undo, Trash2 } from 'lucide-react';
 import { useTaskStore } from '../stores/taskStore';
 import type { Task, SortOption } from '../types';
+import { calculateWeighting } from '../lib/weighting';
+import { useSettingsStore } from '../stores/settingsStore';
 import { FilterBar } from '../components/FilterBar';
 import { TaskCard } from '../components/TaskCard';
 import { EmptyState } from '../components/EmptyState';
 import { EditTaskModal } from '../components/EditTaskModal';
 import { TaskDetail } from '../components/TaskDetail';
+import { todayLocal } from '../lib/dateUtils';
 
 interface TodoProps {
   onToast: (message: string, type?: 'success' | 'error' | 'info') => void;
@@ -14,6 +17,7 @@ interface TodoProps {
 
 export function Todo({ onToast }: TodoProps) {
   const { tasks, done, addTask, deleteTask, updateTask, markDone, deleteDoneTask } = useTaskStore();
+  const settings = useSettingsStore((s) => s.settings);
   const [filter, setFilter] = useState('');
   const [sort, setSort] = useState<SortOption>('due');
   const [showCreate, setShowCreate] = useState(false);
@@ -28,7 +32,7 @@ export function Todo({ onToast }: TodoProps) {
   const [importance, setImportance] = useState<1 | 2 | 3>(2);
 
   useEffect(() => {
-    setDelivery(new Date().toISOString().split('T')[0]);
+    setDelivery(todayLocal());
   }, []);
 
   const taskList = useMemo(() => {
@@ -36,6 +40,7 @@ export function Todo({ onToast }: TodoProps) {
       t.description.toLowerCase().includes(filter.toLowerCase())
     );
 
+    const taskValues = Object.values(tasks);
     filtered.sort((a, b) => {
       switch (sort) {
         case 'due':
@@ -46,11 +51,15 @@ export function Todo({ onToast }: TodoProps) {
           return b.hours - a.hours;
         case 'description':
           return a.description.localeCompare(b.description);
+        case 'weighting':
+          return calculateWeighting(b, taskValues, settings) - calculateWeighting(a, taskValues, settings);
+        default:
+          return 0;
       }
     });
 
     return filtered;
-  }, [tasks, filter, sort]);
+  }, [tasks, filter, sort, settings]);
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();

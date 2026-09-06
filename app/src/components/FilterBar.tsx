@@ -13,6 +13,7 @@ const sortOptions: { value: SortOption; label: string }[] = [
   { value: 'importance', label: 'Wichtigkeit' },
   { value: 'hours', label: 'Stunden' },
   { value: 'description', label: 'Beschreibung' },
+  { value: 'weighting', label: 'Dringlichkeit (Weighting)' },
 ];
 
 export function FilterBar({ filter, setFilter, sort, setSort }: FilterBarProps) {

@@ -52,4 +52,4 @@ export interface User {
 
 export type PageId = 'home' | 'todo' | 'plan' | 'week' | 'settings';
 
-export type SortOption = 'due' | 'importance' | 'hours' | 'description';
+export type SortOption = 'due' | 'importance' | 'hours' | 'description' | 'weighting';

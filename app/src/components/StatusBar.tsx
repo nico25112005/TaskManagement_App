@@ -1,13 +1,14 @@
 import { CheckCircle, Clock, Target } from 'lucide-react';
 import { useTaskStore } from '../stores/taskStore';
 import { useTimerStore } from '../stores/timerStore';
+import { todayLocal } from '../lib/dateUtils';
 
 export function StatusBar() {
   const tasks = useTaskStore((s) => s.tasks);
   const blocksToday = useTimerStore((s) => s.totalBlocksToday);
 
   const openCount = Object.values(tasks).filter((t) => !t.done).length;
-  const todayKey = new Date().toISOString().split('T')[0];
+  const todayKey = todayLocal();
   const todayHours = Object.values(tasks)
     .filter((t) => t.delivery === todayKey)
     .reduce((sum, t) => sum + t.hours, 0);
