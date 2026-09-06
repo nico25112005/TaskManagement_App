@@ -1,5 +1,6 @@
 import type { Task, CalendarEvent, Settings, WeekDay } from '../types';
 import { calculateWeighting } from './weighting';
+import { toLocalISODate } from './dateUtils';
 
 /**
  * Get the available hours for a given day based on calendar events.
@@ -39,10 +40,10 @@ function getAvailableHoursForDay(
 }
 
 /**
- * Format a date as ISO date string (YYYY-MM-DD).
+ * Format a date as local ISO date string (YYYY-MM-DD).
  */
 function toISODate(date: Date): string {
-  return date.toISOString().split('T')[0];
+  return toLocalISODate(date);
 }
 
 /**

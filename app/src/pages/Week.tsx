@@ -13,6 +13,7 @@ import { useTaskStore } from '../stores/taskStore';
 import { useCalendarStore } from '../stores/calendarStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { distributeTasks } from '../lib/distributor';
+import { toLocalISODate } from '../lib/dateUtils';
 import type { Task, WeekDay as WeekDayType } from '../types';
 
 interface WeekProps {
@@ -144,7 +145,7 @@ export function Week({ onToast }: WeekProps) {
     for (let i = 0; i < 7; i++) {
       const date = new Date(weekStart);
       date.setDate(date.getDate() + i);
-      const isoDate = date.toISOString().split('T')[0];
+      const isoDate = toLocalISODate(date);
       const day = days.find((d) => d.date === isoDate) ?? { date: isoDate, tasks: [], plannedHours: 0 };
       weekDays.push(day);
     }
@@ -156,7 +157,7 @@ export function Week({ onToast }: WeekProps) {
   // Get events for a specific day
   const getEventsForDay = (dayDate: string) => {
     return events
-      .filter((e) => new Date(e.start).toISOString().split('T')[0] === dayDate)
+      .filter((e) => toLocalISODate(new Date(e.start)) === dayDate)
       .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
       .map((e) => ({ id: e.id, title: e.title, start: e.start, end: e.end, type: e.type }));
   };

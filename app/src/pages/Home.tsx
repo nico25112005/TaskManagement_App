@@ -4,6 +4,7 @@ import { useTaskStore } from '../stores/taskStore';
 import { useCalendarStore } from '../stores/calendarStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { distributeTasks } from '../lib/distributor';
+import { toLocalISODate, getTodayKey } from '../lib/dateUtils';
 import { Timer } from '../components/Timer';
 import { ProgressRing } from '../components/ProgressRing';
 import { TaskCard } from '../components/TaskCard';
@@ -25,7 +26,7 @@ export function Home({ onNavigate }: HomeProps) {
   const settings = useSettingsStore((s) => s.settings);
   const markDone = useTaskStore((s) => s.markDone);
 
-  const todayKey = new Date().toISOString().split('T')[0];
+  const todayKey = getTodayKey();
 
   const weekDays = useMemo(
     () => distributeTasks(Object.values(tasks), events, settings),
@@ -38,7 +39,7 @@ export function Home({ onNavigate }: HomeProps) {
   const taskCount = todayTasks.length;
 
   const todayEvents = events.filter((e) => {
-    const eventDate = new Date(e.start).toISOString().split('T')[0];
+    const eventDate = toLocalISODate(new Date(e.start));
     return eventDate === todayKey;
   });
 

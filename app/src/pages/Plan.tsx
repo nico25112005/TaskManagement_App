@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useCalendarStore } from '../stores/calendarStore';
 import { EventTile } from '../components/EventTile';
+import { toLocalISODate, getTodayKey } from '../lib/dateUtils';
 import type { CalendarEvent, CalendarEventType } from '../types';
 
 function getWeekStart(date: Date): Date {
@@ -82,12 +83,13 @@ export function Plan() {
   }, [weekStart]);
 
   const weekEnd = weekDays[6];
-  const todayKey = new Date().toISOString().split('T')[0];
+  const todayKey = getTodayKey();
 
-  // 0-24h grid — 25 labels (0 through 24)
+  // Plan grid starts at 01:00 and ends at 24:00 (24 hours, labels 1..24)
+  const firstHour = 1;
   const hours = useMemo(() => {
     const result: number[] = [];
-    for (let h = 0; h <= 24; h++) result.push(h);
+    for (let h = firstHour; h <= 24; h++) result.push(h);
     return result;
   }, []);
 
@@ -136,11 +138,11 @@ export function Plan() {
 
   const nowIndicator = useMemo(() => {
     const now = new Date();
-    const nowDay = now.toISOString().split('T')[0];
-    const isThisWeek = weekDays.some((d) => d.toISOString().split('T')[0] === nowDay);
+    const nowDay = toLocalISODate(now);
+    const isThisWeek = weekDays.some((d) => toLocalISODate(d) === nowDay);
     if (!isThisWeek) return null;
     const hour = now.getHours() + now.getMinutes() / 60;
-    return { dayKey: nowDay, top: hour * rowHeight };
+    return { dayKey: nowDay, top: (hour - firstHour) * rowHeight };
   }, [weekDays]);
 
   const goToPrevWeek = () => {
@@ -156,6 +158,9 @@ export function Plan() {
   };
 
   const goToToday = () => setWeekStart(getWeekStart(new Date()));
+
+  // Helper to convert an event's local hour into grid coordinates (1..24 => 0..23 rows)
+  const eventTop = (date: Date) => (date.getHours() + date.getMinutes() / 60 - firstHour) * rowHeight;
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto">
@@ -217,34 +222,26 @@ export function Plan() {
         </form>
       )}
 
-      {/* Week Grid — 0 to 24 hours */}
+      {/* Week Grid — 01:00 to 24:00 hours */}
       <div className="card overflow-x-auto">
         <div className="flex min-w-[800px]">
-          {/* Hour labels column (0-24) */}
+          {/* Hour labels column (1-24) */}
           <div className="w-12 shrink-0 border-r border-gray-200 dark:border-gray-700 relative">
             <div className="h-10 border-b border-gray-200 dark:border-gray-700 flex items-center justify-center text-[10px] text-gray-400">
               Uhr
             </div>
-            {/* 24 hour rows (0-23), each rowHeight tall */}
-            {hours.slice(0, 24).map((h) => (
+            {hours.map((h) => (
               <div key={h} className="text-xs text-gray-400 text-right pr-1.5 leading-none flex items-end justify-end" style={{ height: rowHeight }}>
                 {h.toString().padStart(2, '0')}:00
               </div>
             ))}
-            {/* 24:00 label at bottom */}
-            <div className="absolute bottom-0 left-0 right-0 text-xs text-gray-400 text-right pr-1.5 leading-none">
-              24:00
-            </div>
           </div>
 
           {/* Day columns */}
           {weekDays.map((day, dayIdx) => {
-            const dayKey = day.toISOString().split('T')[0];
+            const dayKey = toLocalISODate(day);
             const isToday = dayKey === todayKey;
-            const dayEvents = events.filter((e) => {
-              const eventDate = new Date(e.start).toISOString().split('T')[0];
-              return eventDate === dayKey;
-            });
+            const dayEvents = events.filter((e) => toLocalISODate(new Date(e.start)) === dayKey);
 
             // Compute overlap layout for this day's events
             const eventLayout = layoutEvents(dayEvents);
@@ -257,10 +254,10 @@ export function Plan() {
                 }`}>
                   {dayNames[dayIdx]} {day.getDate().toString().padStart(2, '0')}.{(day.getMonth() + 1).toString().padStart(2, '0')}
                 </div>
-                {/* Hour grid 0-24 */}
+                {/* Hour grid 1-24 */}
                 <div className="relative overflow-hidden" style={{ height: totalGridHeight }}>
                   {/* Hour slot lines */}
-                  {hours.slice(0, 24).map((h) => (
+                  {hours.map((h) => (
                     <div
                       key={h}
                       className="border-b border-gray-100 dark:border-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer"
@@ -269,9 +266,8 @@ export function Plan() {
                         // Click on hour slot → pre-fill add form with correct times
                         setEvtDay(dayIdx);
                         setEvtStart(`${h.toString().padStart(2, '0')}:00`);
-                        // End at next hour, but cap at 23:59 to stay valid in time input
                         const nextHour = h + 1;
-                        setEvtEnd(nextHour >= 24 ? '23:59' : `${nextHour.toString().padStart(2, '0')}:00`);
+                        setEvtEnd(nextHour > 24 ? '24:00' : `${nextHour.toString().padStart(2, '0')}:00`);
                         setShowAdd(true);
                       }}
                     />
@@ -289,10 +285,9 @@ export function Plan() {
                   {dayEvents.map((event) => {
                     const eventStart = new Date(event.start);
                     const eventEnd = new Date(event.end);
-                    const startHour = eventStart.getHours() + eventStart.getMinutes() / 60;
-                    const endHour = Math.min(24, eventEnd.getHours() + eventEnd.getMinutes() / 60);
-                    const top = startHour * rowHeight;
-                    const heightPx = Math.max(24, (endHour - startHour) * rowHeight);
+                    const top = eventTop(eventStart);
+                    const durationHours = (eventEnd.getTime() - eventStart.getTime()) / (1000 * 60 * 60);
+                    const heightPx = Math.max(24, durationHours * rowHeight);
                     const layout = eventLayout.get(event.id) ?? { col: 0, cols: 1 };
                     const widthPct = 100 / layout.cols;
                     const leftPct = layout.col * widthPct;
