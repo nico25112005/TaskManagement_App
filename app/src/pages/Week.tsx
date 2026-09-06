@@ -8,12 +8,12 @@ import {
   useDraggable,
   useDroppable,
 } from '@dnd-kit/core';
-import { Undo2, Clock, Calendar } from 'lucide-react';
+import { Undo2, Clock, Calendar, AlertTriangle } from 'lucide-react';
 import { useTaskStore } from '../stores/taskStore';
 import { useCalendarStore } from '../stores/calendarStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { distributeTasks } from '../lib/distributor';
-import type { Task, WeekDay as WeekDayType } from '../types';
+import type { Task, WeekDay as WeekDayType, UndistributedTask } from '../types';
 
 interface WeekProps {
   onToast: (message: string, type?: 'success' | 'error' | 'info') => void;
@@ -76,7 +76,8 @@ function DroppableDay({
     data: { dayIndex, date: day.date },
   });
 
-  const isOverloaded = day.plannedHours > maxHours;
+  const displayMax = day.availableHours > 0 ? day.availableHours : maxHours;
+  const isOverloaded = day.plannedHours > displayMax + 0.01;
   const hoursColor = isOverloaded ? 'text-danger' : day.plannedHours > 0 ? 'text-success' : 'text-gray-400';
   const hoursBg = isOverloaded ? 'bg-danger/10' : isOver ? 'bg-success/10' : '';
 
@@ -101,7 +102,7 @@ function DroppableDay({
           {new Date(day.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })}
         </span>
         <span className={`text-xs font-bold ${hoursColor}`}>
-          {day.plannedHours.toFixed(1)}h / {maxHours.toFixed(1)}h
+          {day.plannedHours.toFixed(1)}h / {displayMax.toFixed(1)}h
         </span>
       </div>
       {/* Events section */}
@@ -132,28 +133,34 @@ export function Week({ onToast }: WeekProps) {
   const settings = useSettingsStore((s) => s.settings);
   const [weekStart, setWeekStart] = useState(getWeekStart(new Date()));
   const [localDistribution, setLocalDistribution] = useState<WeekDayType[] | null>(null);
-  const [undoData, setUndoData] = useState<WeekDayType[] | null>(null);
+  const [localUndistributed, setLocalUndistributed] = useState<UndistributedTask[]>([]);
+  const [undoData, setUndoData] = useState<{ days: WeekDayType[]; undistributed: UndistributedTask[] } | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
-  const computedDays = useMemo(() => {
-    const days = distributeTasks(Object.values(tasks), events, settings);
+  const { computedDays, undistributed } = useMemo(() => {
+    const result = distributeTasks(Object.values(tasks), events, settings);
     const weekDays: WeekDayType[] = [];
     for (let i = 0; i < 7; i++) {
       const date = new Date(weekStart);
       date.setDate(date.getDate() + i);
       const isoDate = date.toISOString().split('T')[0];
-      const day = days.find((d) => d.date === isoDate) ?? { date: isoDate, tasks: [], plannedHours: 0 };
+      const day = result.days.find((d) => d.date === isoDate) ?? {
+        date: isoDate,
+        tasks: [],
+        plannedHours: 0,
+        availableHours: 0,
+      };
       weekDays.push(day);
     }
-    return weekDays;
+    return { computedDays: weekDays, undistributed: result.undistributed };
   }, [tasks, events, settings, weekStart]);
 
   const displayDays = localDistribution ?? computedDays;
+  const displayUndistributed = localDistribution ? localUndistributed : undistributed;
 
-  // Get events for a specific day
   const getEventsForDay = (dayDate: string) => {
     return events
       .filter((e) => new Date(e.start).toISOString().split('T')[0] === dayDate)
@@ -164,7 +171,6 @@ export function Week({ onToast }: WeekProps) {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
-
     const activeData = active.data.current;
     const overData = over.data.current;
     if (!activeData || !overData) return;
@@ -172,21 +178,21 @@ export function Week({ onToast }: WeekProps) {
     const taskId = activeData.taskId as string;
     const fromDay = activeData.fromDay as number;
     const toDay = overData.dayIndex as number;
-
     if (fromDay === toDay) return;
 
-    setUndoData(displayDays.map((d) => ({ ...d, tasks: [...d.tasks] })));
+    setUndoData({
+      days: displayDays.map((d) => ({ ...d, tasks: [...d.tasks] })),
+      undistributed: [...displayUndistributed],
+    });
 
     setLocalDistribution((prev) => {
       const days = (prev ?? computedDays).map((d) => ({ ...d, tasks: [...d.tasks] }));
       const task = days[fromDay].tasks.find((t) => t.id === taskId);
       if (!task) return prev;
-
       days[fromDay].tasks = days[fromDay].tasks.filter((t) => t.id !== taskId);
-      days[fromDay].plannedHours -= task.hours;
+      days[fromDay].plannedHours = Math.round((days[fromDay].plannedHours - task.hours) * 12) / 12;
       days[toDay].tasks.push(task);
-      days[toDay].plannedHours += task.hours;
-
+      days[toDay].plannedHours = Math.round((days[toDay].plannedHours + task.hours) * 12) / 12;
       return days;
     });
 
@@ -195,7 +201,8 @@ export function Week({ onToast }: WeekProps) {
 
   const handleUndo = () => {
     if (undoData) {
-      setLocalDistribution(undoData);
+      setLocalDistribution(undoData.days);
+      setLocalUndistributed(undoData.undistributed);
       setUndoData(null);
       onToast('Rückgängig gemacht', 'success');
     }
@@ -209,18 +216,15 @@ export function Week({ onToast }: WeekProps) {
     d.setDate(d.getDate() - 7);
     setWeekStart(d);
   };
-
   const goToNextWeek = () => {
     const d = new Date(weekStart);
     d.setDate(d.getDate() + 7);
     setWeekStart(d);
   };
-
   const goToToday = () => setWeekStart(getWeekStart(new Date()));
 
-  // Calculate total week hours
   const totalWeekHours = displayDays.reduce((sum, d) => sum + d.plannedHours, 0);
-  const maxWeekHours = settings.maxHoursPerDay * 7;
+  const totalAvailHours = displayDays.reduce((sum, d) => sum + (d.availableHours > 0 ? d.availableHours : settings.maxHoursPerDay), 0);
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto">
@@ -228,7 +232,7 @@ export function Week({ onToast }: WeekProps) {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Woche</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-            Gesamt: {totalWeekHours.toFixed(1)}h / {maxWeekHours.toFixed(1)}h
+            Gesamt: {totalWeekHours.toFixed(1)}h / {totalAvailHours.toFixed(1)}h verfügbar
           </p>
         </div>
         {undoData && (
@@ -275,6 +279,36 @@ export function Week({ onToast }: WeekProps) {
           </div>
         </DndContext>
       </div>
+
+      {/* Undistributed Tasks */}
+      {displayUndistributed.length > 0 && (
+        <div className="mt-4 card border-danger/30 bg-danger/5 p-4">
+          <h2 className="text-sm font-semibold text-danger flex items-center gap-2 mb-3">
+            <AlertTriangle size={16} />
+            Nicht zugeteilte Tasks ({displayUndistributed.length})
+          </h2>
+          <div className="space-y-2">
+            {displayUndistributed.map((item, idx) => (
+              <div key={idx} className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-danger/20">
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {item.task.description}
+                  </span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                    {item.task.hours.toFixed(1)}h gesamt, {item.remainingHours.toFixed(1)}h übrig
+                  </span>
+                </div>
+                <span className="text-xs text-danger bg-danger/10 px-2 py-1 rounded">
+                  {item.reason}
+                </span>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+            Tipp: Füge mehr Work-Hours im Plan Tab hinzu oder erhöhe die max. Stunden pro Tag in den Settings.
+          </p>
+        </div>
+      )}
 
       <p className="text-xs text-gray-400 mt-3 text-center flex items-center justify-center gap-1">
         <Calendar size={12} />

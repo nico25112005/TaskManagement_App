@@ -37,6 +37,19 @@ export interface WeekDay {
   date: string; // ISO date
   tasks: Task[];
   plannedHours: number;
+  availableHours: number; // total work hours available this day
+}
+
+export interface UndistributedTask {
+  task: Task;
+  remainingHours: number;
+  reason: string;
+}
+
+export interface User {
+  id: string;
+  username: string;
+  createdAt: string;
 }
 
 export type PageId = 'home' | 'todo' | 'plan' | 'week' | 'settings';

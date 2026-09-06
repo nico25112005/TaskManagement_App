@@ -158,8 +158,8 @@ export function Plan() {
     const rect = gridEl.getBoundingClientRect();
     const y = clientY - rect.top;
     const rawHour = firstHour + y / rowHeight;
-    // Snap to 30-minute increments
-    return Math.round(rawHour * 2) / 2;
+    // Snap to 5-minute increments (1/12 of an hour)
+    return Math.round(rawHour * 12) / 12;
   }, []);
 
   const handleGridMouseDown = (e: React.MouseEvent, dayIdx: number) => {
@@ -182,12 +182,12 @@ export function Plan() {
     if (!drag) return;
     const start = Math.min(drag.startHour, drag.currentHour);
     const end = Math.max(drag.startHour, drag.currentHour);
-    if (end - start >= 0.5) {
+    if (end - start >= 5/60) {
       // Open add-event form with pre-filled times
       const startH = Math.floor(start);
-      const startM = start % 1 === 0.5 ? 30 : 0;
+      const startM = Math.round((start - startH) * 60);
       const endH = Math.floor(end);
-      const endM = end % 1 === 0.5 ? 30 : 0;
+      const endM = Math.round((end - endH) * 60);
       setEvtDay(drag.dayIdx);
       setEvtType('FixedAppointment');
       setEvtTitle('');
@@ -200,11 +200,12 @@ export function Plan() {
 
   const formatDragTime = (h: number) => {
     const hh = Math.floor(h);
-    const mm = h % 1 === 0.5 ? '30' : '00';
-    return `${hh.toString().padStart(2, '0')}:${mm}`;
+    const mm = Math.round((h - hh) * 60);
+    return `${hh.toString().padStart(2, '0')}:${mm.toString().padStart(2, '0')}`;
   };
 
-  // Helper to convert an event's local hour into grid coordinates (1..24 => 0..23 rows)
+  // Helper to convert an event's local hour into grid coordinates
+  // rowHeight = px per hour, so px per 5-min step = rowHeight / 12
   const eventTop = (date: Date) => (date.getHours() + date.getMinutes() / 60 - firstHour) * rowHeight;
 
   return (

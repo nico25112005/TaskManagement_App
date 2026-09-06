@@ -28,7 +28,7 @@ export function Home({ onNavigate }: HomeProps) {
   const todayKey = new Date().toISOString().split('T')[0];
 
   const weekDays = useMemo(
-    () => distributeTasks(Object.values(tasks), events, settings),
+    () => distributeTasks(Object.values(tasks), events, settings).days,
     [tasks, events, settings]
   );
 

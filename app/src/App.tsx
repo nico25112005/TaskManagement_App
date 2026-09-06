@@ -9,10 +9,13 @@ import { Todo } from './pages/Todo';
 import { Plan } from './pages/Plan';
 import { Week } from './pages/Week';
 import { Settings } from './pages/Settings';
+import { LoginScreen } from './components/LoginScreen';
 import { useTaskStore } from './stores/taskStore';
 import { useCalendarStore } from './stores/calendarStore';
 import { useSettingsStore } from './stores/settingsStore';
+import { useUserStore } from './stores/userStore';
 import { useTimerStore } from './stores/timerStore';
+import { createSampleTasks } from './lib/sampleData';
 import type { PageId } from './types';
 
 export function App() {
@@ -22,22 +25,32 @@ export function App() {
   const { toasts, addToast, dismissToast } = useToasts();
 
   const loadTasks = useTaskStore((s) => s.loadTasks);
+  const addTask = useTaskStore((s) => s.addTask);
   const loadEvents = useCalendarStore((s) => s.loadEvents);
   const loadSettings = useSettingsStore((s) => s.loadSettings);
+  const user = useUserStore((s) => s.user);
+  const loadUser = useUserStore((s) => s.loadUser);
   const tick = useTimerStore((s) => s.tick);
 
   // Load persisted data on mount
   useEffect(() => {
+    loadUser();
     loadTasks();
     loadEvents();
     loadSettings();
-  }, [loadTasks, loadEvents, loadSettings]);
+  }, [loadTasks, loadEvents, loadSettings, loadUser]);
+
+  // Seed sample tasks on first login if no tasks exist
+  useEffect(() => {
+    if (user && Object.keys(useTaskStore.getState().tasks).length === 0) {
+      const samples = createSampleTasks();
+      samples.forEach((s) => addTask(s));
+    }
+  }, [user, addTask]);
 
   // Timer tick
   useEffect(() => {
-    const interval = setInterval(() => {
-      tick();
-    }, 1000);
+    const interval = setInterval(() => { tick(); }, 1000);
     return () => clearInterval(interval);
   }, [tick]);
 
@@ -72,6 +85,11 @@ export function App() {
   const handleNavigate = useCallback((page: PageId) => {
     setActivePage(page);
   }, []);
+
+  // Show login screen if no user
+  if (!user) {
+    return <LoginScreen />;
+  }
 
   return (
     <div className="flex flex-col h-screen bg-bg dark:bg-dark-bg">
