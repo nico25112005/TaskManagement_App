@@ -71,12 +71,16 @@ export function Todo({ onToast }: TodoProps) {
   };
 
   const handleToggleDone = (id: string) => {
-    const task = tasks[id];
-    if (task?.done) {
-      useTaskStore.getState().markUndone(id);
-    } else {
+    // If the task is in the active tasks store, mark it done.
+    // If it's in the done store, mark it undone.
+    // TaskCard is only rendered for active (not-done) tasks in the Todo list,
+    // so this always marks done. The done list is shown separately if needed.
+    if (tasks[id]) {
       markDone(id);
       onToast('Task erledigt! 🎉', 'success');
+    } else {
+      useTaskStore.getState().markUndone(id);
+      onToast('Task wieder geöffnet', 'info');
     }
   };
 

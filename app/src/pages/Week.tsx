@@ -8,7 +8,7 @@ import {
   useDraggable,
   useDroppable,
 } from '@dnd-kit/core';
-import { Undo2, Clock } from 'lucide-react';
+import { Undo2, Clock, Calendar } from 'lucide-react';
 import { useTaskStore } from '../stores/taskStore';
 import { useCalendarStore } from '../stores/calendarStore';
 import { useSettingsStore } from '../stores/settingsStore';
@@ -62,11 +62,13 @@ function DroppableDay({
   day,
   dayIndex,
   maxHours,
+  dayEvents,
   children,
 }: {
   day: WeekDayType;
   dayIndex: number;
   maxHours: number;
+  dayEvents: { id: string; title: string; start: string; end: string; type: string }[];
   children: React.ReactNode;
 }) {
   const { setNodeRef, isOver } = useDroppable({
@@ -77,6 +79,13 @@ function DroppableDay({
   const isOverloaded = day.plannedHours > maxHours;
   const hoursColor = isOverloaded ? 'text-danger' : day.plannedHours > 0 ? 'text-success' : 'text-gray-400';
   const hoursBg = isOverloaded ? 'bg-danger/10' : isOver ? 'bg-success/10' : '';
+
+  const typeDotColors: Record<string, string> = {
+    FixedAppointment: 'bg-danger',
+    WorkHours: 'bg-primary',
+    FreeTime: 'bg-success',
+    Sleep: 'bg-gray-500',
+  };
 
   return (
     <div
@@ -95,8 +104,22 @@ function DroppableDay({
           {day.plannedHours.toFixed(1)}h / {maxHours.toFixed(1)}h
         </span>
       </div>
-      {/* Task area — no hour grid, just a simple list */}
-      <div className="p-2 space-y-2" style={{ minHeight: '400px' }}>
+      {/* Events section */}
+      {dayEvents.length > 0 && (
+        <div className="px-2 py-1.5 border-b border-gray-100 dark:border-gray-800 space-y-1">
+          {dayEvents.map((evt) => (
+            <div key={evt.id} className="flex items-center gap-1.5 text-xs">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${typeDotColors[evt.type] ?? 'bg-gray-400'}`} />
+              <span className="text-gray-600 dark:text-gray-400 font-mono">
+                {new Date(evt.start).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+              <span className="truncate text-gray-700 dark:text-gray-300">{evt.title}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {/* Task area */}
+      <div className="p-2 space-y-2" style={{ minHeight: '300px' }}>
         {children}
       </div>
     </div>
@@ -129,6 +152,14 @@ export function Week({ onToast }: WeekProps) {
   }, [tasks, events, settings, weekStart]);
 
   const displayDays = localDistribution ?? computedDays;
+
+  // Get events for a specific day
+  const getEventsForDay = (dayDate: string) => {
+    return events
+      .filter((e) => new Date(e.start).toISOString().split('T')[0] === dayDate)
+      .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
+      .map((e) => ({ id: e.id, title: e.title, start: e.start, end: e.end, type: e.type }));
+  };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -218,12 +249,18 @@ export function Week({ onToast }: WeekProps) {
         <button onClick={goToToday} className="btn-secondary text-xs">Heute</button>
       </div>
 
-      {/* Week Grid with DnD — no hour raster, just task cards per day */}
+      {/* Week Grid with DnD */}
       <div className="card overflow-x-auto">
         <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
           <div className="flex min-w-[700px]">
             {displayDays.map((day, dayIdx) => (
-              <DroppableDay key={dayIdx} day={day} dayIndex={dayIdx} maxHours={settings.maxHoursPerDay}>
+              <DroppableDay
+                key={dayIdx}
+                day={day}
+                dayIndex={dayIdx}
+                maxHours={settings.maxHoursPerDay}
+                dayEvents={getEventsForDay(day.date)}
+              >
                 {day.tasks.length === 0 ? (
                   <div className="text-center text-xs text-gray-300 dark:text-gray-600 py-8">
                     Keine Tasks
@@ -239,8 +276,9 @@ export function Week({ onToast }: WeekProps) {
         </DndContext>
       </div>
 
-      <p className="text-xs text-gray-400 mt-3 text-center">
-        Tasks per Drag & Drop zwischen Tagen verschieben
+      <p className="text-xs text-gray-400 mt-3 text-center flex items-center justify-center gap-1">
+        <Calendar size={12} />
+        Tasks per Drag & Drop zwischen Tagen verschieben · Termine aus dem Plan werden hier angezeigt
       </p>
     </div>
   );

@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useCalendarStore } from '../stores/calendarStore';
 import { EventTile } from '../components/EventTile';
-import type { CalendarEventType } from '../types';
+import type { CalendarEvent, CalendarEventType } from '../types';
 
 function getWeekStart(date: Date): Date {
   const d = new Date(date);
@@ -14,13 +14,58 @@ function getWeekStart(date: Date): Date {
 
 const dayNames = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
+/** Group overlapping events and assign column indices for side-by-side layout. */
+function layoutEvents(events: CalendarEvent[]): Map<string, { col: number; cols: number }> {
+  const sorted = [...events].sort((a, b) => {
+    const aStart = new Date(a.start).getTime();
+    const bStart = new Date(b.start).getTime();
+    if (aStart !== bStart) return aStart - bStart;
+    return new Date(a.end).getTime() - new Date(b.end).getTime();
+  });
+
+  const result = new Map<string, { col: number; cols: number }>();
+  let activeColumns: number[] = [];
+  let group: CalendarEvent[] = [];
+
+  for (const evt of sorted) {
+    const evtStart = new Date(evt.start).getTime();
+    const evtEnd = new Date(evt.end).getTime();
+
+    // Remove columns and events that have ended before this one starts
+    activeColumns = activeColumns.filter((end) => end > evtStart);
+    group = group.filter((e) => new Date(e.end).getTime() > evtStart);
+
+    // Find first free column
+    let col = 0;
+    while (col < activeColumns.length && activeColumns[col] > evtStart) col++;
+
+    if (col === activeColumns.length) {
+      activeColumns.push(evtEnd);
+    } else {
+      activeColumns[col] = evtEnd;
+    }
+
+    result.set(evt.id, { col, cols: 1 });
+    group.push(evt);
+
+    // Update cols for all in current group
+    const currentCols = activeColumns.length;
+    for (const e of group) {
+      const existing = result.get(e.id)!;
+      result.set(e.id, { col: existing.col, cols: currentCols });
+    }
+  }
+
+  return result;
+}
+
 export function Plan() {
   const { events, addEvent, deleteEvent } = useCalendarStore();
   const [weekStart, setWeekStart] = useState(getWeekStart(new Date()));
   const [showAdd, setShowAdd] = useState(false);
 
   // Add event form
-  const [evtType, setEvtType] = useState<CalendarEventType>('WorkHours');
+  const [evtType, setEvtType] = useState<CalendarEventType>('FixedAppointment');
   const [evtTitle, setEvtTitle] = useState('');
   const [evtDay, setEvtDay] = useState(0);
   const [evtStart, setEvtStart] = useState('09:00');
@@ -39,10 +84,10 @@ export function Plan() {
   const weekEnd = weekDays[6];
   const todayKey = new Date().toISOString().split('T')[0];
 
-  // 0-24h grid — full day
+  // 0-24h grid — full day, 25 labels (0 through 24)
   const hours = useMemo(() => {
     const result: number[] = [];
-    for (let h = 0; h < 24; h++) result.push(h);
+    for (let h = 0; h <= 24; h++) result.push(h);
     return result;
   }, []);
 
@@ -52,15 +97,25 @@ export function Plan() {
   const handleAddEvent = (e: React.FormEvent) => {
     e.preventDefault();
     if (!evtTitle.trim()) return;
+
+    // Validate times
+    const [sh, sm] = evtStart.split(':').map(Number);
+    const [eh, em] = evtEnd.split(':').map(Number);
+    if (isNaN(sh) || isNaN(eh) || (eh * 60 + em) <= (sh * 60 + sm)) return;
+
     const day = new Date(weekStart);
     day.setDate(day.getDate() + evtDay);
     const startDate = new Date(day);
-    const [sh, sm] = evtStart.split(':').map(Number);
     startDate.setHours(sh, sm, 0, 0);
     const endDate = new Date(day);
-    const [eh, em] = evtEnd.split(':').map(Number);
     endDate.setHours(eh, em, 0, 0);
-    addEvent({ title: evtTitle.trim(), start: startDate.toISOString(), end: endDate.toISOString(), type: evtType });
+
+    addEvent({
+      title: evtTitle.trim(),
+      start: startDate.toISOString(),
+      end: endDate.toISOString(),
+      type: evtType,
+    });
     setEvtTitle('');
     setShowAdd(false);
   };
@@ -130,7 +185,7 @@ export function Plan() {
           </div>
           <div className="flex flex-col gap-1 flex-1 min-w-[150px]">
             <label className="text-xs text-gray-500">Titel</label>
-            <input type="text" value={evtTitle} onChange={(e) => setEvtTitle(e.target.value)} placeholder="Event-Titel" className="input" />
+            <input type="text" value={evtTitle} onChange={(e) => setEvtTitle(e.target.value)} placeholder="Event-Titel" className="input" autoFocus />
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs text-gray-500">Tag</label>
@@ -142,11 +197,11 @@ export function Plan() {
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs text-gray-500">Von</label>
-            <input type="time" value={evtStart} onChange={(e) => setEvtStart(e.target.value)} className="input" />
+            <input type="time" value={evtStart} onChange={(e) => setEvtStart(e.target.value)} className="input" required />
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs text-gray-500">Bis</label>
-            <input type="time" value={evtEnd} onChange={(e) => setEvtEnd(e.target.value)} className="input" />
+            <input type="time" value={evtEnd} onChange={(e) => setEvtEnd(e.target.value)} className="input" required />
           </div>
           <button type="submit" className="btn-primary">Hinzufügen</button>
         </form>
@@ -160,11 +215,15 @@ export function Plan() {
             <div className="h-10 border-b border-gray-200 dark:border-gray-700 flex items-center justify-center text-[10px] text-gray-400">
               Uhr
             </div>
-            {hours.map((h) => (
+            {/* 24 hour rows (0-23), each rowHeight tall */}
+            {hours.slice(0, 24).map((h) => (
               <div key={h} className="text-xs text-gray-400 text-right pr-1.5 leading-none flex items-end justify-end" style={{ height: rowHeight }}>
                 {h.toString().padStart(2, '0')}:00
               </div>
             ))}
+            {/* 24:00 label at bottom */}
+            <div className="text-xs text-gray-400 text-right pr-1.5 leading-none flex items-end justify-end" style={{ height: 0 }}>
+            </div>
           </div>
 
           {/* Day columns */}
@@ -176,6 +235,9 @@ export function Plan() {
               return eventDate === dayKey;
             });
 
+            // Compute overlap layout for this day's events
+            const eventLayout = layoutEvents(dayEvents);
+
             return (
               <div key={dayIdx} className="flex-1 border-r border-gray-200 dark:border-gray-700 last:border-r-0 relative">
                 {/* Header */}
@@ -186,13 +248,14 @@ export function Plan() {
                 </div>
                 {/* Hour grid 0-24 */}
                 <div className="relative" style={{ height: totalGridHeight }}>
-                  {hours.map((h) => (
+                  {/* Hour slot lines */}
+                  {hours.slice(0, 24).map((h) => (
                     <div
                       key={h}
                       className="border-b border-gray-100 dark:border-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer"
                       style={{ height: rowHeight }}
                       onClick={() => {
-                        // Click on hour slot → pre-fill add form
+                        // Click on hour slot → pre-fill add form with correct times
                         setEvtDay(dayIdx);
                         setEvtStart(`${h.toString().padStart(2, '0')}:00`);
                         setEvtEnd(`${(h + 1).toString().padStart(2, '0')}:00`);
@@ -203,23 +266,41 @@ export function Plan() {
                   {/* Now indicator */}
                   {nowIndicator && nowIndicator.dayKey === dayKey && (
                     <div
-                      className="absolute left-0 right-0 h-0.5 bg-danger z-10"
+                      className="absolute left-0 right-0 h-0.5 bg-danger z-20 pointer-events-none"
                       style={{ top: `${nowIndicator.top}px` }}
                     >
                       <div className="w-2 h-2 bg-danger rounded-full -ml-1 -mt-[3px]" />
                     </div>
                   )}
-                  {/* Events */}
+                  {/* Events positioned by time */}
                   {dayEvents.map((event) => {
                     const eventStart = new Date(event.start);
+                    const eventEnd = new Date(event.end);
                     const startHour = eventStart.getHours() + eventStart.getMinutes() / 60;
+                    const endHour = eventEnd.getHours() + eventEnd.getMinutes() / 60;
                     const top = startHour * rowHeight;
+                    const heightPx = Math.max(24, (endHour - startHour) * rowHeight);
+                    const layout = eventLayout.get(event.id) ?? { col: 0, cols: 1 };
+                    const widthPct = 100 / layout.cols;
+                    const leftPct = layout.col * widthPct;
+
                     return (
-                      <div key={event.id} className="absolute left-0.5 right-0.5 group" style={{ top: `${top}px` }}>
+                      <div
+                        key={event.id}
+                        className="absolute group z-10"
+                        style={{
+                          top: `${top}px`,
+                          height: `${heightPx}px`,
+                          left: `${leftPct}%`,
+                          width: `${widthPct}%`,
+                          paddingLeft: '2px',
+                          paddingRight: '2px',
+                        }}
+                      >
                         <EventTile event={event} />
                         <button
-                          onClick={() => handleRemoveEvent(event.id)}
-                          className="absolute -top-1 -right-1 w-5 h-5 bg-danger text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[10px]"
+                          onClick={(e) => { e.stopPropagation(); handleRemoveEvent(event.id); }}
+                          className="absolute -top-1 -right-1 w-5 h-5 bg-danger text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[10px] z-30"
                         >
                           ✕
                         </button>

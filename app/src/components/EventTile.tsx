@@ -23,17 +23,11 @@ function formatTime(dateStr: string): string {
 }
 
 export function EventTile({ event }: EventTileProps) {
-  const start = new Date(event.start);
-  const end = new Date(event.end);
-  const durationMin = (end.getTime() - start.getTime()) / (1000 * 60);
-  const heightPx = Math.max(20, (durationMin / 30) * 28);
-
   const colors = typeColors[event.type];
 
   return (
     <div
-      className={`absolute left-1 right-1 ${colors.bg} ${colors.text} ${colors.border} border rounded-md px-2 py-1 overflow-hidden cursor-pointer hover:shadow-md transition-all`}
-      style={{ height: `${heightPx}px` }}
+      className={`absolute inset-0 ${colors.bg} ${colors.text} ${colors.border} border rounded-md px-2 py-1 overflow-hidden cursor-pointer hover:shadow-md transition-all`}
     >
       <div className="text-xs font-medium truncate">{event.title}</div>
       <div className="text-[10px] opacity-75">
